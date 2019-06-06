@@ -931,13 +931,75 @@ public class NetworkUtil {
     }
 
     public static String getCGFResultFromDevice(String baseUrl, DeviceVersion version) {
-
         String url = baseUrl;
         Log.i(TAG,"REDIRECT- getCGFResultFromDevice / url: " + url);
         if (url.startsWith("http")) {
             url = url.substring(url.indexOf(":"),url.length());
         }
         Log.i(TAG,"REDIRECT- getCGFResultFromDevice / url: " + url);
+
+        switch (version) {
+            case R1:
+                url = HTTP_ + url;
+                url += "/param_cfg_result.txt";
+                Log.i(TAG,"REDIRECT- getCGFResultFromDevice / R1 - url: " + url);
+                break;
+            case R2:
+                Log.i(TAG,"REDIRECT- getCGFResultFromDevice / R2 - didRedirect: " + didRedirect);
+                if (didRedirect) {
+                    url = HTTPS_ + url;
+                } else {
+                    url = HTTP_ + url;
+                }
+                url += "/__SL_G_MCR";
+                Log.i(TAG,"REDIRECT- getCGFResultFromDevice / R2 - url: " + url);
+                break;
+            case UNKNOWN:
+                break;
+        }
+
+        String result;
+
+        try {
+            HttpParams httpParameters = new BasicHttpParams();
+            // Set the timeout in milliseconds until a connection is established.
+            // The default value is zero, that means the timeout is not used.
+            int timeoutConnection = 3000;
+            HttpConnectionParams.setConnectionTimeout(httpParameters, timeoutConnection);
+            // Set the default socket timeout (SO_TIMEOUT)
+            // in milliseconds which is the timeout for waiting for data.
+            int timeoutSocket = 5000;
+            HttpConnectionParams.setSoTimeout(httpParameters, timeoutSocket);
+            HttpClient client = getNewHttpClient();
+            HttpGet cfgResult = new HttpGet(url);
+            HttpResponse response = client.execute(cfgResult);
+            result = EntityUtils.toString(response.getEntity());
+            if (result.equals("")) {
+                Log.w(TAG, "CFG result returned empty!");
+                mLogger.info("CFG result returned empty!");
+                result = "Timeout";
+            } else {
+                Log.i(TAG, "CFG result returned: " + result);
+                mLogger.info("CFG result returned: " + result);
+            }
+
+        } catch (Exception e) {
+            e.printStackTrace();
+            Log.e(TAG, "Failed to get CFG result");
+            mLogger.info("Failed to get CFG result");
+            result = "Timeout";
+        }
+
+        return result;
+    }
+
+    public static String getCGFResultFromCloud(String baseUrl, DeviceVersion version) {
+        String url = baseUrl;
+        Log.i(TAG,"REDIRECT- getCGFResultFromCloud / url: " + url);
+        if (url.startsWith("http")) {
+            url = url.substring(url.indexOf(":"),url.length());
+        }
+        Log.i(TAG,"REDIRECT- getCGFResultFromCloud / url: " + url);
 
         switch (version) {
             case R1:

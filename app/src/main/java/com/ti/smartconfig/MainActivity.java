@@ -380,7 +380,7 @@ public class MainActivity extends FragmentActivity {
         deviceConfiguration = new DeviceConfiguration_();
         lanFragment = new LanFragment_();
         cloudFragment = new CloudFragment_();
-		bleFragment = new BleFragment_();
+        bleFragment = new BleFragment_();
         otaFragment = new OtaFragment_();
         tabDimens = (int) TypedValue.applyDimension(TypedValue.COMPLEX_UNIT_DIP, SmartConfigConstants.TAB_DIMENS, getResources().getDisplayMetrics());
         tabhost.setup(this, getSupportFragmentManager(), real_tab_content.getId());

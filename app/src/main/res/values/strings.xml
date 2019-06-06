@@ -1,7 +1,7 @@
 <?xml version="1.0" encoding="utf-8"?>
 <resources>
     <string name="file_provider_authority" translatable="false">com.quiro.fileproviderexample.fileprovider</string>
-    <string name="app_name">SimpleLink Starter Pro</string>
+    <string name="app_name">M0V Simplelink</string>
     <string name="settings_build_text">Build %1$s SC lib %2$s</string>
     <string name="menu_settings">Settings</string>
     <string name="next">Next ></string>
@@ -16,7 +16,7 @@
     <string name="title_devices">Devices</string>
     <string name="title_ap_provisioning">Automatic Device Configuration</string>
     <string name="title_settings">Settings</string>
-    <string name="title_activity_ap_mode">Configuration Page</string>
+    <string name="title_activity_ap_mode">Provisioning Page</string>
     <string name="title_activity_sc">Device config</string>
     <string name="title_activity_privacy_policy">PrivacyPolicyActivity</string>
     <string name="smartconfig_start">Start</string>

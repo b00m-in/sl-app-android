@@ -141,10 +141,10 @@ public class DeviceConfiguration extends Fragment {
 	private boolean inInitiateScan;
 	public static final String mypreference = "iot";
 	boolean isSearching = false;
-    public static final String Name = "deviceIP";
-    public MainActivity mainActivity;
-    public TextWatcher nameFieldTextWatcher;
-    public TextWatcher passFieldTextWatcher;
+        public static final String Name = "deviceIP";
+        public MainActivity mainActivity;
+        public TextWatcher nameFieldTextWatcher;
+        public TextWatcher passFieldTextWatcher;
 
 	@Pref
 	SharedPreferencesInterface_ prefs;
@@ -369,7 +369,7 @@ public class DeviceConfiguration extends Fragment {
 			Log.i(TAG, "DeviceConfiguration receive device found, scanningnMDNS:" + scanningnMDNS);
 			if (!scanningnMDNS)
 				return;
-//			isSearching = false;
+                        //isSearching = false;
 			JSONObject deviceJSON = null;
 			try {
 				String jsonString = intent.getExtras().getString("newDevice");
@@ -1039,13 +1039,13 @@ public class DeviceConfiguration extends Fragment {
 			Log.i(TAG,"Initial network is null - will not attempt to connect");
 			showToastWithMessage("No initial network to connect to");
 		}
-        if (moveToDevice) {
-            if (Build.VERSION.SDK_INT >= Build.VERSION_CODES.HONEYCOMB) {
-                new OTAAndType().executeOnExecutor(AsyncTask.THREAD_POOL_EXECUTOR, "");
-            } else {
-                new OTAAndType().execute("");
-            }
-        }
+                if (moveToDevice) {
+                    if (Build.VERSION.SDK_INT >= Build.VERSION_CODES.HONEYCOMB) {
+                        new OTAAndType().executeOnExecutor(AsyncTask.THREAD_POOL_EXECUTOR, "");
+                    } else {
+                        new OTAAndType().execute("");
+                    }
+                }
 	}
 
 	/**
@@ -1571,6 +1571,7 @@ public class DeviceConfiguration extends Fragment {
 			if (mIsViaWifi && mDevice != null) {
 				baseUrl = "://" + mDevice.host;
 			}
+			mLogger.info("*AP* Getting cfg result from SL device: " + baseUrl);
 			resultString = NetworkUtil.getCGFResultFromDevice(baseUrl, deviceVersion);
 			Log.i(TAG, "Getting cfg result from SL (" + resultString + ")");
 			mLogger.info("*AP* Got cfg result from SL device: " + resultString);
@@ -1774,7 +1775,7 @@ public class DeviceConfiguration extends Fragment {
 			}
 			return false;
 		}
-	});
+	        });
 
 		new Thread(new Runnable() {
 			int progress = 0;
