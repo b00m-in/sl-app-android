@@ -152,6 +152,9 @@ public class DeviceConfiguration extends Fragment {
 	public
 	ImageView tab_device_configuration_start_button;
 	@ViewById
+	public
+	ImageView tab_device_configuration_refresh_button;
+	@ViewById
 	EditText tab_device_configuration_device_name_editText;
 	@ViewById
 	RelativeLayout tab_device_configuration_device_name_layout;
@@ -285,7 +288,9 @@ public class DeviceConfiguration extends Fragment {
 								showToastWithMessage("Too many simplelink devices around you , cannot auto connect to the simplelink device");
 							}
 							if( devicesNumber < 1 ){
-								showToastWithMessage("There is no simplelink devices around you..");
+								showToastWithMessage("There are no simplelink devices around you..");
+                                                                tab_device_configuration_refresh_button.setImageResource(R.drawable.refresh_green);
+                                                                tab_device_configuration_refresh_button.setEnabled(true);
 							}
 						//add connect to starting ssid / if we have one
 						if(startingSSID != null){
@@ -564,56 +569,211 @@ public class DeviceConfiguration extends Fragment {
 	 */
 	@AfterViews
 	void afterViews() {
-		tab_device_configuration_password_check_layout.setVisibility(View.GONE);
-		tab_device_configuration_password_check_editText.setInputType(InputType.TYPE_CLASS_TEXT | InputType.TYPE_TEXT_VARIATION_PASSWORD);
-		tab_device_configuration_start_button.setImageResource(R.drawable.start_configuration_button_off);
-		tab_device_configuration_start_button.setEnabled(false);
-        passFieldTextWatcher = new TextWatcher() {
-            @Override
-            public void beforeTextChanged(CharSequence s, int start, int count, int after) {
-            }
-            @Override
-            public void onTextChanged(CharSequence s, int start, int before, int count) {
-                if (tab_device_configuration_password_check_editText.length() > 0) {
+            tab_device_configuration_password_check_layout.setVisibility(View.GONE);
+            tab_device_configuration_password_check_editText.setInputType(InputType.TYPE_CLASS_TEXT | InputType.TYPE_TEXT_VARIATION_PASSWORD);
+            tab_device_configuration_start_button.setImageResource(R.drawable.start_configuration_button_off);
+            tab_device_configuration_start_button.setEnabled(false);
+            passFieldTextWatcher = new TextWatcher() {
+                @Override
+                public void beforeTextChanged(CharSequence s, int start, int count, int after) {
+                }
+                @Override
+                public void onTextChanged(CharSequence s, int start, int before, int count) {
+                    if (tab_device_configuration_password_check_editText.length() > 0) {
 
-                    if (tab_device_configuration_device_name_layout.getVisibility() == View.VISIBLE) {
-                        if (tab_device_configuration_password_check_editText.length() > 0) {
+                        if (tab_device_configuration_device_name_layout.getVisibility() == View.VISIBLE) {
+                            if (tab_device_configuration_password_check_editText.length() > 0) {
+                                tab_device_configuration_start_button.setImageResource(R.drawable.start_configuration_button_on);
+                                tab_device_configuration_start_button.setEnabled(true);
+                                ssidToAddSecurityKey = tab_device_configuration_password_check_editText.getText().toString();
+                                mIsReady = true;
+                                setToReady(mIsReady);
+                            } else {
+                                tab_device_configuration_start_button.setImageResource(R.drawable.start_configuration_button_off);
+                                tab_device_configuration_start_button.setEnabled(false);
+                                mIsReady = false;
+                                setToReady(mIsReady);
+                            }
+                        } else {
                             tab_device_configuration_start_button.setImageResource(R.drawable.start_configuration_button_on);
                             tab_device_configuration_start_button.setEnabled(true);
                             ssidToAddSecurityKey = tab_device_configuration_password_check_editText.getText().toString();
                             mIsReady = true;
                             setToReady(mIsReady);
-                        } else {
-                            tab_device_configuration_start_button.setImageResource(R.drawable.start_configuration_button_off);
-                            tab_device_configuration_start_button.setEnabled(false);
-                            mIsReady = false;
-                            setToReady(mIsReady);
                         }
                     } else {
-                        tab_device_configuration_start_button.setImageResource(R.drawable.start_configuration_button_on);
-                        tab_device_configuration_start_button.setEnabled(true);
-                        ssidToAddSecurityKey = tab_device_configuration_password_check_editText.getText().toString();
-                        mIsReady = true;
+                        tab_device_configuration_start_button.setImageResource(R.drawable.start_configuration_button_off);
+                        tab_device_configuration_start_button.setEnabled(false);
+                        mIsReady = false;
                         setToReady(mIsReady);
                     }
-                } else {
-                    tab_device_configuration_start_button.setImageResource(R.drawable.start_configuration_button_off);
-                    tab_device_configuration_start_button.setEnabled(false);
-                    mIsReady = false;
-                    setToReady(mIsReady);
                 }
+
+                @Override
+                public void afterTextChanged(Editable s) {}
+            };
+
+            nameFieldTextWatcher = new TextWatcher() {
+                @Override
+                public void beforeTextChanged(CharSequence s, int start, int count, int after) {}
+
+                @Override
+                public void onTextChanged(CharSequence s, int start, int before, int count) {
+                    if (tab_device_configuration_device_name_editText.length() > 0) {
+                        if (ssidToAddSecurityType != ssidToAddSecurityType.OPEN) {
+                            tab_device_configuration_password_check_editText.addTextChangedListener(passFieldTextWatcher);
+                        } else {
+                            tab_device_configuration_start_button.setImageResource(R.drawable.start_configuration_button_on);
+                            tab_device_configuration_start_button.setEnabled(true);
+                            ssidToAddSecurityKey = tab_device_configuration_password_check_editText.getText().toString();
+                            mIsReady = true;
+                            setToReady(mIsReady);
+                        }
+                        if (tab_device_configuration_password_check_layout.getVisibility() == View.VISIBLE) {
+                            if (tab_device_configuration_password_check_editText.length() > 0) {
+                                tab_device_configuration_start_button.setImageResource(R.drawable.start_configuration_button_on);
+                                tab_device_configuration_start_button.setEnabled(true);
+                                ssidToAddSecurityKey = tab_device_configuration_password_check_editText.getText().toString();
+                                mIsReady = true;
+                                setToReady(mIsReady);
+                            }
+                        }
+                    } else {
+                        tab_device_configuration_start_button.setImageResource(R.drawable.start_configuration_button_off);
+                        tab_device_configuration_start_button.setEnabled(false);
+                        mIsReady = false;
+                        setToReady(mIsReady);
+                    }
+                }
+
+                @Override
+                public void afterTextChanged(Editable s) {}
+            };
+            startConfigButtonState();
+
+            DisplayWifiState();
+            // Get instance of Vibrator from current Context
+            v = (Vibrator) getActivity().getSystemService(Context.VIBRATOR_SERVICE);
+            mLogger = LoggerFactory.getLogger(DeviceConfiguration.class);
+            setToReady(false);
+            tab_device_configuration_router_layout.setVisibility(View.GONE);
+            if (prefs.showDeviceName().get()) {
+                    tab_device_configuration_device_name_layout.setVisibility(View.VISIBLE);
+            }
+            else {
+                    tab_device_configuration_device_name_layout.setVisibility(View.GONE);
+            }
+            if(prefs.isIoTuuid().get()) {
+                    tab_device_configuration_iot_uuid_layout.setVisibility(View.VISIBLE);
+            }
+            else {
+                    tab_device_configuration_iot_uuid_layout.setVisibility(View.GONE);
             }
 
-            @Override
-            public void afterTextChanged(Editable s) {}
-        };
+            //Check to see if the starting network is null
+            startingSSID = ((MainActivity)getActivity()).mStartingWifiNetwork;
+            String connectedWifi = NetworkUtil.getConnectedSSID(getActivity());
+            Log.i(TAG,"StartingSSID: " + startingSSID);
+            if (startingSSID ==  null && connectedWifi== null ) {
+                    mLogger.info("*AP* Showing \"no wifi activity\" dialog, because the starting network is null and we are not connected to any network now");
+                    AlertDialog wifiDialog = new AlertDialog.Builder(getActivity()). //create a dialog
+                    setTitle("No WiFi Connection").
+                    setMessage("Please connect your Smart Phone to router").
+                    setPositiveButton("Connect to WiFi", new OnClickListener() {
+                            @Override
+                            public void onClick(DialogInterface dialog, int which) { //the user clicked yes
+                                    WifiManager wifiManager = (WifiManager) getActivity().getApplicationContext().getSystemService(Context.WIFI_SERVICE);
+                                    if (!wifiManager.isWifiEnabled())
+                                            wifiManager.setWifiEnabled(true);
+                                    startActivityForResult(new Intent(Settings.ACTION_WIFI_SETTINGS), Constants.WIFI_SETTINGS_INTENT_RESULTS);
+                            }
+                    }).setNeutralButton("No router", new OnClickListener() {
+                            @Override
+                            public void onClick(DialogInterface dialog, int which) {
+                                    WifiManager wifiManager = (WifiManager) getActivity().getApplicationContext().getSystemService(Context.WIFI_SERVICE);
+                                    if (!wifiManager.isWifiEnabled())
+                                            wifiManager.setWifiEnabled(true);
+                                    initiateScan();
+                                    Log.e(TAG,"Scan running from Afterviews #3");
+                            }
+                    }).create();
+                    wifiDialog.show();
+            }
+            else {
+                    initiateScan();
+                    Log.e(TAG,"Scan running from Afterviews #2");
+            }
+            tab_device_configuration_loader_layout.setOnTouchListener(new View.OnTouchListener() {
+                    @SuppressLint("ClickableViewAccessibility")
+                    @Override
+                    public boolean onTouch(View arg0, MotionEvent arg1) {
+                            return true;
+                    }
+            });
+            tab_device_configuration_password_checkbox.setOnCheckedChangeListener(new CompoundButton.OnCheckedChangeListener() {
 
-       nameFieldTextWatcher = new TextWatcher() {
-            @Override
-            public void beforeTextChanged(CharSequence s, int start, int count, int after) {}
+                    public void onCheckedChanged(CompoundButton buttonView, boolean isChecked) {
+                            // checkbox status is changed from unchecked to checked.
+                            if (!isChecked) {
+                                    // show password
+                                    tab_device_configuration_password_check_editText.setTransformationMethod(PasswordTransformationMethod.getInstance());
+                            } else {
+                                    // hide password
+                                    tab_device_configuration_password_check_editText.setTransformationMethod(HideReturnsTransformationMethod.getInstance());
+                            }
+                    }
+            });
 
-            @Override
-            public void onTextChanged(CharSequence s, int start, int before, int count) {
+            //listen to editText focus and hiding keyboard when focus is out
+            tab_device_configuration_device_name_editText.setOnFocusChangeListener(new View.OnFocusChangeListener() {
+                    @Override
+                    public void onFocusChange(View v, boolean hasFocus) {
+                            if (!hasFocus) {
+                                    hideKeyboard(v);
+                            }
+                    }
+            });
+
+            tab_device_configuration_password_check_editText.setOnFocusChangeListener(new View.OnFocusChangeListener() {
+                    @Override
+                    public void onFocusChange(View v, boolean hasFocus) {
+                            if (!hasFocus) {
+                                    hideKeyboard(v);
+                            }
+                    }
+
+            });
+            int devicesNumber = 0;
+            ScanResult result = null;
+
+            wifiList = NetworkUtil.getWifiScanResults(true, getActivity());
+            mLogger.info("*AP* getWifiScanResults from wifiManager to find SL device as AP - Provisioning tab opened in AP mode");
+            for (ScanResult scanResult : wifiList) {
+                    if (scanResult.SSID.contains(Constants.DEVICE_PREFIX)) {
+                            devicesNumber++;
+                            result = scanResult;
+                    }
+            }
+	}
+
+        public void startConfigButtonState() {
+            if (tab_device_configuration_device_name_layout.getVisibility() == View.VISIBLE) {
+                tab_device_configuration_device_name_editText.addTextChangedListener(nameFieldTextWatcher);
+                Random random = new Random();
+                int ran = (random.nextInt(8)+1)*100 + (random.nextInt(8)+1)*10 + (random.nextInt(8)+1);
+                if (ran < 0) {
+                    ran = (ran * -1);
+                }
+                tab_device_configuration_device_name_editText.setTextColor(Color.LTGRAY);
+                tab_device_configuration_device_name_editText.setText(String.format("Dev-%d",ran));
+                tab_device_configuration_device_name_editText.setOnClickListener(new View.OnClickListener() {
+                    @Override
+                    public void onClick(View v) {
+                        tab_device_configuration_device_name_editText.setText("");
+                        tab_device_configuration_device_name_editText.setTextColor(Color.BLACK);
+                    }
+                });
+
                 if (tab_device_configuration_device_name_editText.length() > 0) {
                     if (ssidToAddSecurityType != ssidToAddSecurityType.OPEN) {
                         tab_device_configuration_password_check_editText.addTextChangedListener(passFieldTextWatcher);
@@ -624,153 +784,13 @@ public class DeviceConfiguration extends Fragment {
                         mIsReady = true;
                         setToReady(mIsReady);
                     }
-                    if (tab_device_configuration_password_check_layout.getVisibility() == View.VISIBLE) {
-                        if (tab_device_configuration_password_check_editText.length() > 0) {
-                            tab_device_configuration_start_button.setImageResource(R.drawable.start_configuration_button_on);
-                            tab_device_configuration_start_button.setEnabled(true);
-                            ssidToAddSecurityKey = tab_device_configuration_password_check_editText.getText().toString();
-                            mIsReady = true;
-                            setToReady(mIsReady);
-                        }
-                    }
                 } else {
                     tab_device_configuration_start_button.setImageResource(R.drawable.start_configuration_button_off);
                     tab_device_configuration_start_button.setEnabled(false);
                     mIsReady = false;
                     setToReady(mIsReady);
                 }
-            }
-
-            @Override
-            public void afterTextChanged(Editable s) {}
-        };
-        startConfigButtonState();
-
-		DisplayWifiState();
-		// Get instance of Vibrator from current Context
-		v = (Vibrator) getActivity().getSystemService(Context.VIBRATOR_SERVICE);
-		mLogger = LoggerFactory.getLogger(DeviceConfiguration.class);
-		setToReady(false);
-		tab_device_configuration_router_layout.setVisibility(View.GONE);
-		if (prefs.showDeviceName().get()) {
-			tab_device_configuration_device_name_layout.setVisibility(View.VISIBLE);
-		}
-		else {
-			tab_device_configuration_device_name_layout.setVisibility(View.GONE);
-		}
-		if(prefs.isIoTuuid().get()) {
-			tab_device_configuration_iot_uuid_layout.setVisibility(View.VISIBLE);
-		}
-		else {
-			tab_device_configuration_iot_uuid_layout.setVisibility(View.GONE);
-		}
-
-		//Check to see if the starting network is null
-		startingSSID = ((MainActivity)getActivity()).mStartingWifiNetwork;
-		String connectedWifi = NetworkUtil.getConnectedSSID(getActivity());
-		Log.i(TAG,"StartingSSID: " + startingSSID);
-		if (startingSSID ==  null && connectedWifi== null ) {
-			mLogger.info("*AP* Showing \"no wifi activity\" dialog, because the starting network is null and we are not connected to any network now");
-			AlertDialog wifiDialog = new AlertDialog.Builder(getActivity()). //create a dialog
-			setTitle("No WiFi Connection").
-			setMessage("Please connect your Smart Phone to router").
-			setPositiveButton("Connect to WiFi", new OnClickListener() {
-				@Override
-				public void onClick(DialogInterface dialog, int which) { //the user clicked yes
-					WifiManager wifiManager = (WifiManager) getActivity().getApplicationContext().getSystemService(Context.WIFI_SERVICE);
-					if (!wifiManager.isWifiEnabled())
-						wifiManager.setWifiEnabled(true);
-					startActivityForResult(new Intent(Settings.ACTION_WIFI_SETTINGS), Constants.WIFI_SETTINGS_INTENT_RESULTS);
-				}
-			}).setNeutralButton("No router", new OnClickListener() {
-				@Override
-				public void onClick(DialogInterface dialog, int which) {
-					WifiManager wifiManager = (WifiManager) getActivity().getApplicationContext().getSystemService(Context.WIFI_SERVICE);
-					if (!wifiManager.isWifiEnabled())
-						wifiManager.setWifiEnabled(true);
-					initiateScan();
-					Log.e(TAG,"Scan running from Afterviews #3");
-				}
-			}).create();
-			wifiDialog.show();
-
-		}
-		else {
-			initiateScan();
-			Log.e(TAG,"Scan running from Afterviews #2");
-		}
-		tab_device_configuration_loader_layout.setOnTouchListener(new View.OnTouchListener() {
-			@SuppressLint("ClickableViewAccessibility")
-			@Override
-			public boolean onTouch(View arg0, MotionEvent arg1) {
-				return true;
-			}
-		});
-		tab_device_configuration_password_checkbox.setOnCheckedChangeListener(new CompoundButton.OnCheckedChangeListener() {
-
-			public void onCheckedChanged(CompoundButton buttonView, boolean isChecked) {
-				// checkbox status is changed from unchecked to checked.
-				if (!isChecked) {
-					// show password
-					tab_device_configuration_password_check_editText.setTransformationMethod(PasswordTransformationMethod.getInstance());
-				} else {
-					// hide password
-					tab_device_configuration_password_check_editText.setTransformationMethod(HideReturnsTransformationMethod.getInstance());
-				}
-			}
-		});
-
-		//listen to editText focus and hiding keyboard when focus is out
-		tab_device_configuration_device_name_editText.setOnFocusChangeListener(new View.OnFocusChangeListener() {
-			@Override
-			public void onFocusChange(View v, boolean hasFocus) {
-				if (!hasFocus) {
-					hideKeyboard(v);
-				}
-			}
-		});
-
-		tab_device_configuration_password_check_editText.setOnFocusChangeListener(new View.OnFocusChangeListener() {
-			@Override
-			public void onFocusChange(View v, boolean hasFocus) {
-				if (!hasFocus) {
-					hideKeyboard(v);
-				}
-			}
-
-		});
-		int devicesNumber = 0;
-		ScanResult result = null;
-
-		wifiList = NetworkUtil.getWifiScanResults(true, getActivity());
-		mLogger.info("*AP* getWifiScanResults from wifiManager to find SL device as AP - Provisioning tab opened in AP mode");
-		for (ScanResult scanResult : wifiList) {
-			if (scanResult.SSID.contains(Constants.DEVICE_PREFIX)) {
-				devicesNumber++;
-				result = scanResult;
-			}
-		}
-	}
-
-    public void startConfigButtonState() {
-        if (tab_device_configuration_device_name_layout.getVisibility() == View.VISIBLE) {
-            tab_device_configuration_device_name_editText.addTextChangedListener(nameFieldTextWatcher);
-            Random random = new Random();
-            int ran = (random.nextInt(8)+1)*100 + (random.nextInt(8)+1)*10 + (random.nextInt(8)+1);
-            if (ran < 0) {
-                ran = (ran * -1);
-            }
-            tab_device_configuration_device_name_editText.setTextColor(Color.LTGRAY);
-            tab_device_configuration_device_name_editText.setText(String.format("Dev-%d",ran));
-            tab_device_configuration_device_name_editText.setOnClickListener(new View.OnClickListener() {
-                @Override
-                public void onClick(View v) {
-                    tab_device_configuration_device_name_editText.setText("");
-                    tab_device_configuration_device_name_editText.setTextColor(Color.BLACK);
-                }
-            });
-
-            if (tab_device_configuration_device_name_editText.length() > 0) {
+            } else {
                 if (ssidToAddSecurityType != ssidToAddSecurityType.OPEN) {
                     tab_device_configuration_password_check_editText.addTextChangedListener(passFieldTextWatcher);
                 } else {
@@ -780,24 +800,8 @@ public class DeviceConfiguration extends Fragment {
                     mIsReady = true;
                     setToReady(mIsReady);
                 }
-            } else {
-                tab_device_configuration_start_button.setImageResource(R.drawable.start_configuration_button_off);
-                tab_device_configuration_start_button.setEnabled(false);
-                mIsReady = false;
-                setToReady(mIsReady);
-            }
-        } else {
-            if (ssidToAddSecurityType != ssidToAddSecurityType.OPEN) {
-                tab_device_configuration_password_check_editText.addTextChangedListener(passFieldTextWatcher);
-            } else {
-                tab_device_configuration_start_button.setImageResource(R.drawable.start_configuration_button_on);
-                tab_device_configuration_start_button.setEnabled(true);
-                ssidToAddSecurityKey = tab_device_configuration_password_check_editText.getText().toString();
-                mIsReady = true;
-                setToReady(mIsReady);
             }
         }
-    }
 
 	public void hideKeyboard(View view) {
 		InputMethodManager inputMethodManager =(InputMethodManager)getActivity().getSystemService(Activity.INPUT_METHOD_SERVICE);
@@ -1058,13 +1062,13 @@ public class DeviceConfiguration extends Fragment {
 	 */
 	@Override
 	public void onResume() {
-		super.onResume();
+            super.onResume();
 
-        startConfigButtonState();
+            startConfigButtonState();
 
-		getActivity().registerReceiver(myWifiReceiver, new IntentFilter(ConnectivityManager.CONNECTIVITY_ACTION));
-		getActivity().registerReceiver(scanFinishedReceiver, new IntentFilter(SmartConfigConstants.SCAN_FINISHED_BROADCAST_ACTION));
-		getActivity().registerReceiver(deviceFoundReceiver, new IntentFilter(SmartConfigConstants.DEVICE_FOUND_BROADCAST_ACTION));
+            getActivity().registerReceiver(myWifiReceiver, new IntentFilter(ConnectivityManager.CONNECTIVITY_ACTION));
+            getActivity().registerReceiver(scanFinishedReceiver, new IntentFilter(SmartConfigConstants.SCAN_FINISHED_BROADCAST_ACTION));
+            getActivity().registerReceiver(deviceFoundReceiver, new IntentFilter(SmartConfigConstants.DEVICE_FOUND_BROADCAST_ACTION));
 	}
 
 	/**
@@ -1286,6 +1290,11 @@ public class DeviceConfiguration extends Fragment {
 		}
 	}
 
+	@SuppressWarnings("unchecked")
+	@Click
+	void tab_device_configuration_refresh_button() {
+            initiateScan();
+	}
 	/**
 	 * Sets the UI "Device connection" bar's state (background color and text)
 	 * to reflect the current Wi-Fi connection status of the mobile phone.
@@ -1577,6 +1586,12 @@ public class DeviceConfiguration extends Fragment {
 			mLogger.info("*AP* Got cfg result from SL device: " + resultString);
 			CFG_Result_Enum result_Enum = NetworkUtil.cfgEnumForResponse(resultString);
 			result = NetworkUtil.getErrorMsgForCFGResult(result_Enum);
+
+                        //baseUrl = "://192.168.1.100:38980/confo/" + mDevice.name + "/" + ssidToAdd;
+                        baseUrl = "://b00m.in:38980/confo/" + mDevice.name + "/" + ssidToAdd;
+			mLogger.info("*AP* Getting cfg result from cloud: " + baseUrl);
+                        resultString = NetworkUtil.getCGFResultFromCloud(baseUrl, deviceVersion);
+			mLogger.info("*AP* Getting cfg result from cloud: " + resultString);
 			return result;
 		}
 	}

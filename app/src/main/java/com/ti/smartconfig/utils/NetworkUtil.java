@@ -1016,6 +1016,7 @@ public class NetworkUtil {
                 }
                 url += "/__SL_G_MCR";
                 Log.i(TAG,"REDIRECT- getCGFResultFromDevice / R2 - url: " + url);
+                mLogger.info("getCGFResult from: " + url);
                 break;
             case UNKNOWN:
                 break;
@@ -1027,7 +1028,7 @@ public class NetworkUtil {
             HttpParams httpParameters = new BasicHttpParams();
             // Set the timeout in milliseconds until a connection is established.
             // The default value is zero, that means the timeout is not used.
-            int timeoutConnection = 3000;
+            int timeoutConnection = 6000;
             HttpConnectionParams.setConnectionTimeout(httpParameters, timeoutConnection);
             // Set the default socket timeout (SO_TIMEOUT)
             // in milliseconds which is the timeout for waiting for data.
