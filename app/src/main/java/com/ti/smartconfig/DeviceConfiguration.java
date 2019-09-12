@@ -289,7 +289,7 @@ public class DeviceConfiguration extends Fragment {
 							}
 							if( devicesNumber < 1 ){
 								showToastWithMessage("There are no simplelink devices around you..");
-                                                                tab_device_configuration_refresh_button.setImageResource(R.drawable.refresh_green);
+                                                                tab_device_configuration_refresh_button.setImageResource(R.drawable.new_graphics_rescan);
                                                                 tab_device_configuration_refresh_button.setEnabled(true);
 							}
 						//add connect to starting ssid / if we have one
@@ -478,7 +478,7 @@ public class DeviceConfiguration extends Fragment {
 	 *                         false if the configuration verification is to be retrieved from the SL device as access point.
 	 */
 	private void confirmResult(final Boolean viaWifi) {
-	if (progressDialog != null && progressDialog.isShowing()) {
+            if (progressDialog != null && progressDialog.isShowing()) {
 			progressDialog.dismiss();
 			}
 		if (!viaWifi) {
@@ -569,6 +569,8 @@ public class DeviceConfiguration extends Fragment {
 	 */
 	@AfterViews
 	void afterViews() {
+            final String sub = prefs.sub().get();
+            showToastWithMessage(sub);
             tab_device_configuration_password_check_layout.setVisibility(View.GONE);
             tab_device_configuration_password_check_editText.setInputType(InputType.TYPE_CLASS_TEXT | InputType.TYPE_TEXT_VARIATION_PASSWORD);
             tab_device_configuration_start_button.setImageResource(R.drawable.start_configuration_button_off);

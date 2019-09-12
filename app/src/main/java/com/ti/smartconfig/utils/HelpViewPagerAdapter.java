@@ -41,11 +41,12 @@ import android.support.v4.app.FragmentPagerAdapter;
 import com.ti.smartconfig.HelpPage1_;
 import com.ti.smartconfig.HelpPage2_;
 import com.ti.smartconfig.HelpPage3_;
+import com.ti.smartconfig.LoginPage_;
 
 public class HelpViewPagerAdapter extends FragmentPagerAdapter {
 
 	// Declare the number of ViewPager pages
-	final int PAGE_COUNT = 3;
+	final int PAGE_COUNT = 4;
 
 	public HelpViewPagerAdapter(FragmentManager fm) {
 		super(fm);
@@ -60,6 +61,8 @@ public class HelpViewPagerAdapter extends FragmentPagerAdapter {
 			return new HelpPage2_();
 		case 2:
 			return new HelpPage3_();
+		case 3:
+			return new LoginPage_();
 		}
 		
 		return new HelpPage1_();

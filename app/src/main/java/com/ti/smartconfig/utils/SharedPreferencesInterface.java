@@ -94,5 +94,8 @@ public interface SharedPreferencesInterface {
 	
 	@DefaultString("[]")
 	String recentDevicesArray();
+    
+        @DefaultString("Guest")
+        String sub();
 	
 }

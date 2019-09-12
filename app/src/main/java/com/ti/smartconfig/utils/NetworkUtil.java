@@ -1057,6 +1057,54 @@ public class NetworkUtil {
         return result;
     }
 
+    public static Boolean loginToCloud(String baseUrl, String email, String pswd) {
+        String url = baseUrl;
+        Log.i(TAG,"REDIRECT- loginToCloud / url: " + url);
+        Log.i(TAG,"REDIRECT- loginToCloud / didRedirect: " + didRedirect);
+        if(didRedirect) {
+            url = HTTPS_ + url;
+        } else {
+            url = HTTPS_ + url;
+        }
+        url += "/api/login";
+        Log.i(TAG,"REDIRECT- loginToCloud / url: " + url);
+        mLogger.info("*AP* loginToCloud: " + url + " " + email + pswd);
+        if (email.equals("") || pswd.equals(""))
+            return false;
+        Boolean flag = false;
+        HttpParams httpParameters = new BasicHttpParams();
+        // Set the timeout in milliseconds until a connection is established.
+        // The default value is zero, that means the timeout is not used.
+        int timeoutConnection = 2000;
+        HttpConnectionParams.setConnectionTimeout(httpParameters, timeoutConnection);
+        // Set the default socket timeout (SO_TIMEOUT)
+        // in milliseconds which is the timeout for waiting for data.
+        int timeoutSocket = 2000;
+        HttpConnectionParams.setSoTimeout(httpParameters, timeoutSocket);
+        HttpClient client = getNewHttpClient();
+        try {
+            HttpPost loginPost = new HttpPost(url);
+            List<NameValuePair> loginParam = new ArrayList<>(2);
+            email = new String(email.getBytes("UTF-8"), "ISO-8859-1");
+            pswd = new String(pswd.getBytes("UTF-8"), "ISO-8859-1");
+            loginParam.add(new BasicNameValuePair("email", email));
+            loginParam.add(new BasicNameValuePair("pswd", pswd));
+            loginPost.setEntity(new UrlEncodedFormEntity(loginParam));
+            HttpResponse response = client.execute(loginPost);
+            if (response.getStatusLine().getStatusCode() == HttpStatus.SC_OK) {
+                flag = true;
+            }
+            mLogger.info("*AP* loginToCloud: response " + response.getStatusLine().getStatusCode());
+            client.getConnectionManager().shutdown();
+        } catch (Exception e) {
+            mLogger.info("*AP* loginToCloud exception: " + e.toString());
+            e.printStackTrace();
+            client.getConnectionManager().shutdown();
+            flag = false;
+        }
+        return flag;
+    }
+
     public static String getErrorMsgForCFGResult(CFG_Result_Enum result) {
         String resultString = null;
 
@@ -1209,9 +1257,9 @@ public class NetworkUtil {
             // Create a KeyStore containing our Certificate
             KeyStore trustStore = KeyStore.getInstance(KeyStore.getDefaultType());
             trustStore.load(null, null);
-            caInput = context.getResources().openRawResource(R.raw.dummyrootcacert);
+            caInput = context.getResources().openRawResource(R.raw.b00m_trusted_ca_cert);
             Certificate ca = CertificateFactory.getInstance("X.509").generateCertificate(caInput);
-            trustStore.setCertificateEntry("dummyrootcacert", ca);
+            trustStore.setCertificateEntry("DSTRootCAX3"/*"dummyrootcacert"*/, ca);
 
             // Create a TrustManager that trusts the Certificate in our KeyStore
             String tmfAlgorithm = TrustManagerFactory.getDefaultAlgorithm();

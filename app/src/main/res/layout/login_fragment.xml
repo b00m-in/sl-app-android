@@ -1,0 +1,158 @@
+<?xml version="1.0" encoding="utf-8"?>
+<RelativeLayout xmlns:android="http://schemas.android.com/apk/res/android"
+    android:layout_width="match_parent"
+    android:layout_height="match_parent" >
+
+    <RelativeLayout
+        android:id="@+id/login_layout"
+        android:layout_width="match_parent"
+        android:layout_height="wrap_content"
+        android:layout_alignParentLeft="true"
+        android:layout_alignParentRight="true"
+        android:layout_alignParentTop="true"
+        android:background="@color/color_headline_background" >
+
+        <TextView
+            android:id="@+id/login_headline_label"
+            android:layout_width="wrap_content"
+            android:layout_height="wrap_content"
+            android:layout_alignParentLeft="true"
+            android:layout_alignParentRight="true"
+            android:layout_alignParentTop="true"
+            android:gravity="center_vertical|center_horizontal"
+            android:padding="10dp"
+            android:text="@string/title_login"
+            android:textAppearance="?android:attr/textAppearanceMedium" />
+
+        <View
+            android:layout_width="match_parent"
+            android:layout_height="1dp"
+            android:layout_alignParentLeft="true"
+            android:layout_toLeftOf="@+id/login_headline_label"
+            android:background="@color/color_line" />
+    </RelativeLayout>
+
+    <RelativeLayout
+        android:id="@+id/email_layout"
+        android:layout_width="match_parent"
+        android:layout_height="70dp"
+        android:layout_below="@+id/login_layout"
+        android:background="@android:color/white" >
+        <TextView
+            android:id="@+id/email"
+            android:text="@string/email"
+            android:layout_width="wrap_content"
+            android:layout_height="wrap_content"
+            android:layout_alignParentLeft="true"
+            android:layout_centerVertical="true"
+            android:layout_marginLeft="5dp"
+            android:layout_toLeftOf="@+id/login_email_edittext"
+            android:maxLines="2"
+            android:textAppearance="?android:attr/textAppearanceSmall"
+            android:textSize="16sp" />
+        <EditText
+            android:id="@+id/login_email_edittext"
+            android:layout_width="175dp"
+            android:layout_height="40dp"
+            android:layout_alignParentRight="true"
+            android:layout_centerVertical="true"
+            android:layout_marginRight="5dp"
+            android:background="@drawable/new_graphics_white_box"
+            android:imeOptions="actionDone"
+            android:ems="10"
+            android:maxLength="19"
+            android:inputType="text"
+            android:textSize="13sp"
+            android:digits="abcdefghijklmnopqrstuvwxyzABCDEFGHIJKLMNOPQRSTUVWXYZ0123456789-_.@"
+            android:padding="5dp" />
+
+        <View
+            android:layout_width="match_parent"
+            android:layout_height="1dp"
+            android:layout_alignParentBottom="true"
+            android:layout_alignParentLeft="true"
+            android:layout_alignParentRight="true"
+            android:background="@color/color_line" />
+    </RelativeLayout>
+
+    <RelativeLayout
+        android:id="@+id/pswd_layout"
+        android:layout_width="match_parent"
+        android:layout_height="70dp"
+        android:layout_below="@+id/email_layout"
+        android:background="@android:color/white" >
+        <TextView
+            android:id="@+id/pswd"
+            android:text="@string/pswd"
+            android:layout_width="wrap_content"
+            android:layout_height="wrap_content"
+            android:layout_alignParentLeft="true"
+            android:layout_centerVertical="true"
+            android:layout_marginLeft="5dp"
+            android:layout_toLeftOf="@+id/login_pswd_edittext"
+            android:maxLines="2"
+            android:textAppearance="?android:attr/textAppearanceSmall"
+            android:textSize="16sp" />
+        <EditText
+            android:id="@+id/login_pswd_edittext"
+            android:layout_width="175dp"
+            android:layout_height="40dp"
+            android:layout_alignParentRight="true"
+            android:layout_centerVertical="true"
+            android:layout_marginRight="5dp"
+            android:layout_below="@+id/login_email_edittext"
+            android:background="@drawable/new_graphics_white_box"
+            android:imeOptions="actionDone"
+            android:ems="10"
+            android:maxLength="19"
+            android:inputType="text"
+            android:textSize="13sp"
+            android:digits="abcdefghijklmnopqrstuvwxyzABCDEFGHIJKLMNOPQRSTUVWXYZ0123456789-_.,%?!£$*@"
+            android:padding="5dp" />
+
+        <View
+            android:layout_width="match_parent"
+            android:layout_height="1dp"
+            android:layout_alignParentBottom="true"
+            android:layout_alignParentLeft="true"
+            android:layout_alignParentRight="true"
+            android:background="@color/color_line" />
+    </RelativeLayout>
+
+    <Button
+        android:id="@+id/buttonLogin"
+        android:layout_width="match_parent"
+        android:layout_height="40dp"
+        android:layout_margin="20dp"
+        android:layout_below="@+id/pswd_layout"
+        android:background="@color/blue"
+        android:text="Login"
+        android:textAllCaps="true"
+        android:textColor="@color/white"/>
+
+    <RelativeLayout
+        android:id="@+id/msg_layout"
+        android:layout_width="match_parent"
+        android:layout_height="70dp"
+        android:layout_below="@+id/buttonLogin"
+        android:background="@android:color/white" >
+        <TextView
+            android:id="@+id/resp"
+            android:text="@string/resp"
+            android:layout_width="wrap_content"
+            android:layout_height="wrap_content"
+            android:layout_alignParentLeft="true"
+            android:layout_centerVertical="true"
+            android:layout_marginLeft="5dp"
+            android:maxLines="2"
+            android:textAppearance="?android:attr/textAppearanceSmall"
+            android:textSize="16sp" />
+        <View
+            android:layout_width="match_parent"
+            android:layout_height="1dp"
+            android:layout_alignParentBottom="true"
+            android:layout_alignParentLeft="true"
+            android:layout_alignParentRight="true"
+            android:background="@color/color_line" />
+    </RelativeLayout>
+</RelativeLayout>

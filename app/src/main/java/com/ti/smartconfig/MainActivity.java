@@ -811,6 +811,13 @@ public class MainActivity extends FragmentActivity {
         @Override
         public void pingDeviceFetched(JSONObject deviceJSON) {
             Log.i(TAG, "SL Device was found via PING or Bcast : " + deviceJSON);
+            try {
+                if (deviceJSON.getString("name").contains("html") || deviceJSON.getString("name").contains("HTML")) {
+                    return; // ignore the html crap
+                }
+            } catch (Exception e) {
+                e.printStackTrace();
+            }
             mLogger.info("SL Dev found PB: " + deviceJSON);
             // check if device already exist
             boolean addToDeviceList = true;

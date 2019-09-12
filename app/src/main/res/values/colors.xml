@@ -15,5 +15,7 @@
     <color name="color_ota_background">#FF4444</color>
     <color name="color_general_background">#DDD</color>
 
+    <color name="blue">#17b4ed</color>
+    <color name="white">#fff</color>
 
 </resources>
