@@ -38,6 +38,7 @@ import java.io.IOException;
 import java.net.URISyntaxException;
 import java.security.cert.CertificateException;
 import java.util.ArrayList;
+import java.util.Calendar;
 import android.os.AsyncTask;
 import android.util.Log;
 
@@ -86,6 +87,23 @@ public class AddProfileAsyncTask extends AsyncTask<ArrayList<Object>, Void, Bool
 			return false;
 		}
 
+                // set the date and time from phone
+                Calendar rightNow = Calendar.getInstance();
+                int yea = rightNow.get(Calendar.YEAR);
+                int mon = rightNow.get(Calendar.MONTH);
+                int dat = rightNow.get(Calendar.DATE);
+                int hou = rightNow.get(Calendar.HOUR);
+                int min = rightNow.get(Calendar.MINUTE);
+                int sec = rightNow.get(Calendar.SECOND);
+                String dateTime = "" + yea + "," + mon + "," + dat + "," + hou + "," + min + "," + sec;
+
+                try {
+                        if (NetworkUtil.setDatetime(dateTime, Constants.BASE_URL_NO_HTTP, mDeviceVersion)) {
+                            print("Set Date " + dateTime);
+                        }
+                } catch (CertificateException e) {
+                        e.printStackTrace();
+                }
 
 		if ( !iotUuid.equals("") ) {
 			try {
@@ -100,18 +118,18 @@ public class AddProfileAsyncTask extends AsyncTask<ArrayList<Object>, Void, Bool
 
 
 		if (!deviceName.equals("")) {
-			try {
-				if (NetworkUtil.setNewDeviceName(deviceName, Constants.BASE_URL_NO_HTTP, mDeviceVersion)) {
-                    mDeviceName = deviceName;
-                    print("Set a new device name " + deviceName);
-                }
-                else {
-                    mAddProfileAsyncTaskCallback.addProfileFailed("Failed to set a new device name");
-                    return false;
-                }
-			} catch (CertificateException e) {
+                    try {
+                        if (NetworkUtil.setNewDeviceName(deviceName, Constants.BASE_URL_NO_HTTP, mDeviceVersion)) {
+                            mDeviceName = deviceName;
+                            print("Set a new device name " + deviceName);
+                        }
+                        else {
+                            mAddProfileAsyncTaskCallback.addProfileFailed("Failed to set a new device name");
+                            return false;
+                        }
+                    } catch (CertificateException e) {
 				e.printStackTrace();
-			}
+                    }
 		}
 		else {     
 			//read device name from device only if not set by the application

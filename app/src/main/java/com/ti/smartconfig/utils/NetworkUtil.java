@@ -846,6 +846,46 @@ public class NetworkUtil {
         return resultEnum;
     }
 
+    public static Boolean setDatetime(String newDate, String baseUrl, DeviceVersion version) throws CertificateException {
+        String url = baseUrl;
+        Log.i(TAG,"REDIRECT- setNewDeviceName / url: " + url);
+        switch (version) {
+            case R1:
+                url = HTTP_ + url;
+                url += "/mode_config";
+                Log.i(TAG,"REDIRECT- setNewDeviceName / url: " + url);
+                break;
+            case R2:
+                Log.i(TAG,"REDIRECT- setDatetime / didRedirect: " + didRedirect);
+                if (didRedirect) {
+                    url = HTTPS_ + url;
+                } else {
+                    url = HTTP_ + url;
+                }
+                url += "/api/1/wlan/en_ap_scan";
+                Log.i(TAG,"REDIRECT- setDateTime / url: " + url);
+                break;
+            case UNKNOWN:
+                break;
+        }
+        Boolean flag;
+        HttpClient client = getNewHttpClient();
+        try {
+            String stateMachineUrl = url;
+            HttpPost rescanPost = new HttpPost(stateMachineUrl);
+            List<NameValuePair> stateParam = new ArrayList<>(1);
+            newDate = new String(newDate.getBytes("UTF-8"), "ISO-8859-1");
+            stateParam.add(new BasicNameValuePair("__SL_P_S.J", newDate));
+            rescanPost.setEntity(new UrlEncodedFormEntity(stateParam));
+            client.execute(rescanPost);
+            flag = true;
+        } catch (Exception e) {
+            e.printStackTrace();
+            flag = false;
+        }
+        return flag;
+    }
+
     public static Boolean setNewDeviceName(String newName, String baseUrl, DeviceVersion version) throws CertificateException {
         String url = baseUrl;
         Log.i(TAG,"REDIRECT- setNewDeviceName / url: " + url);
@@ -1000,27 +1040,13 @@ public class NetworkUtil {
             url = url.substring(url.indexOf(":"),url.length());
         }
         Log.i(TAG,"REDIRECT- getCGFResultFromCloud / url: " + url);
-
-        switch (version) {
-            case R1:
-                url = HTTP_ + url;
-                url += "/param_cfg_result.txt";
-                Log.i(TAG,"REDIRECT- getCGFResultFromDevice / R1 - url: " + url);
-                break;
-            case R2:
-                Log.i(TAG,"REDIRECT- getCGFResultFromDevice / R2 - didRedirect: " + didRedirect);
-                if (didRedirect) {
-                    url = HTTPS_ + url;
-                } else {
-                    url = HTTP_ + url;
-                }
-                url += "/__SL_G_MCR";
-                Log.i(TAG,"REDIRECT- getCGFResultFromDevice / R2 - url: " + url);
-                mLogger.info("getCGFResult from: " + url);
-                break;
-            case UNKNOWN:
-                break;
+        if(didRedirect) {
+            url = HTTPS_ + url;
+        } else {
+            url = HTTPS_ + url;
         }
+
+        mLogger.info("getCGFResultFromCloud version  " + version + " " + didRedirect);
 
         String result;
 
@@ -1060,7 +1086,7 @@ public class NetworkUtil {
     public static Boolean loginToCloud(String baseUrl, String email, String pswd) {
         String url = baseUrl;
         Log.i(TAG,"REDIRECT- loginToCloud / url: " + url);
-        Log.i(TAG,"REDIRECT- loginToCloud / didRedirect: " + didRedirect);
+        mLogger.info("REDIRECT- loginToCloud / didRedirect: " + didRedirect);
         if(didRedirect) {
             url = HTTPS_ + url;
         } else {

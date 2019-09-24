@@ -35,6 +35,7 @@
 package com.ti.smartconfig;
 
 import java.util.ArrayList;
+import java.util.Calendar;
 import java.util.List;
 import java.util.Random;
 import org.slf4j.Logger;
@@ -53,6 +54,7 @@ import com.ti.smartconfig.utils.DevicePickPopUpView_;
 import com.ti.smartconfig.utils.Device_Type_Enum;
 import com.ti.smartconfig.utils.ScanResultsPopUpView_;
 import com.ti.smartconfig.utils.SharedPreferencesInterface_;
+import com.ti.smartconfig.utils.SetDatetimeAsyncTask;
 import com.ti.smartconfig.utils.AddProfileAsyncTask;
 import com.ti.smartconfig.utils.WifiNetworkUtils;
 import com.ti.smartconfig.utils.CFG_Result_Enum;
@@ -151,6 +153,9 @@ public class DeviceConfiguration extends Fragment {
 	@ViewById
 	public
 	ImageView tab_device_configuration_start_button;
+	@ViewById
+	public
+	ImageView tab_device_configuration_datetime_button;
 	@ViewById
 	public
 	ImageView tab_device_configuration_refresh_button;
@@ -276,6 +281,8 @@ public class DeviceConfiguration extends Fragment {
 						SecurityType securityType = NetworkUtil.getScanResultSecurity(result);
 						if (securityType == SecurityType.OPEN) {
 							deviceWasChosen(result, SecurityType.OPEN, null);
+                                                        tab_device_configuration_datetime_button.setImageResource(R.drawable.time_button);
+                                                        tab_device_configuration_datetime_button.setEnabled(true);
 						}
 						else {
 							showToastWithMessage("The device is password protected, auto connect is not possible");
@@ -291,6 +298,8 @@ public class DeviceConfiguration extends Fragment {
 								showToastWithMessage("There are no simplelink devices around you..");
                                                                 tab_device_configuration_refresh_button.setImageResource(R.drawable.new_graphics_rescan);
                                                                 tab_device_configuration_refresh_button.setEnabled(true);
+                                                                tab_device_configuration_datetime_button.setImageResource(R.drawable.clock_grey);
+                                                                tab_device_configuration_datetime_button.setEnabled(false);
 							}
 						//add connect to starting ssid / if we have one
 						if(startingSSID != null){
@@ -823,6 +832,14 @@ public class DeviceConfiguration extends Fragment {
 		startWifiScan();
 	}
 
+        private void setDatetime() {
+            if (Build.VERSION.SDK_INT >= Build.VERSION_CODES.HONEYCOMB) {
+                    new SetDatetimeAsyncTask().executeOnExecutor(AsyncTask.THREAD_POOL_EXECUTOR, "");
+            } else {
+                    new SetDatetimeAsyncTask().execute("");
+            }
+        }
+
 	/**
 	 * Receives results associated with the WIFI_SETTINGS_INTENT_RESULTS request code from the Wi-Fi settings activity,
 	 * sets the SSID the mobile device is currently connected to as the starting Wi-Fi network,
@@ -1297,6 +1314,12 @@ public class DeviceConfiguration extends Fragment {
 	void tab_device_configuration_refresh_button() {
             initiateScan();
 	}
+
+	@SuppressWarnings("unchecked")
+	@Click
+	void tab_device_configuration_datetime_button() {
+            setDatetime();
+	}
 	/**
 	 * Sets the UI "Device connection" bar's state (background color and text)
 	 * to reflect the current Wi-Fi connection status of the mobile phone.
@@ -1590,7 +1613,8 @@ public class DeviceConfiguration extends Fragment {
 			result = NetworkUtil.getErrorMsgForCFGResult(result_Enum);
 
                         //baseUrl = "://192.168.1.100:38980/confo/" + mDevice.name + "/" + ssidToAdd;
-                        baseUrl = "://b00m.in:38980/confo/" + mDevice.name + "/" + ssidToAdd;
+                        //baseUrl = "://b00m.in:38980/confo/" + mDevice.name + "/" + ssidToAdd;
+                        baseUrl = "://b00m.in/api/confo/" + mDevice.name + "/" + ssidToAdd;
 			mLogger.info("*AP* Getting cfg result from cloud: " + baseUrl);
                         resultString = NetworkUtil.getCGFResultFromCloud(baseUrl, deviceVersion);
 			mLogger.info("*AP* Getting cfg result from cloud: " + resultString);
