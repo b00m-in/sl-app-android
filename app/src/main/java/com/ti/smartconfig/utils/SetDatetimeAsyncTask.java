@@ -76,7 +76,7 @@ public class SetDatetimeAsyncTask extends AsyncTask<String, Void, Boolean> {
             int yea = rightNow.get(Calendar.YEAR);
             int mon = rightNow.get(Calendar.MONTH) + 1;
             int dat = rightNow.get(Calendar.DATE);
-            int hou = rightNow.get(Calendar.HOUR);
+            int hou = rightNow.get(Calendar.HOUR_OF_DAY);
             int min = rightNow.get(Calendar.MINUTE);
             int sec = rightNow.get(Calendar.SECOND);
             mDeviceTime = "" + yea + "," + mon + "," + dat + "," + hou + "," + min + "," + sec;
