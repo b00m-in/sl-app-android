@@ -1287,6 +1287,7 @@ public class DeviceConfiguration extends Fragment {
 			passing.add(ssidToAddSecurityKey);
 			passing.add(ssidToAddPriority);
 			passing.add(tab_device_configuration_iot_uuid_name_editText.getText().toString());
+                        passing.add(prefs.sub().get());
 			mLogger.info("*AP* Executing AddProfileAST to set a new wifi profile to SL device" +
 					"\n***\nSend\nSL device name: " + tab_device_configuration_device_name_editText.getText().toString() +
 					"\nSSID to add: " + ssidToAdd + "\nPass len: " + ssidToAddSecurityKey.length() + "\n***");

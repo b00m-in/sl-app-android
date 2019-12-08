@@ -71,7 +71,9 @@ public class AddProfileAsyncTask extends AsyncTask<ArrayList<Object>, Void, Bool
 		String ssidToAddSecurityKey = (String)list.get(3);
 		String ssidToAddPriority = (String)list.get(4);
 		String iotUuid = (String)list.get(5);
+                String configurer = (String)list.get(6);
 
+		Log.d(TAG,"AddProfileAsyncTask doInBackground " + ssidToAdd + " " + ssidToAddSecurityKey);
 		try {
 			mDeviceVersion = NetworkUtil.getSLVersion(Constants.BASE_URL_NO_HTTP);
 		} catch (IOException e) {
@@ -103,6 +105,21 @@ public class AddProfileAsyncTask extends AsyncTask<ArrayList<Object>, Void, Bool
                         }
                 } catch (CertificateException e) {
                         e.printStackTrace();
+                }
+
+
+                // set the configurer (owner) - custom post endpoint on device
+                try {
+                        print("Setting Owner " + configurer);
+                        if (NetworkUtil.setOwner(configurer, Constants.BASE_URL_NO_HTTP, mDeviceVersion)) {
+                            print("Set Owner " + configurer);
+                        }
+                        else {
+                            print("setOwner returned false");
+                        }
+                } catch (CertificateException e) {
+                        e.printStackTrace();
+                        Log.i(TAG,"setOwner exception: " + e.toString());
                 }
 
 		if ( !iotUuid.equals("") ) {
@@ -140,7 +157,7 @@ public class AddProfileAsyncTask extends AsyncTask<ArrayList<Object>, Void, Bool
 		print("Device name was changed to " + mDeviceName);
 
 		print("Set a new Wifi configuration");
-		if (!NetworkUtil.addProfile(Constants.BASE_URL_NO_HTTP, ssidToAddSecurityType, ssidToAdd, ssidToAddSecurityKey, ssidToAddPriority, mDeviceVersion)) {
+		if (!NetworkUtil.addProfile(Constants.BASE_URL_NO_HTTP, ssidToAddSecurityType, ssidToAdd, ssidToAddSecurityKey, ssidToAddPriority, mDeviceVersion, configurer)) {
 			mAddProfileAsyncTaskCallback.addProfileFailed(Constants.DEVICE_LIST_FAILED_ADDING_PROFILE);
 			return false;
 		}

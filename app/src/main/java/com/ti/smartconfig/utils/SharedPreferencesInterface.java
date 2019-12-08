@@ -98,4 +98,6 @@ public interface SharedPreferencesInterface {
         @DefaultString("Guest")
         String sub();
 	
+        @DefaultString("OK")
+        String serverResp();
 }

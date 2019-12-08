@@ -43,6 +43,7 @@ import java.net.HttpURLConnection;
 import java.net.URI;
 import java.net.URISyntaxException;
 import java.net.URL;
+import java.net.URLEncoder;
 import java.security.KeyStore;
 import java.security.cert.Certificate;
 import java.security.cert.CertificateException;
@@ -465,7 +466,7 @@ public class NetworkUtil {
         return newState;
     }
 
-    public static Boolean addProfile(String baseUrl, SecurityType securityType, String ssid, String password, String priorityString, DeviceVersion version) {
+    public static Boolean addProfile(String baseUrl, SecurityType securityType, String ssid, String password, String priorityString, DeviceVersion version, String configurer) {
 
         String url = baseUrl;
         Log.i(TAG,"REDIRECT- addProfile / url: " + url);
@@ -493,20 +494,23 @@ public class NetworkUtil {
         Boolean flag;
         if (securityType == SecurityType.UNKNOWN) {
             if (password.matches("")) {
-                flag = NetworkUtil.addProfile(baseUrl, SecurityType.OPEN, ssid, password, priorityString, version);
+                flag = NetworkUtil.addProfile(baseUrl, SecurityType.OPEN, ssid, password, priorityString, version, configurer);
             } else {
-                flag = NetworkUtil.addProfile(baseUrl, SecurityType.WEP, ssid, password, priorityString, version);
-                flag = flag && NetworkUtil.addProfile(baseUrl, SecurityType.WPA1, ssid, password, priorityString, version);
+                flag = NetworkUtil.addProfile(baseUrl, SecurityType.WEP, ssid, password, priorityString, version, configurer);
+                flag = flag && NetworkUtil.addProfile(baseUrl, SecurityType.WPA1, ssid, password, priorityString, version, configurer);
             }
         } else {
             try {
                 HttpClient client = getNewHttpClient();
                 String addProfileUrl = url;
                 HttpPost addProfilePost = new HttpPost(addProfileUrl);
+                addProfilePost.setHeader("SL_NETAPP_REQUEST_METADATA_TYPE_HTTP_REFERER", configurer);
                 List<NameValuePair> nameValuePairs = new ArrayList<>(4);
                 ssid = new String(ssid.getBytes("UTF-8"), "ISO-8859-1");
                 nameValuePairs.add(new BasicNameValuePair("__SL_P_P.A", ssid));
                 nameValuePairs.add(new BasicNameValuePair("__SL_P_P.B", String.valueOf(SecurityType.getIntValue(securityType))));
+                //password = new String(password.getBytes("UTF-8"), "ISO-8859-1");
+                password = URLEncoder.encode(password, "UTF-8");
                 nameValuePairs.add(new BasicNameValuePair("__SL_P_P.C", password));
                 try {
                     int priority = Integer.parseInt(priorityString);
@@ -862,7 +866,7 @@ public class NetworkUtil {
                 } else {
                     url = HTTP_ + url;
                 }
-                url += "/api/1/wlan/en_ap_scan";
+                url += "/api/1/wlan/en_ap_scan/set_time";
                 Log.i(TAG,"REDIRECT- setDateTime / url: " + url);
                 break;
             case UNKNOWN:
@@ -886,6 +890,48 @@ public class NetworkUtil {
         return flag;
     }
 
+    public static Boolean setOwner(String referer, String baseUrl, DeviceVersion version) throws CertificateException {
+        String url = baseUrl;
+        Log.i(TAG,"REDIRECT- setNewDeviceOwner / url: " + url);
+        switch (version) {
+            case R1:
+                url = HTTP_ + url;
+                url += "/set_owner";
+                Log.i(TAG,"REDIRECT- setNewDeviceOwner / url: " + url);
+                break;
+            case R2:
+                Log.i(TAG,"REDIRECT- setOwner / didRedirect: " + didRedirect);
+                if (didRedirect) {
+                    url = HTTPS_ + url;
+                } else {
+                    url = HTTP_ + url;
+                }
+                url += "/m0v/set_owner";
+                Log.i(TAG,"REDIRECT- setOwner / url: " + url);
+                break;
+            case UNKNOWN:
+                break;
+        }
+        Boolean flag;
+        HttpClient client = getNewHttpClient();
+        try {
+            String stateMachineUrl = url;
+            HttpPost addOwnerPost = new HttpPost(stateMachineUrl);
+            addOwnerPost.setHeader("Referer", referer);
+            //addOwnerPost.setHeader("Content-Length", Integer.toString(referer.length()));
+            // List<NameValuePair> stateParam = new ArrayList<>(1);
+            // configurer = new String(configurer.getBytes("UTF-8"), "ISO-8859-1");
+            // stateParam.add(new BasicNameValuePair("configurer", configurer));
+            // addOwnerPost.setEntity(new UrlEncodedFormEntity(stateParam));
+            client.execute(addOwnerPost);
+            flag = true;
+        } catch (Exception e) {
+            e.printStackTrace();
+            Log.i(TAG,"setOwner exception: " + e.toString());
+            flag = false;
+        }
+        return flag;
+}
     public static Boolean setNewDeviceName(String newName, String baseUrl, DeviceVersion version) throws CertificateException {
         String url = baseUrl;
         Log.i(TAG,"REDIRECT- setNewDeviceName / url: " + url);
@@ -1121,6 +1167,60 @@ public class NetworkUtil {
                 flag = true;
             }
             mLogger.info("*AP* loginToCloud: response " + response.getStatusLine().getStatusCode());
+            client.getConnectionManager().shutdown();
+        } catch (Exception e) {
+            mLogger.info("*AP* loginToCloud exception: " + e.toString());
+            e.printStackTrace();
+            client.getConnectionManager().shutdown();
+            flag = false;
+        }
+        return flag;
+    }
+
+    public static Boolean registerWithCloud(String baseUrl, String fullname, String phone, String email, String pswd, String confirm) {
+        String url = baseUrl;
+        Log.i(TAG,"REDIRECT- RegisterWithCloud / url: " + url);
+        mLogger.info("REDIRECT- registerWithCloud / didRedirect: " + didRedirect);
+        if(didRedirect) {
+            url = HTTPS_ + url;
+        } else {
+            url = HTTPS_ + url;
+        }
+        url += "/api/register";
+        Log.i(TAG,"REDIRECT- registerWithCloud / url: " + url);
+        mLogger.info("*AP* registerWithCloud: " + url + " " + email + pswd);
+        if (email.equals("") || pswd.equals(""))
+            return false;
+        Boolean flag = false;
+        HttpParams httpParameters = new BasicHttpParams();
+        // Set the timeout in milliseconds until a connection is established.
+        // The default value is zero, that means the timeout is not used.
+        int timeoutConnection = 2000;
+        HttpConnectionParams.setConnectionTimeout(httpParameters, timeoutConnection);
+        // Set the default socket timeout (SO_TIMEOUT)
+        // in milliseconds which is the timeout for waiting for data.
+        int timeoutSocket = 2000;
+        HttpConnectionParams.setSoTimeout(httpParameters, timeoutSocket);
+        HttpClient client = getNewHttpClient();
+        try {
+            HttpPost regPost = new HttpPost(url);
+            List<NameValuePair> regParam = new ArrayList<>(2);
+            fullname = new String(fullname.getBytes("UTF-8"), "ISO-8859-1");
+            phone = new String(phone.getBytes("UTF-8"), "ISO-8859-1");
+            email = new String(email.getBytes("UTF-8"), "ISO-8859-1");
+            pswd = new String(pswd.getBytes("UTF-8"), "ISO-8859-1");
+            confirm = new String(confirm.getBytes("UTF-8"), "ISO-8859-1");
+            regParam.add(new BasicNameValuePair("fullname", fullname));
+            regParam.add(new BasicNameValuePair("phone", phone));
+            regParam.add(new BasicNameValuePair("email", email));
+            regParam.add(new BasicNameValuePair("pswd", pswd));
+            regParam.add(new BasicNameValuePair("confirm", confirm));
+            regPost.setEntity(new UrlEncodedFormEntity(regParam));
+            HttpResponse response = client.execute(regPost);
+            if (response.getStatusLine().getStatusCode() == HttpStatus.SC_OK) {
+                flag = true;
+            }
+            mLogger.info("*AP* registerWithCloud: response " + response.getStatusLine().getStatusCode());
             client.getConnectionManager().shutdown();
         } catch (Exception e) {
             mLogger.info("*AP* loginToCloud exception: " + e.toString());

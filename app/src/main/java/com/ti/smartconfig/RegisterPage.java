@@ -52,10 +52,12 @@ import com.ti.smartconfig.utils.SharedPreferencesInterface_;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 
-@EFragment(R.layout.login_fragment)
-public class LoginPage  extends Fragment{
+@EFragment(R.layout.register_fragment)
+public class RegisterPage  extends Fragment{
 
 	private Logger mLogger;
+
+        private String serverResp; 
 
 	@Pref
 	SharedPreferencesInterface_ prefs;
@@ -64,10 +66,19 @@ public class LoginPage  extends Fragment{
 	TextView resp;
 
 	@ViewById
-        EditText login_email_edittext;
+        EditText register_fullname_edittext;
 
 	@ViewById
-        EditText login_pswd_edittext;
+        EditText register_phone_edittext;
+
+	@ViewById
+        EditText register_email_edittext;
+
+	@ViewById
+        EditText register_pswd_edittext;
+
+	@ViewById
+        EditText register_confirm_edittext;
 
 	@AfterViews
 	void afterViews() {
@@ -93,11 +104,11 @@ public class LoginPage  extends Fragment{
                     }
             });*/
 
-            mLogger = LoggerFactory.getLogger(LoginPage.class);
+            mLogger = LoggerFactory.getLogger(RegisterPage.class);
 	}
 
 	@Click
-	void buttonLogin() {
+	void buttonRegister() {
 		//mPager.setAdapter(null);
 		
 		/*FragmentTransaction transaction = getActivity().getSupportFragmentManager().beginTransaction();
@@ -107,49 +118,52 @@ public class LoginPage  extends Fragment{
 		transaction.commit();*/
             //Boolean ok = PostLogin(login_email_edittext.getText().toString(), login_pswd_edittext.getText().toString());
             if (Build.VERSION.SDK_INT >= Build.VERSION_CODES.HONEYCOMB) {
-                    new GetLoginResult().executeOnExecutor(AsyncTask.THREAD_POOL_EXECUTOR, login_email_edittext.getText().toString(), login_pswd_edittext.getText().toString());
+                    new GetRegisterResult().executeOnExecutor(AsyncTask.THREAD_POOL_EXECUTOR, register_fullname_edittext.getText().toString(), register_phone_edittext.getText().toString(), register_email_edittext.getText().toString(), register_pswd_edittext.getText().toString(), register_confirm_edittext.getText().toString());
             } else {
-                    new GetLoginResult().execute(login_email_edittext.getText().toString(), login_pswd_edittext.getText().toString());
+                    new GetRegisterResult().execute(register_fullname_edittext.getText().toString(), register_phone_edittext.getText().toString(), register_email_edittext.getText().toString(), register_pswd_edittext.getText().toString(), register_confirm_edittext.getText().toString());
             }
 
 	}
 
-        Boolean PostLogin(String email, String pswd) {
+        Boolean PostRegister(String fullname, String phone, String email, String pswd, String confirm) {
             String baseUrl = "://b00m.in";
-            mLogger.info("*AP* Logging into cloud: " + email + pswd);
-            Boolean result = NetworkUtil.loginToCloud(baseUrl, email, pswd);
+            mLogger.info("*AP* Registering with: " + email + pswd);
+            Boolean result = NetworkUtil.registerWithCloud(baseUrl, fullname, phone, email, pswd, confirm);
             //mLogger.info("*AP* Logging into cloud: " + resultString);
             return result;
 
         }
 
-	class GetLoginResult extends AsyncTask<String, Void, Boolean> {
+	class GetRegisterResult extends AsyncTask<String, Void, Boolean> {
 
 		private Boolean mIsViaWifi;
 
 		@Override
 		protected void onPostExecute(Boolean result) {
-                    mLogger.info("*AP* login result text: " + result);
+                    mLogger.info("*AP* register result text: " + result);
                     super.onPostExecute(result);
-                    //resp.setText(result.toString());
                     if (result) {
-                        resp.setText("Logged in as " + prefs.sub().get());
+                        resp.setText("Registered as " + prefs.sub().get());
                     } else {
                         resp.setText("There was a problem"); //result.toString());
                     }
-                    
 		}
 
 		@Override
 		protected Boolean doInBackground(String... params) {
-			mLogger.info("GetLoginResult doInBackground called");
+			mLogger.info("GetRegisterResult doInBackground called");
+                        if(!params[3].equals(params[4])) {
+                            mLogger.info("*AP* Error pswd mismatch: " + params[3] + " " + params[4]);
+                            return false;
+                        }
                         String baseUrl = "://b00m.in";
-                        mLogger.info("*AP* Logging into cloud: " + baseUrl + " " + params[0] + " " + params[1]);
-                        Boolean result = NetworkUtil.loginToCloud(baseUrl, params[0], params[1]);
+                        mLogger.info("*AP* Registering with cloud: " + baseUrl + " " + params[0] + " " + params[1]);
+                        Boolean result = NetworkUtil.registerWithCloud(baseUrl, params[0], params[1], params[2], params[3], params[4]);
                         if (result) {
-                            prefs.sub().put(params[0]);
+                            prefs.sub().put(params[2]);
                         }
 			return result;
 		}
 	}
 }
+

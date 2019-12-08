@@ -167,7 +167,7 @@ public class MainActivity extends FragmentActivity {
     DeviceConfiguration deviceConfiguration;
     LanFragment lanFragment;
     CloudFragment cloudFragment;
-	BleFragment bleFragment;
+    BleFragment bleFragment;
     OtaFragment otaFragment;
     public Logger mLogger;
     public Device_Type_Enum deviceTypeEnum;

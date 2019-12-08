@@ -182,4 +182,8 @@
      <string name="resp">Server Response</string>
      <string name="pressed">Button Pressed</string>
 
+     <string name="title_register">Register</string>
+     <string name="fullname">Name</string>
+     <string name="phone">Phone</string>
+     <string name="confirm">Confim</string>
 </resources>

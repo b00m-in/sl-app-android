@@ -42,11 +42,12 @@ import com.ti.smartconfig.HelpPage1_;
 import com.ti.smartconfig.HelpPage2_;
 import com.ti.smartconfig.HelpPage3_;
 import com.ti.smartconfig.LoginPage_;
+import com.ti.smartconfig.RegisterPage_;
 
 public class HelpViewPagerAdapter extends FragmentPagerAdapter {
 
 	// Declare the number of ViewPager pages
-	final int PAGE_COUNT = 4;
+	final int PAGE_COUNT = 5;
 
 	public HelpViewPagerAdapter(FragmentManager fm) {
 		super(fm);
@@ -63,6 +64,8 @@ public class HelpViewPagerAdapter extends FragmentPagerAdapter {
 			return new HelpPage3_();
 		case 3:
 			return new LoginPage_();
+		case 4:
+			return new RegisterPage_();
 		}
 		
 		return new HelpPage1_();
