@@ -6,7 +6,7 @@ android {
     compileSdkVersion 26
     buildToolsVersion '28.0.3'
     defaultConfig {
-        applicationId "com.ti.smartconfig"
+        applicationId "in.b00m.smartconfig"
         minSdkVersion 21
         targetSdkVersion 26
 

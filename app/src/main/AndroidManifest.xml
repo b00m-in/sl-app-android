@@ -1,6 +1,6 @@
 <?xml version="1.0" encoding="utf-8"?>
 <manifest xmlns:android="http://schemas.android.com/apk/res/android"
-    package="com.ti.smartconfig"
+    package="in.b00m.smartconfig"
     android:versionCode="13"
     android:versionName="2.2.257" >
 
