@@ -115,7 +115,7 @@ public class LoginPage  extends Fragment{
 	}
 
         Boolean PostLogin(String email, String pswd) {
-            String baseUrl = "://b00m.in";
+            String baseUrl = "://pv.b00m.in";
             mLogger.info("*AP* Logging into cloud: " + email + pswd);
             Boolean result = NetworkUtil.loginToCloud(baseUrl, email, pswd);
             //mLogger.info("*AP* Logging into cloud: " + resultString);
@@ -143,7 +143,7 @@ public class LoginPage  extends Fragment{
 		@Override
 		protected Boolean doInBackground(String... params) {
 			mLogger.info("GetLoginResult doInBackground called");
-                        String baseUrl = "://b00m.in";
+                        String baseUrl = "://pv.b00m.in";
                         mLogger.info("*AP* Logging into cloud: " + baseUrl + " " + params[0] + " " + params[1]);
                         Boolean result = NetworkUtil.loginToCloud(baseUrl, params[0], params[1]);
                         if (result) {

@@ -100,4 +100,10 @@ public interface SharedPreferencesInterface {
 	
         @DefaultString("OK")
         String serverResp();
+
+        @DefaultString("77.5")
+        String longitude();
+
+        @DefaultString("13.0")
+        String latitude();
 }

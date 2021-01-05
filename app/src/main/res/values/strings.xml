@@ -1,7 +1,7 @@
 <?xml version="1.0" encoding="utf-8"?>
 <resources>
     <string name="file_provider_authority" translatable="false">com.quiro.fileproviderexample.fileprovider</string>
-    <string name="app_name">M0V Simplelink</string>
+    <string name="app_name">B00M</string>
     <string name="settings_build_text">Build %1$s SC lib %2$s</string>
     <string name="menu_settings">Settings</string>
     <string name="next">Next ></string>

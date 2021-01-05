@@ -1288,9 +1288,11 @@ public class DeviceConfiguration extends Fragment {
 			passing.add(ssidToAddPriority);
 			passing.add(tab_device_configuration_iot_uuid_name_editText.getText().toString());
                         passing.add(prefs.sub().get());
+                        String ls = prefs.longitude().get() + "/" + prefs.latitude().get();
+                        passing.add(ls);
 			mLogger.info("*AP* Executing AddProfileAST to set a new wifi profile to SL device" +
 					"\n***\nSend\nSL device name: " + tab_device_configuration_device_name_editText.getText().toString() +
-					"\nSSID to add: " + ssidToAdd + "\nPass len: " + ssidToAddSecurityKey.length() + "\n***");
+					"\nSSID to add: " + ssidToAdd + "\nPass len: " + ssidToAddSecurityKey.length() + "\nLocation: " + ls + "\n ***");
 			if (Build.VERSION.SDK_INT >= Build.VERSION_CODES.HONEYCOMB) {
 				new AddProfileAsyncTask(mAddProfileAsyncTaskCallback).executeOnExecutor(AsyncTask.THREAD_POOL_EXECUTOR, passing);
 				//print for testing
@@ -1615,7 +1617,7 @@ public class DeviceConfiguration extends Fragment {
 
                         //baseUrl = "://192.168.1.100:38980/confo/" + mDevice.name + "/" + ssidToAdd;
                         //baseUrl = "://b00m.in:38980/confo/" + mDevice.name + "/" + ssidToAdd;
-                        baseUrl = "://b00m.in/api/confo/" + mDevice.name + "/" + ssidToAdd;
+                        baseUrl = "://pv.b00m.in/api/confo/" + mDevice.name + "/" + ssidToAdd;
 			mLogger.info("*AP* Getting cfg result from cloud: " + baseUrl);
                         resultString = NetworkUtil.getCGFResultFromCloud(baseUrl, deviceVersion);
 			mLogger.info("*AP* Getting cfg result from cloud: " + resultString);

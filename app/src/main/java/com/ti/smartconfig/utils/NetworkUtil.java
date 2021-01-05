@@ -466,7 +466,7 @@ public class NetworkUtil {
         return newState;
     }
 
-    public static Boolean addProfile(String baseUrl, SecurityType securityType, String ssid, String password, String priorityString, DeviceVersion version, String configurer) {
+    public static Boolean addProfile(String baseUrl, SecurityType securityType, String ssid, String password, String priorityString, DeviceVersion version, String configurer, String coords ) {
 
         String url = baseUrl;
         Log.i(TAG,"REDIRECT- addProfile / url: " + url);
@@ -494,17 +494,19 @@ public class NetworkUtil {
         Boolean flag;
         if (securityType == SecurityType.UNKNOWN) {
             if (password.matches("")) {
-                flag = NetworkUtil.addProfile(baseUrl, SecurityType.OPEN, ssid, password, priorityString, version, configurer);
+                flag = NetworkUtil.addProfile(baseUrl, SecurityType.OPEN, ssid, password, priorityString, version, configurer, coords);
             } else {
-                flag = NetworkUtil.addProfile(baseUrl, SecurityType.WEP, ssid, password, priorityString, version, configurer);
-                flag = flag && NetworkUtil.addProfile(baseUrl, SecurityType.WPA1, ssid, password, priorityString, version, configurer);
+                flag = NetworkUtil.addProfile(baseUrl, SecurityType.WEP, ssid, password, priorityString, version, configurer, coords);
+                flag = flag && NetworkUtil.addProfile(baseUrl, SecurityType.WPA1, ssid, password, priorityString, version, configurer, coords);
             }
         } else {
             try {
                 HttpClient client = getNewHttpClient();
                 String addProfileUrl = url;
                 HttpPost addProfilePost = new HttpPost(addProfileUrl);
-                addProfilePost.setHeader("SL_NETAPP_REQUEST_METADATA_TYPE_HTTP_REFERER", configurer);
+                addProfilePost.setHeader("Referer", configurer);
+                addProfilePost.setHeader("Etag", coords);
+                mLogger.info("addProfile headers " + configurer + " " + coords); 
                 List<NameValuePair> nameValuePairs = new ArrayList<>(4);
                 ssid = new String(ssid.getBytes("UTF-8"), "ISO-8859-1");
                 nameValuePairs.add(new BasicNameValuePair("__SL_P_P.A", ssid));
@@ -890,7 +892,7 @@ public class NetworkUtil {
         return flag;
     }
 
-    public static Boolean setOwner(String referer, String baseUrl, DeviceVersion version) throws CertificateException {
+    public static Boolean setOwner(String referer, String coords, String baseUrl, DeviceVersion version) throws CertificateException {
         String url = baseUrl;
         Log.i(TAG,"REDIRECT- setNewDeviceOwner / url: " + url);
         switch (version) {
@@ -906,7 +908,11 @@ public class NetworkUtil {
                 } else {
                     url = HTTP_ + url;
                 }
-                url += "/m0v/set_owner";
+                //url += "/m0v/set_owner?" + coords;
+                //coords = "/" + coords;
+                //url += coords;
+                url += "/m0v/set_owner/";
+                mLogger.info("setOwner url " + url); 
                 Log.i(TAG,"REDIRECT- setOwner / url: " + url);
                 break;
             case UNKNOWN:
@@ -918,6 +924,8 @@ public class NetworkUtil {
             String stateMachineUrl = url;
             HttpPost addOwnerPost = new HttpPost(stateMachineUrl);
             addOwnerPost.setHeader("Referer", referer);
+            addOwnerPost.setHeader("Etag", coords);
+            mLogger.info("setOwner headers " + url + " "  + referer + " " + coords); 
             //addOwnerPost.setHeader("Content-Length", Integer.toString(referer.length()));
             // List<NameValuePair> stateParam = new ArrayList<>(1);
             // configurer = new String(configurer.getBytes("UTF-8"), "ISO-8859-1");

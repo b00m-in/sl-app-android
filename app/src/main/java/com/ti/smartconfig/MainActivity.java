@@ -138,6 +138,10 @@ import ch.qos.logback.core.rolling.SizeBasedTriggeringPolicy;
 import ch.qos.logback.core.rolling.TimeBasedRollingPolicy;
 import ch.qos.logback.core.util.StatusPrinter;
 
+import android.location.Location;
+import android.location.LocationManager;
+//import com.google.android.gms.location.FusedLocationProviderClient;
+
 @SuppressLint("NewApi")
 @EActivity(R.layout.activity_main)
 @OptionsMenu(R.menu.activity_main)
@@ -199,6 +203,10 @@ public class MainActivity extends FragmentActivity {
     private long network_end = 0;
     private Ping mPing;
     public UdpBcastServer udpBcastServer;
+ 
+    //private FusedLocationProviderClient fusedLocationClient;
+    public double longitude;
+    public double latitude;
 
     @Pref
     SharedPreferencesInterface_ prefs;
@@ -318,6 +326,39 @@ public class MainActivity extends FragmentActivity {
                     }
                 });
                 builder.show();
+            } else {
+                try {
+                    LocationManager locationManager;
+                    locationManager = (LocationManager) getSystemService
+                            (Context.LOCATION_SERVICE);
+                    Location location = locationManager.getLastKnownLocation
+                            (LocationManager.GPS_PROVIDER);
+
+                    if (location != null) {
+                        longitude = location.getLongitude();
+                        latitude = location.getLatitude();
+                        prefs.longitude().put(Double.toString(longitude));
+                        prefs.latitude().put(Double.toString(latitude));
+                        mLogger.info(TAG, "location set to " + longitude + " " + latitude);
+                    } else {
+                        location = locationManager.getLastKnownLocation
+                            (LocationManager.PASSIVE_PROVIDER);
+                        if (location != null) {
+                            longitude = location.getLongitude();
+                            latitude = location.getLatitude();
+                            prefs.longitude().put(Double.toString(longitude));
+                            prefs.latitude().put(Double.toString(latitude));
+                            mLogger.info(TAG, "location set to " + longitude + " " + latitude);
+                        }
+
+                    }
+                } catch (Exception e) {
+                    e.printStackTrace();
+                    prefs.longitude().put("77.5");
+                    prefs.latitude().put("13");
+                    Log.i(TAG, "location set to default " + "77.5 " + "13");
+                    //mLogger.info(TAG, "location set to default " + "77.5 " + "13");
+                }
             }
             if(this.checkSelfPermission(Manifest.permission.WRITE_EXTERNAL_STORAGE)!= PackageManager.PERMISSION_GRANTED) {
                 final AlertDialog.Builder builder = new AlertDialog.Builder(this);

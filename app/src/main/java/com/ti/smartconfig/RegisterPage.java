@@ -126,7 +126,7 @@ public class RegisterPage  extends Fragment{
 	}
 
         Boolean PostRegister(String fullname, String phone, String email, String pswd, String confirm) {
-            String baseUrl = "://b00m.in";
+            String baseUrl = "://pv.b00m.in";
             mLogger.info("*AP* Registering with: " + email + pswd);
             Boolean result = NetworkUtil.registerWithCloud(baseUrl, fullname, phone, email, pswd, confirm);
             //mLogger.info("*AP* Logging into cloud: " + resultString);
@@ -156,7 +156,7 @@ public class RegisterPage  extends Fragment{
                             mLogger.info("*AP* Error pswd mismatch: " + params[3] + " " + params[4]);
                             return false;
                         }
-                        String baseUrl = "://b00m.in";
+                        String baseUrl = "://pv.b00m.in";
                         mLogger.info("*AP* Registering with cloud: " + baseUrl + " " + params[0] + " " + params[1]);
                         Boolean result = NetworkUtil.registerWithCloud(baseUrl, params[0], params[1], params[2], params[3], params[4]);
                         if (result) {

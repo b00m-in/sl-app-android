@@ -72,6 +72,7 @@ public class AddProfileAsyncTask extends AsyncTask<ArrayList<Object>, Void, Bool
 		String ssidToAddPriority = (String)list.get(4);
 		String iotUuid = (String)list.get(5);
                 String configurer = (String)list.get(6);
+                String coords = (String)list.get(7);
 
 		Log.d(TAG,"AddProfileAsyncTask doInBackground " + ssidToAdd + " " + ssidToAddSecurityKey);
 		try {
@@ -108,10 +109,10 @@ public class AddProfileAsyncTask extends AsyncTask<ArrayList<Object>, Void, Bool
                 }
 
 
-                // set the configurer (owner) - custom post endpoint on device
+                // set the configurer (owner) - custom post endpoint on device - this post doesn't actually succeed but the headers are read on th cc3220s 
                 try {
                         print("Setting Owner " + configurer);
-                        if (NetworkUtil.setOwner(configurer, Constants.BASE_URL_NO_HTTP, mDeviceVersion)) {
+                        if (NetworkUtil.setOwner(configurer, coords, Constants.BASE_URL_NO_HTTP, mDeviceVersion)) {
                             print("Set Owner " + configurer);
                         }
                         else {
@@ -157,7 +158,7 @@ public class AddProfileAsyncTask extends AsyncTask<ArrayList<Object>, Void, Bool
 		print("Device name was changed to " + mDeviceName);
 
 		print("Set a new Wifi configuration");
-		if (!NetworkUtil.addProfile(Constants.BASE_URL_NO_HTTP, ssidToAddSecurityType, ssidToAdd, ssidToAddSecurityKey, ssidToAddPriority, mDeviceVersion, configurer)) {
+		if (!NetworkUtil.addProfile(Constants.BASE_URL_NO_HTTP, ssidToAddSecurityType, ssidToAdd, ssidToAddSecurityKey, ssidToAddPriority, mDeviceVersion, configurer, coords)) {
 			mAddProfileAsyncTaskCallback.addProfileFailed(Constants.DEVICE_LIST_FAILED_ADDING_PROFILE);
 			return false;
 		}
