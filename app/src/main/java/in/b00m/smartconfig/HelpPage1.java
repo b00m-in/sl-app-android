@@ -58,7 +58,7 @@ public class HelpPage1 extends Fragment {
 		int width = displaymetrics.widthPixels;
 		BitmapFactory.Options options = new BitmapFactory.Options();
 		options.inScaled = false;
-		Bitmap icon = BitmapFactory.decodeResource(getActivity().getResources(), R.drawable.help_first, options);
+		Bitmap icon = BitmapFactory.decodeResource(getActivity().getResources(), R.drawable.help_first_boom, options);
 		page1_image.setImageBitmap(scaleDown(icon, width, false));
 	}
 	

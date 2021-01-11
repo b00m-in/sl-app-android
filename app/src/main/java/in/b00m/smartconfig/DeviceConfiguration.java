@@ -153,9 +153,9 @@ public class DeviceConfiguration extends Fragment {
 	@ViewById
 	public
 	ImageView tab_device_configuration_start_button;
-	@ViewById
+	/*@ViewById
 	public
-	ImageView tab_device_configuration_datetime_button;
+	ImageView tab_device_configuration_datetime_button;*/
 	@ViewById
 	public
 	ImageView tab_device_configuration_refresh_button;
@@ -281,8 +281,8 @@ public class DeviceConfiguration extends Fragment {
 						SecurityType securityType = NetworkUtil.getScanResultSecurity(result);
 						if (securityType == SecurityType.OPEN) {
 							deviceWasChosen(result, SecurityType.OPEN, null);
-                                                        tab_device_configuration_datetime_button.setImageResource(R.drawable.time_button);
-                                                        tab_device_configuration_datetime_button.setEnabled(true);
+                                                        //tab_device_configuration_datetime_button.setImageResource(R.drawable.time_button);
+                                                        //tab_device_configuration_datetime_button.setEnabled(true);
 						}
 						else {
 							showToastWithMessage("The device is password protected, auto connect is not possible");
@@ -298,8 +298,8 @@ public class DeviceConfiguration extends Fragment {
 								showToastWithMessage("There are no simplelink devices around you..");
                                                                 tab_device_configuration_refresh_button.setImageResource(R.drawable.new_graphics_rescan);
                                                                 tab_device_configuration_refresh_button.setEnabled(true);
-                                                                tab_device_configuration_datetime_button.setImageResource(R.drawable.clock_grey);
-                                                                tab_device_configuration_datetime_button.setEnabled(false);
+                                                                //tab_device_configuration_datetime_button.setImageResource(R.drawable.clock_grey);
+                                                                //tab_device_configuration_datetime_button.setEnabled(false);
 							}
 						//add connect to starting ssid / if we have one
 						if(startingSSID != null){
@@ -1268,6 +1268,10 @@ public class DeviceConfiguration extends Fragment {
 		if (!mIsReady) {
 			return;
 		}
+		if (prefs.sub().get() == "Guest") {
+			showToastWithMessage(Constants.DEVICE_LIST_MUST_LOGIN);
+			return;
+		}
 		if (ssidToAdd == null || ssidToAdd.equals("") || tab_device_configuration_router_device_pick_label.getText().toString().contains("mysimplelink")) {
 			showToastWithMessage(Constants.DEVICE_LIST_MUST_SUPPLY_SSID);
 			return;
@@ -1318,11 +1322,11 @@ public class DeviceConfiguration extends Fragment {
             initiateScan();
 	}
 
-	@SuppressWarnings("unchecked")
+	/*@SuppressWarnings("unchecked")
 	@Click
 	void tab_device_configuration_datetime_button() {
             setDatetime();
-	}
+	}*/
 	/**
 	 * Sets the UI "Device connection" bar's state (background color and text)
 	 * to reflect the current Wi-Fi connection status of the mobile phone.
@@ -1332,11 +1336,13 @@ public class DeviceConfiguration extends Fragment {
 		NetworkInfo myNetworkInfo = myConnManager.getNetworkInfo(ConnectivityManager.TYPE_WIFI);
 		String ssid = NetworkUtil.getConnectedSSID(getActivity());
 		if (myNetworkInfo.isConnected()) {
-			tab_device_configuration_device_connection.setText("Connected to : " +ssid);
+			//tab_device_configuration_device_connection.setText("Connected to : " +ssid);
+                        tab_device_configuration_device_connection.setText(String.format(getString(R.string.tab_device_configuration_connected_to_ssid), ssid, prefs.sub().get()));
 			tab_device_configuration_device_connection.setTextColor(Color.WHITE);
 			textViewConnectionTextView.setBackgroundColor(getResources().getColor(R.color.color_connection_text_sc_holo_grey));
 		} else {
-			tab_device_configuration_device_connection.setText("No Wifi Connection");
+			//tab_device_configuration_device_connection.setText("No Wifi Connection");
+                        tab_device_configuration_device_connection.setText(String.format(getString(R.string.tab_device_configuration_connected_to_ssid), ssid, prefs.sub().get()));
 			tab_device_configuration_device_connection.setTextColor(Color.WHITE);
 			textViewConnectionTextView.setBackgroundColor(getResources().getColor(R.color.color_red));
 		}

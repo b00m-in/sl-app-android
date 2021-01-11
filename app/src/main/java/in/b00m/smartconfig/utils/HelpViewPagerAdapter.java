@@ -47,7 +47,7 @@ import in.b00m.smartconfig.RegisterPage_;
 public class HelpViewPagerAdapter extends FragmentPagerAdapter {
 
 	// Declare the number of ViewPager pages
-	final int PAGE_COUNT = 5;
+	final int PAGE_COUNT = 3;
 
 	public HelpViewPagerAdapter(FragmentManager fm) {
 		super(fm);
@@ -62,10 +62,10 @@ public class HelpViewPagerAdapter extends FragmentPagerAdapter {
 			return new HelpPage2_();
 		case 2:
 			return new HelpPage3_();
-		case 3:
+		/*case 3:
 			return new LoginPage_();
 		case 4:
-			return new RegisterPage_();
+			return new RegisterPage_();*/
 		}
 		
 		return new HelpPage1_();

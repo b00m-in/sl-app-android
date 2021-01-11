@@ -9,6 +9,7 @@
     <string name="refresh">Refresh</string>
     <string name="go">Go</string>
     <string name="send">Send</string>
+    <string name="logout">Logout</string>
     <string name="show">Show</string>
     <string name="outOfTheBox">Out Of The Box</string>
     <string name="title_outOfTheBox_qrScanner">Scan the QR Code located on the package</string>
@@ -156,7 +157,8 @@
     <string name="title_activity_terms_of_use">TermsOfUseActivity</string>
 
     <string name="tab_device_configuration_iot_uuid_name">iotLink UUID</string>
-    <string name="tab_device_configuration_connected_to_ssid">Connected to : %1$s</string>
+    <string name="tab_device_configuration_connected_to_ssid">Connected to : %1$s | Logged in as : %2$s</string>
+    <string name="settings_loggedinas_text">Logged in as : %1$s</string>
     <string name="tab_device_configuration_no_wifi_connection">No WiFi Connection</string>
     <string name="device_pick_pop_up_view_show_only_devices">Show only devices</string>
     <string name="device_pick_pop_up_view_show_all">Show all</string>

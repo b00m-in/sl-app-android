@@ -658,7 +658,7 @@ public class NewSmartConfigFragment extends Fragment {
             tab_device_configuration_device_connection.setTextColor(Color.WHITE);
             textViewConnectionTextView.setBackgroundColor(getResources().getColor(R.color.color_red));
         } else {
-            tab_device_configuration_device_connection.setText(String.format(getString(R.string.tab_device_configuration_connected_to_ssid), ssid));
+            tab_device_configuration_device_connection.setText(String.format(getString(R.string.tab_device_configuration_connected_to_ssid), ssid, prefs.sub().get()));
             tab_device_configuration_device_connection.setTextColor(Color.WHITE);
             textViewConnectionTextView.setBackgroundColor(getResources().getColor(R.color.color_connection_text_sc_holo_grey));
             startScan();
@@ -1698,7 +1698,7 @@ public class NewSmartConfigFragment extends Fragment {
             }
         }
         if (myNetworkInfo.isConnected()) {
-            tab_device_configuration_device_connection.setText(String.format(getString(R.string.tab_device_configuration_connected_to_ssid), ssid));
+            tab_device_configuration_device_connection.setText(String.format(getString(R.string.tab_device_configuration_connected_to_ssid), ssid, prefs.sub().get()));
             tab_device_configuration_device_connection.setTextColor(Color.WHITE);
             textViewConnectionTextView.setBackgroundColor(getResources().getColor(R.color.color_connection_text_sc_holo_grey));
             if (ssid != null && !(ssid.equals(""))) {

@@ -404,7 +404,7 @@
                 android:contentDescription="@string/image_description"
                 android:src="@drawable/new_graphics_rescan" />
 
-            <RelativeLayout
+            <!-- <RelativeLayout
                 android:id="@+id/tab_device_configuration_datetime_layout"
                 android:layout_width="120dp"
                 android:layout_height="120dp"
@@ -427,7 +427,7 @@
                     android:layout_margin="00dp"
                     android:layout_centerInParent="true" 
                     android:background="@drawable/mask" />
-            </RelativeLayout>
+            </RelativeLayout> -->
         </RelativeLayout>
 
 

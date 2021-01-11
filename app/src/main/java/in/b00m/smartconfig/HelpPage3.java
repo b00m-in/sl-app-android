@@ -56,7 +56,7 @@ public class HelpPage3 extends Fragment{
 
 		BitmapFactory.Options options = new BitmapFactory.Options();
 		options.inScaled = false;
-		Bitmap icon = BitmapFactory.decodeResource(getActivity().getResources(), R.drawable.help_third, options);
+		Bitmap icon = BitmapFactory.decodeResource(getActivity().getResources(), R.drawable.help_third_boom, options);
 		page3_image.setImageBitmap(HelpPage1.scaleDown(icon, width, false));
 	}
 }

@@ -230,6 +230,7 @@
                  -->
         </RelativeLayout>
 
+        <!-- 
         <RelativeLayout
             android:id="@+id/settings_show_password_layout"
             android:layout_width="match_parent"
@@ -271,6 +272,7 @@
                 android:layout_alignParentRight="true"
                 />
             
+             -->
             <!-- 
             <Switch
                 android:id="@+id/settings_show_password_toggle"
@@ -279,7 +281,9 @@
                 android:layout_alignBaseline="@id/settings_show_password_text"
                 android:layout_alignParentRight="true" />
                  -->
+        <!-- 
         </RelativeLayout>
+                 -->
 
         <!--
         <RelativeLayout
@@ -325,7 +329,7 @@
             android:id="@+id/settings_open_devices_tab_layout"
             android:layout_width="match_parent"
             android:layout_height="50dp"
-            android:layout_below="@+id/settings_show_password_layout"
+            android:layout_below="@+id/settings_show_name_layout"
             android:layout_centerHorizontal="true"
             android:layout_marginTop="1dp"
             android:background="#FFF"
@@ -602,16 +606,49 @@
             </EditText>
         </RelativeLayout>
 
+        <RelativeLayout
+            android:id="@+id/settings_loggedinas_layout"
+            android:layout_width="match_parent"
+            android:layout_height="50dp"
+            android:layout_below="@id/settings_sc_transmit_timing_layout"
+            android:layout_centerHorizontal="true"
+            android:layout_marginTop="1dp"
+            android:background="#FFF"
+            android:padding="10dp" >
+
+            <TextView
+                android:id="@+id/settings_loggedinas_text"
+                android:layout_width="wrap_content"
+                android:layout_height="wrap_content"
+                android:layout_alignParentLeft="true"
+                android:layout_centerVertical="true"
+                android:text="@string/settings_loggedinas_text"
+                android:textSize="14sp" />
+
+            <TextView
+                android:id="@+id/settings_logout_button"
+                android:layout_width="100dp"
+                android:layout_height="wrap_content"
+                android:layout_alignParentRight="true"
+                android:layout_centerVertical="true"
+                android:gravity="center_vertical|center_horizontal"
+                android:paddingBottom="5dp"
+                android:paddingTop="5dp"
+                android:text="@string/logout"
+                android:textColor="#CC0000"
+                android:textSize="14sp" />
+        </RelativeLayout>
+
         <TextView
             android:id="@+id/settings_build_text"
             android:layout_width="wrap_content"
             android:layout_height="wrap_content"
             android:layout_alignParentLeft="true"
-            android:layout_below="@id/settings_sc_transmit_timing_layout"
+            android:layout_below="@id/settings_loggedinas_layout"
             android:layout_marginBottom="15dp"
             android:layout_marginTop="15dp"
             android:text="@string/settings_build_text"
-            android:textSize="13sp" />
+            android:textSize="13sp" /> 
     </RelativeLayout>
 
 </ScrollView>

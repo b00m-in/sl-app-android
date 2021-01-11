@@ -100,8 +100,8 @@ public class SettingsFragment extends Fragment implements OnCheckedChangeListene
 	@ViewById
 	ToggleButton settings_iot_uuid_toggle;
 
-	@ViewById
-	ToggleButton settings_show_password_toggle;
+	//@ViewById
+	//ToggleButton settings_show_password_toggle;
 	//Switch settings_show_password_toggle;
 
 	@ViewById
@@ -121,7 +121,11 @@ public class SettingsFragment extends Fragment implements OnCheckedChangeListene
 	TextView settings_build_text;
 
 	@ViewById
+	TextView settings_loggedinas_text;
+
+	@ViewById
 	EditText settings_sc_transmit_timing_edit_text;
+
 	@ViewById
 	TextView settings_terms_button;
 
@@ -139,11 +143,11 @@ public class SettingsFragment extends Fragment implements OnCheckedChangeListene
 			settings_open_devices_tab_toggle.setChecked(true);
 		else
 			settings_open_devices_tab_toggle.setChecked(false);
-		if (prefs.showSmartConfigPass().get())
+		/*if (prefs.showSmartConfigPass().get())
 			settings_show_password_toggle.setChecked(true);
 		else
 			settings_show_password_toggle.setChecked(false);
-
+                */
 		if (prefs.autoConnectToSL().get())
 			settings_auto_connect_toggle.setChecked(true);
 		else
@@ -168,7 +172,7 @@ public class SettingsFragment extends Fragment implements OnCheckedChangeListene
 		// initialize listeners
 		settings_show_name_toggle.setOnCheckedChangeListener(this);
 		settings_open_devices_tab_toggle.setOnCheckedChangeListener(this);
-		settings_show_password_toggle.setOnCheckedChangeListener(this);
+		//settings_show_password_toggle.setOnCheckedChangeListener(this);
 		settings_auto_connect_toggle.setOnCheckedChangeListener(this);
 		settings_ap_sc_toggle.setOnCheckedChangeListener(this);
 		settings_ble_toggle.setOnCheckedChangeListener(this);
@@ -177,6 +181,7 @@ public class SettingsFragment extends Fragment implements OnCheckedChangeListene
 		try {
 			PackageInfo pInfo = getActivity().getPackageManager().getPackageInfo(getActivity().getPackageName(), 0);
 			settings_build_text.setText(String.format(getString(R.string.settings_build_text),pInfo.versionName,smartConfigVer.ver));
+			settings_loggedinas_text.setText(String.format(getString(R.string.settings_loggedinas_text), prefs.sub().get()));
 		} catch (NameNotFoundException e) {
 			e.printStackTrace();
 		}
@@ -198,10 +203,10 @@ public class SettingsFragment extends Fragment implements OnCheckedChangeListene
 					prefs.startTab().put(Constants.SC_OR_AP_TAB);
 				prefs.openInDevicesList().put(settings_open_devices_tab_toggle.isChecked());
 				break;
-			case R.id.settings_show_password_toggle:
+			/*case R.id.settings_show_password_toggle:
 				v.vibrate(50);
 				prefs.showSmartConfigPass().put(settings_show_password_toggle.isChecked());
-				break;
+				break;*/
 			case R.id.settings_auto_connect_toggle:
 				v.vibrate(50);
 				prefs.autoConnectToSL().put(settings_auto_connect_toggle.isChecked());
@@ -279,22 +284,22 @@ public class SettingsFragment extends Fragment implements OnCheckedChangeListene
 		((MainActivity) getActivity()).showSuccessDialog("Device name entry is available on provisioning screen.", getString(R.string.pop_up_close), null, PopupType.Information, null, null);
 	}
 
-	@Click
+	/*@Click
 	void settings_show_password_layout_help() {
 		((MainActivity) getActivity()).showSuccessDialog("SmartConfig security Key entry is available on provisioning screen.", getString(R.string.pop_up_close), null, PopupType.Information, null, null);
-	}
+	}*/
 
 	@Click
 	void settings_open_devices_tab_layout_help() {
 		((MainActivity) getActivity()).showSuccessDialog("Application starts on Devices tab. Otherwise application starts on provisioning tab.", getString(R.string.pop_up_close), null, PopupType.Information, null, null);
 	}
 
-    @Click
-    void settings_iot_uuid_layout_help(){
-        ((MainActivity)getActivity()).showSuccessDialog("iotLink UUID entry is available on provisioning screen", getString(R.string.pop_up_close), null, PopupType.Information, null, null);
-    }
+        @Click
+        void settings_iot_uuid_layout_help(){
+            ((MainActivity)getActivity()).showSuccessDialog("iotLink UUID entry is available on provisioning screen", getString(R.string.pop_up_close), null, PopupType.Information, null, null);
+        }
 
-    @Click
+        @Click
 	void settings_terms_button() {
 		final ConnectivityManager conMgr = (ConnectivityManager) getActivity().getSystemService(Context.CONNECTIVITY_SERVICE);
 		final NetworkInfo activeNetwork = conMgr.getActiveNetworkInfo();
@@ -312,14 +317,20 @@ public class SettingsFragment extends Fragment implements OnCheckedChangeListene
 			// Permission is granted
 			final Intent ei = new Intent(Intent.ACTION_SEND);
 			ei.setType("vnd.android.cursor.dir/email");
-			ei.putExtra(Intent.EXTRA_EMAIL, new String[]{"ecs-bugreport@list.ti.com"});
+			ei.putExtra(Intent.EXTRA_EMAIL, new String[]{"bugs@b00m.in"});
 			ei.putExtra(Intent.EXTRA_SUBJECT, "Log for SmartConfig, version: " + settings_build_text.getText().toString());
 			ei.putExtra(Intent.EXTRA_STREAM, FileProvider.getUriForFile(getActivity(),
 					getString(R.string.file_provider_authority),
 					new File( Constants.LOG_PATH)));
 			startActivity(Intent.createChooser(ei, "Send email..."));
 		}
-    }
+        }
+	@Click
+	void settings_logout_button() {
+            prefs.sub().put("Guest");
+            ((MainActivity) getActivity()).clearAllTabs();
+            ((MainActivity) getActivity()).initTabs(Constants.SC_OR_AP_TAB);
+        }
 
 	@UiThread
 	void showToastWithMessage(final String msg) {

@@ -108,7 +108,7 @@ public class RegisterPage  extends Fragment{
 	}
 
 	@Click
-	void buttonRegister() {
+	void register_fragment_register_button() {
 		//mPager.setAdapter(null);
 		
 		/*FragmentTransaction transaction = getActivity().getSupportFragmentManager().beginTransaction();
@@ -144,6 +144,8 @@ public class RegisterPage  extends Fragment{
                     super.onPostExecute(result);
                     if (result) {
                         resp.setText("Registered as " + prefs.sub().get());
+                        ((MainActivity) getActivity()).clearAllTabs();
+                        ((MainActivity) getActivity()).initTabs(prefs.startTab().get());
                     } else {
                         resp.setText("There was a problem"); //result.toString());
                     }
@@ -164,6 +166,30 @@ public class RegisterPage  extends Fragment{
                         }
 			return result;
 		}
+	}
+
+	@Click
+	void register_fragment_close_button() {
+		//mPager.setAdapter(null);
+		
+		FragmentTransaction transaction = getActivity().getSupportFragmentManager().beginTransaction();
+		transaction.setCustomAnimations(R.anim.fragment_fade_out, R.anim.fragment_fade_out);
+		transaction.remove(this);
+		transaction.setTransitionStyle(FragmentTransaction.TRANSIT_FRAGMENT_OPEN);
+		transaction.commit();
+	}
+	@Click
+	void register_fragment_cancel_button() {
+		//mPager.setAdapter(null);
+		
+		FragmentTransaction transaction = getActivity().getSupportFragmentManager().beginTransaction();
+		transaction.setCustomAnimations(R.anim.fragment_fade_out, R.anim.fragment_fade_out);
+		transaction.remove(this);
+		transaction.setTransitionStyle(FragmentTransaction.TRANSIT_FRAGMENT_OPEN);
+		transaction.commit();
+	}
+	public void onBackPressed() {
+		// ignore the back button
 	}
 }
 

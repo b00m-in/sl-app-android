@@ -57,6 +57,8 @@ public class LoginPage  extends Fragment{
 
 	private Logger mLogger;
 
+        public MainActivity mainActivity;
+
 	@Pref
 	SharedPreferencesInterface_ prefs;
 
@@ -134,6 +136,8 @@ public class LoginPage  extends Fragment{
                     //resp.setText(result.toString());
                     if (result) {
                         resp.setText("Logged in as " + prefs.sub().get());
+                        ((MainActivity) getActivity()).clearAllTabs();
+                        ((MainActivity) getActivity()).initTabs(prefs.startTab().get());
                     } else {
                         resp.setText("There was a problem"); //result.toString());
                     }
@@ -151,5 +155,29 @@ public class LoginPage  extends Fragment{
                         }
 			return result;
 		}
+	}
+
+        /*@Override
+        public void onAttach(Activity activity) {
+            super.onAttach(activity);
+            mainActivity = (MainActivity) activity;
+        }
+
+        @Override
+        public void onDetach() {
+            super.onDetach();
+            mainActivity = null;
+        }*/
+	@Click
+	void buttonRegister() {
+		//mPager.setAdapter(null);
+		RegisterPage fragment = new RegisterPage_();
+
+		FragmentTransaction transaction = getActivity().getSupportFragmentManager().beginTransaction();
+		transaction.setCustomAnimations(R.anim.fragment_fade_out, R.anim.fragment_fade_out);
+                transaction.add(android.R.id.content, fragment);
+		transaction.setTransitionStyle(FragmentTransaction.TRANSIT_FRAGMENT_OPEN);
+		transaction.commit();
+
 	}
 }

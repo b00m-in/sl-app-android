@@ -155,4 +155,14 @@
             android:layout_alignParentRight="true"
             android:background="@color/color_line" />
     </RelativeLayout>
+    <Button
+        android:id="@+id/buttonRegister"
+        android:layout_width="match_parent"
+        android:layout_height="40dp"
+        android:layout_margin="20dp"
+        android:layout_below="@+id/msg_layout"
+        android:background="@color/blue"
+        android:text="register"
+        android:textAllCaps="true"
+        android:textColor="@color/white"/>
 </RelativeLayout>

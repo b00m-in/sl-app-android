@@ -167,6 +167,8 @@ public class MainActivity extends FragmentActivity {
     //the tabs
     DevicesFragment devicesFragment;
     SettingsFragment settingsFragment;
+    LoginPage loginFragment;
+    RegisterPage registerFragment;
     NewSmartConfigFragment newSmartConfigFragment;
     DeviceConfiguration deviceConfiguration;
     LanFragment lanFragment;
@@ -418,6 +420,8 @@ public class MainActivity extends FragmentActivity {
         newSmartConfigFragment = new NewSmartConfigFragment_();
         devicesFragment = new DevicesFragment_();
         settingsFragment = new SettingsFragment_();
+        loginFragment = new LoginPage_();
+        registerFragment = new RegisterPage_();
         deviceConfiguration = new DeviceConfiguration_();
         lanFragment = new LanFragment_();
         cloudFragment = new CloudFragment_();
@@ -616,10 +620,18 @@ public class MainActivity extends FragmentActivity {
             tabhost.addTab(tabhost.newTabSpec("ota").setIndicator(makeTabIndicator(getResources().getDrawable(R.drawable.ota_selector))),
                     otaFragment.getClass(), null);
 
-            tabhost.addTab(tabhost.newTabSpec("settings").setIndicator(makeTabIndicator(getResources().getDrawable(R.drawable.tab_settings_selector))),
+            /*tabhost.addTab(tabhost.newTabSpec("settings").setIndicator(makeTabIndicator(getResources().getDrawable(R.drawable.tab_settings_selector))),
                     settingsFragment.getClass(), null);
-
-
+            */
+            if (prefs.sub().get().matches("Guest")) {
+                tabhost.addTab(tabhost.newTabSpec("settings").setIndicator(makeTabIndicator(getResources().getDrawable(R.drawable.tab_settings_selector))),
+                    loginFragment.getClass(), null);
+                showToastWithMessage("Logged in as Guest");
+            } else {
+                tabhost.addTab(tabhost.newTabSpec("settings1").setIndicator(makeTabIndicator(getResources().getDrawable(R.drawable.tab_settings_selector))),
+                    settingsFragment.getClass(), null);
+                showToastWithMessage("Logged in as User");
+            }
 
             tabhost.getTabWidget().getChildAt(Constants.LAN_TAB).setVisibility(View.GONE);
 
