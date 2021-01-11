@@ -143,7 +143,7 @@ public class DevicesFragment extends Fragment {
 		devices_list_listView.setAdapter(deviceListAdapter);
 		//initialize timer receiver which responsible to delay the device list refresh (every 5 seconds)
 		mainActivity.startService(new Intent(getActivity(), TimerReceiver.class));
-		Log.w(TAG, "Started service");
+		//Log.w(TAG, "Started service");
 		final Handler handler = new Handler();
 		handler.postDelayed(new Runnable() {
 			@Override
@@ -167,7 +167,7 @@ public class DevicesFragment extends Fragment {
 		        SharedPreferences.Editor editor = sharedpreferences.edit();
 				editor.putString(Name, simplelinkDeviceIp);
 				editor.commit();
-				Log.i(TAG, "Entered IP into SP: " + dev.host);
+				//Log.i(TAG, "Entered IP into SP: " + dev.host);
 				mLogger.info("*AP* Entered IP into SP: " + dev.host);
                 if (Build.VERSION.SDK_INT >= Build.VERSION_CODES.HONEYCOMB) {
                     new OTAAndType().executeOnExecutor(AsyncTask.THREAD_POOL_EXECUTOR, simplelinkDeviceIp);
@@ -194,7 +194,7 @@ public class DevicesFragment extends Fragment {
 		
 		getActivity().registerReceiver(scanFinishedReceiver, new IntentFilter(SmartConfigConstants.SCAN_FINISHED_BROADCAST_ACTION));
 		getActivity().registerReceiver(deviceFoundReceiver, new IntentFilter(TimerReceiver.COUNTDOWN_BR));
-		Log.i(TAG, "Registered broadcast received");
+		//Log.i(TAG, "Registered broadcast received");
 
 		updateDeviceList();
 		updateRecentDeviceList();
@@ -207,8 +207,8 @@ public class DevicesFragment extends Fragment {
 		super.onPause();
 		getActivity().unregisterReceiver(scanFinishedReceiver);
 		getActivity().unregisterReceiver(deviceFoundReceiver);
-		Log.i(TAG, "Unregistered broadcast receivers");
-		Log.w(TAG, "onPause stop scanning mDNS");
+		//Log.i(TAG, "Unregistered broadcast receivers");
+		//Log.w(TAG, "onPause stop scanning mDNS");
 		MainActivity mainActivity = (MainActivity) getActivity();
 		mainActivity.stopScanning();
 		mainActivity.setMDNSDevice(null);
@@ -220,11 +220,11 @@ public class DevicesFragment extends Fragment {
 		updateDeviceList();
 		if (prefs.isScanning().get()) {
 			showRefreshProgress();
-			Log.d(TAG,"DevicesFragment/refresh button - already scanning");
+			//Log.d(TAG,"DevicesFragment/refresh button - already scanning");
 		} else {
 			prefs.scanningDisable().put(false);
 			((MainActivity) getActivity()).scanForDevices();
-			Log.d(TAG,"DevicesFragment/refresh button - start scan");
+			//Log.d(TAG,"DevicesFragment/refresh button - start scan");
 		}
 	}
 	
@@ -269,7 +269,7 @@ public class DevicesFragment extends Fragment {
 			if(millisUntilFinished<2000){
 				//fire the updateDeviceList method after 30 sec delay
 				updateDeviceList();
-				Log.i(TAG, "Update table after 30 seconds delay ");
+				//Log.i(TAG, "Update table after 30 seconds delay ");
 
 			}
 		}
@@ -278,26 +278,26 @@ public class DevicesFragment extends Fragment {
 	class OTAAndType extends AsyncTask<String,Void,Device_Type_Enum> {
 		@Override
 		protected Device_Type_Enum doInBackground(String... params) {
-			Log.i(TAG, "OTAAndType doInBackground");
+			//Log.i(TAG, "OTAAndType doInBackground");
 			Device_Type_Enum deviceTypeEnum = null;
 			String baseUrl = "://" + params[0];
-			Log.i(TAG,"OTAAndType baseUrl: " + baseUrl);
+			//Log.i(TAG,"OTAAndType baseUrl: " + baseUrl);
 			try {
 				deviceTypeEnum = NetworkUtil.slDeviceOTAAndType(baseUrl);
 			} catch (Exception e) {
 				e.printStackTrace();
 			}
-			Log.i(TAG, "OTAAndType: " + deviceTypeEnum);
+			//Log.i(TAG, "OTAAndType: " + deviceTypeEnum);
 			return deviceTypeEnum;
 		}
 
 		@Override
 		protected void onPostExecute(Device_Type_Enum deviceTypeEnum) {
 			super.onPostExecute(deviceTypeEnum);
-			Log.i(TAG, "OTAAndType onPost, result: " + deviceTypeEnum);
+			//Log.i(TAG, "OTAAndType onPost, result: " + deviceTypeEnum);
 			if (mainActivity != null) {
 				mainActivity.deviceTypeEnum = deviceTypeEnum;
-				Log.i(TAG, "OTAAndType set result to main: " + mainActivity.deviceTypeEnum);
+				//Log.i(TAG, "OTAAndType set result to main: " + mainActivity.deviceTypeEnum);
                 //refresh tabs in order to display extra tabs
 				mainActivity.clearAllTabs();
 				mainActivity.initTabs(Constants.DEVICES_TAB);

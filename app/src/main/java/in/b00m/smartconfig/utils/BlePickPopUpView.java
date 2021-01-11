@@ -128,7 +128,7 @@ public class BlePickPopUpView extends RelativeLayout {
 
         @Override
         public void onScanFailed(int errorCode) {
-            Log.e("Scan Failed", "Error Code: " + errorCode);
+            //Log.e("Scan Failed", "Error Code: " + errorCode);
         }
     };
 

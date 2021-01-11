@@ -176,12 +176,12 @@ public class WifiNetworkUtils {
 			
 			if (withTimer) {
 				mLogger.info("Starting wifi connection short timer (" + CONNECTION_TIMEOUT + "ms)");
-				Log.w(TAG, "Starting wifi connection short timer (" + CONNECTION_TIMEOUT + "ms)");
+				//Log.w(TAG, "Starting wifi connection short timer (" + CONNECTION_TIMEOUT + "ms)");
 				mWifiHandler.postDelayed(mWifiConnectionTimeout, CONNECTION_TIMEOUT);
 			}
 			else {
 				mLogger.info("Starting wifi connection long timer (" + LONG_CONNECTION_TIMEOUT + "ms)");
-				Log.w(TAG, "Starting wifi connection long timer (" + LONG_CONNECTION_TIMEOUT + "ms)");
+				//Log.w(TAG, "Starting wifi connection long timer (" + LONG_CONNECTION_TIMEOUT + "ms)");
 				mWifiHandler.postDelayed(mWifiConnectionTimeout, LONG_CONNECTION_TIMEOUT);
 			}
 		} catch (Exception e) {
@@ -249,7 +249,7 @@ public class WifiNetworkUtils {
 
 						if (mConnectAfterDisconnected) {
 							mConnectAfterDisconnected = false;
-							Log.i(TAG, "Connecting after disconnecting: " + wifiManager.enableNetwork(mConfigurationToConnectAfterDisconnecting.networkId, true));
+							//Log.i(TAG, "Connecting after disconnecting: " + wifiManager.enableNetwork(mConfigurationToConnectAfterDisconnecting.networkId, true));
 						}
 						break;
 					case DISCONNECTING:
@@ -318,7 +318,7 @@ public class WifiNetworkUtils {
 			if (intent.hasExtra(WifiManager.EXTRA_SUPPLICANT_ERROR)) {
 				int error = intent.getIntExtra(WifiManager.EXTRA_SUPPLICANT_ERROR, 0);
 				mLogger.error("Supplicant State Receiver, error: " + error);
-				Log.e(TAG, "Supplicant error (" + error + ")");
+				//Log.e(TAG, "Supplicant error (" + error + ")");
 				if (error == WifiManager.ERROR_AUTHENTICATING)
 					mBitbiteNetworkUtilsCallback.failedToConnectToNetwork(WifiConnectionFailure.Wrong_Password);
 				else
@@ -346,7 +346,7 @@ public class WifiNetworkUtils {
 	}
 	
 	public void clearCallback() {
-		Log.e(TAG, "Callback was cleared");
+		//Log.e(TAG, "Callback was cleared");
 		mBitbiteNetworkUtilsCallback = null;
 	}
 
@@ -422,16 +422,16 @@ public class WifiNetworkUtils {
         
         switch (telephonyService.getDataState()) {
 		case TelephonyManager.DATA_DISCONNECTED:
-			Log.i(TAG, "DATA_DISCONNECTED");
+			//Log.i(TAG, "DATA_DISCONNECTED");
 			break;
 		case TelephonyManager.DATA_CONNECTING:
-			Log.i(TAG, "DATA_CONNECTING");
+			//Log.i(TAG, "DATA_CONNECTING");
 			break;
 		case TelephonyManager.DATA_SUSPENDED:
-			Log.i(TAG, "DATA_SUSPENDED");
+			//Log.i(TAG, "DATA_SUSPENDED");
 			break;
 		case TelephonyManager.DATA_CONNECTED:
-			Log.i(TAG, "DATA_CONNECTED");
+			//Log.i(TAG, "DATA_CONNECTED");
 			return true;
 		}
 		return false;
@@ -449,11 +449,11 @@ public class WifiNetworkUtils {
 		    final Method getMobileDataEnabledMethod = iConnectivityManagerClass.getDeclaredMethod("getMobileDataEnabled");
 		    getMobileDataEnabledMethod.setAccessible(true);
 		    Boolean flag = (Boolean) getMobileDataEnabledMethod.invoke(iConnectivityManager);
-		    Log.i(TAG, "3G data was initialised " + flag);
+		    //Log.i(TAG, "3G data was initialised " + flag);
 		    return flag;
 	    } catch (Exception e) {
 			e.printStackTrace();
-	    	Log.e(TAG, "Failed to know if 3G was enabled");
+	    	//Log.e(TAG, "Failed to know if 3G was enabled");
 	    }
 	    return false;
 	}

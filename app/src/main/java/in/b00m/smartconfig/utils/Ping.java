@@ -95,7 +95,7 @@ public class Ping  {
             if (Thread.interrupted()) {
                 return;
             }
-            Log.d("pingRunnable","started");
+            //Log.d("pingRunnable","started");
             //onPre
             before();
             if (Thread.interrupted()) {
@@ -104,7 +104,7 @@ public class Ping  {
 
             //doInBackground
             working = true;
-            Log.i(TAG, "Ping Runnable started");
+            //Log.i(TAG, "Ping Runnable started");
             ping(ipToPing);
 
             if (Thread.interrupted()) {
@@ -112,7 +112,7 @@ public class Ping  {
             }
             //onPost
             after();
-            Log.d("pingRunnable", "finished");
+            //Log.d("pingRunnable", "finished");
         }
     };
 
@@ -157,15 +157,15 @@ public class Ping  {
                 while ((s = buffer.readLine()) != null) {
                     response += s;
                 }
-                Log.i(TAG, "name from file:" + response);
+                //Log.i(TAG, "name from file:" + response);
                 name = response;
             }
         }
         catch (HttpHostConnectException e) {
-            Log.e(TAG, "Connection exception: " + e.toString());
+            //Log.e(TAG, "Connection exception: " + e.toString());
         }
         catch (Exception e) {
-            Log.e(TAG, "exception: " + e.toString());
+            //Log.e(TAG, "exception: " + e.toString());
             e.printStackTrace();
         }
         return name;
@@ -175,7 +175,7 @@ public class Ping  {
         BufferedReader reader = null;
         Matcher matcher;
         try {
-            Log.i(TAG, "ping " + host);
+            //Log.i(TAG, "ping " + host);
             if (proc == null) {
                 proc = Runtime.getRuntime().exec(CMD + host);
                 reader = new BufferedReader(new InputStreamReader(proc.getInputStream()), BUF);
@@ -189,7 +189,7 @@ public class Ping  {
                     matcher = mPattern.matcher(line);
                     if (matcher.find()) {
                         if (mGatewayIp.equalsIgnoreCase(matcher.group())) {
-                            Log.i(TAG, "gateway answer - skip");
+                            //Log.i(TAG, "gateway answer - skip");
                         } else {
                             String name = "";
                             try {
@@ -203,7 +203,7 @@ public class Ping  {
                                     deviceJSON.put("name", name);
                                     deviceJSON.put("host", matcher.group());
                                     deviceJSON.put("age", 0);
-                                    Log.i(TAG, "Publishing device found to application,  name: " + name);
+                                    //Log.i(TAG, "Publishing device found to application,  name: " + name);
                                     mPingCallback.pingDeviceFetched(deviceJSON);
                                 } catch (JSONException e) {
                                     e.printStackTrace();
@@ -216,7 +216,7 @@ public class Ping  {
             }
         } catch (Exception e) {
             e.printStackTrace();
-            Log.e(TAG, "Can't use native ping");
+            //Log.e(TAG, "Can't use native ping");
         } finally {
             try {
                 if (reader != null) {
@@ -232,25 +232,25 @@ public class Ping  {
         BufferedReader reader = null;
         Matcher matcher;
         try {
-            Log.i(TAG, "getAvgResponseTime");
+            //Log.i(TAG, "getAvgResponseTime");
             final Process proc = Runtime.getRuntime().exec(CMD + host);
             proc.waitFor();
             int exit = proc.exitValue();
-            Log.i(TAG, "exit value = " + exit);
+            //Log.i(TAG, "exit value = " + exit);
             reader = new BufferedReader(new InputStreamReader(proc.getInputStream()), BUF);
             while ((line = reader.readLine()) != null) {
-                Log.i(TAG,"Answer from ping"+line);
+                //Log.i(TAG,"Answer from ping"+line);
                 matcher = mPattern.matcher(line);
                 if (matcher.matches()) {
                     reader.close();
-                    Log.i(TAG, "found device at:" + matcher.group(1));
+                    //Log.i(TAG, "found device at:" + matcher.group(1));
                     return (int) Float.parseFloat(matcher.group(1));
                 }
             }
             reader.close();
         } catch (Exception e) {
             e.printStackTrace();
-            Log.e(TAG, "Can't use native ping");
+            //Log.e(TAG, "Can't use native ping");
         } finally {
             try {
                 if (reader != null) {
@@ -264,7 +264,7 @@ public class Ping  {
     }
 
     public void stopPing() {
-        Log.i(TAG, "stopPing");
+        //Log.i(TAG, "stopPing");
         if (proc!=null) {
             proc.destroy();
         }

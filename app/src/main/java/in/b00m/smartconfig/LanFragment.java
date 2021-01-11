@@ -184,7 +184,7 @@ public class LanFragment extends Fragment {
         deviceInfoUrl = httpOrHttps()+"://" + deviceIp + "/device?macaddress&ipaddress&ssid";//
         String accelerometerUrl = httpOrHttps()+"://" + deviceIp + "/sensor?axisx&axisy&axisz";
         ledUrl = httpOrHttps() + "://" + deviceIp + "/light?redled";
-        Log.d(TAG,"accelerometer task exe,\nudUrl: " + cloudUrl + "\ndeviceInfoUrl: " + deviceInfoUrl + "\naccelerometerUrl: " + accelerometerUrl + "\nledUrl: " + ledUrl);
+        //Log.d(TAG,"accelerometer task exe,\nudUrl: " + cloudUrl + "\ndeviceInfoUrl: " + deviceInfoUrl + "\naccelerometerUrl: " + accelerometerUrl + "\nledUrl: " + ledUrl);
         accelerometerAsyncTask = new AccelerometerAsyncTask();
         accelerometerAsyncTask.executeOnExecutor(AsyncTask.THREAD_POOL_EXECUTOR, accelerometerUrl);
         cancelAsyncTask = false;
@@ -194,7 +194,7 @@ public class LanFragment extends Fragment {
         red_led_button.setOnClickListener(new View.OnClickListener() {
             @Override
             public void onClick(View v) {
-                Log.d(TAG,"led button pressed");
+                //Log.d(TAG,"led button pressed");
                 String ssid = mNetworkUtils.getConnectedSSID();
                 if (ssid == null) {
                     Toast.makeText(getActivity(), "Please check your internet connection", Toast.LENGTH_SHORT).show();
@@ -558,7 +558,7 @@ public class LanFragment extends Fragment {
             HttpResponse response;
             String responseString = null;
             try {
-                Log.d(TAG, "Cloud AsyncTask is running!!");
+                //Log.d(TAG, "Cloud AsyncTask is running!!");
                 response = httpclient.execute(new HttpGet(uri[0]));
                 StatusLine statusLine = response.getStatusLine();
                 if (statusLine.getStatusCode() == HttpStatus.SC_OK || statusLine.getStatusCode() == HttpStatus.SC_NO_CONTENT) {

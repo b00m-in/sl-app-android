@@ -66,7 +66,7 @@ public class UdpBcastServer {
             }
         } catch (SocketException e) {
             e.printStackTrace();
-            Log.i(TAG, "socket error" + e.getMessage());
+            //Log.i(TAG, "socket error" + e.getMessage());
         }
         working = true;
     }
@@ -90,7 +90,7 @@ public class UdpBcastServer {
             }
             //do in background
             working = true;
-            Log.i(TAG, "udpBcastRunnable started");
+            //Log.i(TAG, "udpBcastRunnable started");
             UdpReceive();
             if (Thread.interrupted()) {
                 return;
@@ -111,7 +111,7 @@ public class UdpBcastServer {
                 }
                 catch(IOException e) {
                     e.printStackTrace();
-                    Log.e(TAG, "IO error");
+                    //Log.e(TAG, "IO error");
                     working = false;
                 }
                 String dataAsString = new String(recPacket.getData(),0,recPacket.getLength());
@@ -126,16 +126,16 @@ public class UdpBcastServer {
                 if(deviceAddress!=null && !deviceAddress.equalsIgnoreCase("") ) {
                     deviceAddress = deviceAddress.split(",")[0];
                 }
-                Log.i(TAG, "Received name: " + deviceName + " Received address: " + deviceAddress );
+                //Log.i(TAG, "Received name: " + deviceName + " Received address: " + deviceAddress );
                 InetAddress IPAddress = recPacket.getAddress();
-                Log.i(TAG, "Received from " + IPAddress.toString().split("/")[1]);
+                //Log.i(TAG, "Received from " + IPAddress.toString().split("/")[1]);
                 if (!deviceName.equalsIgnoreCase("") && !deviceAddress.equalsIgnoreCase("") ) {
                     JSONObject deviceJSON = new JSONObject();
                     try {
                         deviceJSON.put("name", deviceName);
                         deviceJSON.put("host", deviceAddress);
                         deviceJSON.put("age", 0);
-                        Log.i(TAG, "Bcast publishing device found to application,  name: " + deviceName);
+                        //Log.i(TAG, "Bcast publishing device found to application,  name: " + deviceName);
                         mLogger.info("Bcast SL dev found to app, name: " + deviceName);
                         mPingCallback.pingDeviceFetched(deviceJSON);
                     } catch (JSONException e) {

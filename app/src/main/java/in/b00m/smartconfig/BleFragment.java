@@ -158,13 +158,13 @@ public class BleFragment extends Fragment {
         public void onConnectionStateChange(final BluetoothGatt gatt, int status, int newState) {
             super.onConnectionStateChange(gatt, status, newState);
             if (status == 133) {
-                Log.e("GattManager", "Got the status 133 bug, closing gatt");
+                //Log.e("GattManager", "Got the status 133 bug, closing gatt");
                 gatt.close();
                 mGattManager.getGatts().remove(mBtdevice.getAddress());
                 return;
             }
             if (newState == BluetoothProfile.STATE_CONNECTED) {
-                Log.i("GattManager", "Gatt connected to device " + mBtdevice.getAddress());
+                //Log.i("GattManager", "Gatt connected to device " + mBtdevice.getAddress());
                 getActivity().runOnUiThread(new Runnable() {
                     @Override
                     public void run() {
@@ -184,7 +184,7 @@ public class BleFragment extends Fragment {
                     }
                 });
             } else if (newState == BluetoothProfile.STATE_DISCONNECTED) {
-                Log.i("GattManager", "Disconnected from gatt server " + mBtdevice.getAddress() + ", newState: " + newState);
+                //Log.i("GattManager", "Disconnected from gatt server " + mBtdevice.getAddress() + ", newState: " + newState);
                 getActivity().runOnUiThread(new Runnable() {
                     public void run() {
                         if(tab_device_configuration_device_to_configure_device_pick_label!=null) {
@@ -227,7 +227,7 @@ public class BleFragment extends Fragment {
         @Override
         public void onServicesDiscovered(final BluetoothGatt gatt, int status) {
             super.onServicesDiscovered(gatt, status);
-            Log.d("GattManager", "services discovered, status: " + status);
+            //Log.d("GattManager", "services discovered, status: " + status);
             if(!provStarted) {
                 getActivity().runOnUiThread(new Runnable() {
                     @Override
@@ -288,7 +288,7 @@ public class BleFragment extends Fragment {
                                                 if (characteristic.getUuid().equals(UUID.fromString(Constants.BLE_WIFI_START_CHAR_UUID))) {
                                                     // Start characteristic written successfully
                                                     //   Provisioning successfully Completed.
-                                                    Log.d(TAG, "Success");
+                                                    //Log.d(TAG, "Success");
                                                     getActivity().runOnUiThread(new Runnable() {
                                                         public void run() {
                                                             mainActivity.showSuccessDialog(null, getString(R.string.pop_up_close), null, Popup.PopupType.Success, null, "Provisioning successful");
@@ -322,7 +322,7 @@ public class BleFragment extends Fragment {
                                         getActivity().runOnUiThread(new Runnable() {
                                             public void run() {
                                                 mainActivity.showSuccessDialog(Constants.FAILED_IP_ADDRESS, getString(R.string.pop_up_close), null, Popup.PopupType.Failure, null, null);
-                                                Log.d(TAG, "Failed to get and ip address from the access point");
+                                                //Log.d(TAG, "Failed to get and ip address from the access point");
                                                 removeLoaderAndClear();
                                             }
                                         });
@@ -331,7 +331,7 @@ public class BleFragment extends Fragment {
                                         getActivity().runOnUiThread(new Runnable() {
                                             public void run() {
                                                 mainActivity.showSuccessDialog(Constants.FAILED_TO_CONNECT_AP, getString(R.string.pop_up_close), null, Popup.PopupType.Failure, null, null);
-                                                Log.d(TAG, "Failed to connect to the access point");
+                                                //Log.d(TAG, "Failed to connect to the access point");
                                                 removeLoaderAndClear();
                                             }
                                         });
@@ -340,7 +340,7 @@ public class BleFragment extends Fragment {
                                         getActivity().runOnUiThread(new Runnable() {
                                             public void run() {
                                                 mainActivity.showSuccessDialog(Constants.FAILED_PING, getString(R.string.pop_up_close), null, Popup.PopupType.Failure, null, null);
-                                                Log.d(TAG, "Failed to ping the access point");
+                                                //Log.d(TAG, "Failed to ping the access point");
                                                 removeLoaderAndClear();
                                             }
                                         });
@@ -349,7 +349,7 @@ public class BleFragment extends Fragment {
                                         getActivity().runOnUiThread(new Runnable() {
                                             public void run() {
                                                 mainActivity.showSuccessDialog(Constants.FAILED_TIMEOUT, getString(R.string.pop_up_close), null, Popup.PopupType.Failure, null, null);
-                                                Log.d(TAG, "Failed Timeout!");
+                                                //Log.d(TAG, "Failed Timeout!");
                                                 removeLoaderAndClear();
                                             }
                                         });
@@ -373,7 +373,7 @@ public class BleFragment extends Fragment {
         @Override
         public void onCharacteristicWrite(BluetoothGatt gatt, BluetoothGattCharacteristic characteristic, int status) {
             super.onCharacteristicWrite(gatt, characteristic, status);
-            Log.d("GattManager", "Characteristic " + characteristic.getUuid() + "written to on device " + mBtdevice.getAddress());
+            //Log.d("GattManager", "Characteristic " + characteristic.getUuid() + "written to on device " + mBtdevice.getAddress());
             if (mGattManager.getCurrentOperation() != null && mGattManager.getCurrentOperation().type() == GattOperation.OperationType.OPERATION_CHAR_WRITE)
                 ((GattCharacteristicWriteOperation) mGattManager.getCurrentOperation()).onWrite(characteristic, status);
             mGattManager.setCurrentOperation(null);
@@ -383,7 +383,7 @@ public class BleFragment extends Fragment {
         @Override
         public void onCharacteristicChanged(BluetoothGatt gatt, BluetoothGattCharacteristic characteristic) {
             super.onCharacteristicChanged(gatt, characteristic);
-//                    Log.d("GattManager", "Characteristic " + characteristic.getUuid() + "was changed, device: " + device.getAddress());
+//                    //Log.d("GattManager", "Characteristic " + characteristic.getUuid() + "was changed, device: " + device.getAddress());
             if (mGattManager.getCharacteristicChangeListeners().containsKey(characteristic.getUuid())) {
                 for (CharacteristicChangeListener listener : mGattManager.getCharacteristicChangeListeners().get(characteristic.getUuid())) {
                     listener.onCharacteristicChanged(mBtdevice.getAddress(), characteristic);
@@ -401,7 +401,7 @@ public class BleFragment extends Fragment {
         mHandler = new android.os.Handler();
         mRunnable = new Runnable() {
             public void run() {
-                Log.i("tag", "20000 milliseconds timeout");
+                //Log.i("tag", "20000 milliseconds timeout");
                 mHandler.removeCallbacks(mRunnable);
                 mHandler.removeCallbacksAndMessages(null);
                 // Reconnect to BLE device to continue provisioning
@@ -541,13 +541,13 @@ public class BleFragment extends Fragment {
         deviceName = tab_ble_configuration_devicename_editText.getText().toString();
         ssidName = tab_ble_configuration_ssid_name_editText.getText().toString();
         password = tab_ble_wifi_password_check_editText.getText().toString();
-        Log.d("BLEProvisionFragment", "BLE Provisioning Started");
+        //Log.d("BLEProvisionFragment", "BLE Provisioning Started");
         //BLE Provisioning Started!
        // Writing SSID characteristic (" + mSsid + ")"
         mHandler = new android.os.Handler();
         mRunnable = new Runnable() {
             public void run() {
-                Log.i("tag", "20000 milliseconds timeout");
+                //Log.i("tag", "20000 milliseconds timeout");
                 mHandler.removeCallbacks(mRunnable);
                 mHandler.removeCallbacksAndMessages(null);
                 // Reconnect to BLE device to continue provisioning
@@ -564,7 +564,7 @@ public class BleFragment extends Fragment {
             public void call(BluetoothGattCharacteristic characteristic, int status) {
                 if (characteristic.getUuid().equals(UUID.fromString(Constants.BLE_WIFI_DEVNAME_CHAR_UUID))) {
                    // Device name characteristic written successfully
-                    Log.i("DeviceInfo", "Device name characteristic written successfully");
+                    //Log.i("DeviceInfo", "Device name characteristic written successfully");
                     sendProvisionStart();
                 }
             }
@@ -575,11 +575,11 @@ public class BleFragment extends Fragment {
             public void call(BluetoothGattCharacteristic characteristic, int status) {
                 if (characteristic.getUuid().equals(UUID.fromString(Constants.BLE_WIFI_PASS_CHAR_UUID))) {
                     //Security key characteristic written successfully!
-                    Log.i("DeviceInfo", "Security key characteristic written successfully!");
+                    //Log.i("DeviceInfo", "Security key characteristic written successfully!");
 
                     if (!deviceName.isEmpty()) {
                         //Writing device name characteristic.
-                        Log.i("DeviceInfo", "Writing device name characteristic.");
+                        //Log.i("DeviceInfo", "Writing device name characteristic.");
                         mGattManager.queue(new GattCharacteristicWriteOperation(
                                 mBtdevice,
                                 UUID.fromString(Constants.BLE_WIFI_SERVICE_UUID),
@@ -601,10 +601,10 @@ public class BleFragment extends Fragment {
             public void call(BluetoothGattCharacteristic characteristic, int status) {
                 if (characteristic.getUuid().equals(UUID.fromString(Constants.BLE_WIFI_SSID_CHAR_UUID))) {
                     //SSID characteristic written successfully!
-                    Log.i("DeviceInfo", "SSID characteristic written successfully!");
+                    //Log.i("DeviceInfo", "SSID characteristic written successfully!");
                     if (!password.isEmpty()) {
                         //Writing security key characteristic.
-                        Log.i("DeviceInfo", "Writing security key characteristic.");
+                        //Log.i("DeviceInfo", "Writing security key characteristic.");
                             mGattManager.queue(new GattCharacteristicWriteOperation(mBtdevice,
                                     UUID.fromString(Constants.BLE_WIFI_SERVICE_UUID),
                                     UUID.fromString(Constants.BLE_WIFI_PASS_CHAR_UUID),
@@ -614,7 +614,7 @@ public class BleFragment extends Fragment {
                         //No security key provided, skipping to next step...
                         if (!deviceName.isEmpty()) {
                             // Writing device name characteristic.
-                            Log.i("DeviceInfo", "Writing device name characteristic.");
+                            //Log.i("DeviceInfo", "Writing device name characteristic.");
                             mGattManager.queue(new GattCharacteristicWriteOperation(mBtdevice,
                                     UUID.fromString(Constants.BLE_WIFI_SERVICE_UUID),
                                     UUID.fromString(Constants.BLE_WIFI_DEVNAME_CHAR_UUID),
@@ -641,7 +641,7 @@ public class BleFragment extends Fragment {
             public void call(BluetoothGattCharacteristic characteristic, int status) {
                 if (characteristic.getUuid().equals(UUID.fromString(Constants.BLE_WIFI_START_CHAR_UUID))) {
                    // Start characteristic written successfully!
-                    Log.i("DeviceInfo", "Start characteristic written successfully!");
+                    //Log.i("DeviceInfo", "Start characteristic written successfully!");
                 }
             }
         };
@@ -724,7 +724,7 @@ public class BleFragment extends Fragment {
             hasService = false;
             mRunnable = new Runnable() {
                 public void run() {
-                    Log.i("tag", "20000 milliseconds timeout");
+                    //Log.i("tag", "20000 milliseconds timeout");
                     mHandler.removeCallbacks(mRunnable);
                     mHandler.removeCallbacksAndMessages(null);
                     // Reconnect to BLE device to continue provisioning
@@ -771,7 +771,7 @@ public class BleFragment extends Fragment {
     }
     @Override
     public void onDestroy() {
-        Log.d("BLE Provision Fragment", "OnDestroy");
+        //Log.d("BLE Provision Fragment", "OnDestroy");
         super.onDestroy();
         if (mGattManager!= null&& mBtdevice!=null) {
             mGattManager.close(mBtdevice);
@@ -816,7 +816,7 @@ public class BleFragment extends Fragment {
         returnFromPopUp = true;
         if (bleDeviceAddress != null && bleDeviceAddress.length() > 0) {
             start();
-            Log.d(TAG, "The chosen ble device : " + bleDeviceAddress);
+            //Log.d(TAG, "The chosen ble device : " + bleDeviceAddress);
             final Handler handler = new Handler();
             handler.postDelayed(new Runnable() {
                 @Override

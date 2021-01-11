@@ -203,7 +203,7 @@ public class CloudFragment extends Fragment implements RadioGroup.OnCheckedChang
             //this loop going to work forever until the user will move to other tab/close the application
             while (!cancelAsyncTaskProcess) {
                 try {
-                    Log.d(TAG, "Cloud AsyncTask is running!!");
+                    //Log.d(TAG, "Cloud AsyncTask is running!!");
                     response = httpclient.execute(new HttpGet(uri[0]));
                     StatusLine statusLine = response.getStatusLine();
                     if (statusLine.getStatusCode() == HttpStatus.SC_OK || statusLine.getStatusCode() == HttpStatus.SC_NO_CONTENT) {

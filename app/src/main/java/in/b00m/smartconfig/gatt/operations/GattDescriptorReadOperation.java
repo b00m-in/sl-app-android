@@ -23,7 +23,7 @@ public class GattDescriptorReadOperation extends GattOperation {
     }
     @Override
     public void execute(BluetoothGatt gatt) {
-        Log.d("GattDescReadCallback", "Reading from " + mDescriptor);
+        //Log.d("GattDescReadCallback", "Reading from " + mDescriptor);
         BluetoothGattDescriptor descriptor = gatt.getService(mService).getCharacteristic(mCharacteristic).getDescriptor(mDescriptor);
         gatt.readDescriptor(descriptor);
     }

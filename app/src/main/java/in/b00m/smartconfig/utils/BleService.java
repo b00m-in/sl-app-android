@@ -53,15 +53,14 @@ public class BleService extends Service {
                 intentAction = ACTION_GATT_CONNECTED;
                 connectionState = CONNECTED;
                 broadcastUpdate(intentAction);
-                Log.i(TAG, "Connected to GATT server.");
+                //Log.i(TAG, "Connected to GATT server.");
                 // Attempts to discover services after successful connection.
-                Log.i(TAG, "Attempting to start service discovery:" +
-                        bluetoothGatt.discoverServices());
+                //Log.i(TAG, "Attempting to start service discovery:" + bluetoothGatt.discoverServices());
 
             } else if (newState == BluetoothProfile.STATE_DISCONNECTED) {
                 intentAction = ACTION_GATT_DISCONNECTED;
                 connectionState = DISCONNECTED;
-                Log.i(TAG, "Disconnected from GATT server.");
+                //Log.i(TAG, "Disconnected from GATT server.");
                 broadcastUpdate(intentAction);
             }
         }
@@ -71,7 +70,7 @@ public class BleService extends Service {
             if (status == BluetoothGatt.GATT_SUCCESS) {
                 broadcastUpdate(ACTION_GATT_SERVICES_DISCOVERED);
             } else {
-                Log.w(TAG, "onServicesDiscovered received: " + status);
+                //Log.w(TAG, "onServicesDiscovered received: " + status);
             }
         }
 
@@ -144,13 +143,13 @@ public class BleService extends Service {
         if (bleManager == null) {
             bleManager = (BluetoothManager) getSystemService(Context.BLUETOOTH_SERVICE);
             if (bleManager == null) {
-                Log.e(TAG, "Unable to initialize BluetoothManager.");
+                //Log.e(TAG, "Unable to initialize BluetoothManager.");
                 return false;
             }
         }
         bleAdapter = bleManager.getAdapter();
         if (bleAdapter == null) {
-            Log.e(TAG, "Unable to obtain a BluetoothAdapter.");
+            //Log.e(TAG, "Unable to obtain a BluetoothAdapter.");
             return false;
         }
 
@@ -169,14 +168,14 @@ public class BleService extends Service {
     public boolean connect(final String address) {
       //  initialize();
         if (bleAdapter == null || address == null) {
-            Log.w(TAG, "BluetoothAdapter not initialized or unspecified address.");
+            //Log.w(TAG, "BluetoothAdapter not initialized or unspecified address.");
             return false;
         }
 
         // Previously connected device.  Try to reconnect.
         if (bleDeviceAdresss != null && address.equals(bleDeviceAdresss)
                 && bluetoothGatt != null) {
-            Log.d(TAG, "Trying to use an existing mBluetoothGatt for connection.");
+            //Log.d(TAG, "Trying to use an existing mBluetoothGatt for connection.");
             if (bluetoothGatt.connect()) {
                 connectionState = CONNECTING;
                 return true;
@@ -187,13 +186,13 @@ public class BleService extends Service {
 
         final BluetoothDevice device = bleAdapter.getRemoteDevice(address);
         if (device == null) {
-            Log.w(TAG, "Device not found.  Unable to connect.");
+            //Log.w(TAG, "Device not found.  Unable to connect.");
             return false;
         }
         // We want to directly connect to the device, so we are setting the autoConnect
         // parameter to false.
         bluetoothGatt = device.connectGatt(this, false, mGattCallback);
-        Log.d(TAG, "Trying to create a new connection.");
+        //Log.d(TAG, "Trying to create a new connection.");
         bleDeviceAdresss = address;
         connectionState = CONNECTING;
         return true;
@@ -207,7 +206,7 @@ public class BleService extends Service {
      */
     public void disconnect() {
         if (bleAdapter == null || bluetoothGatt == null) {
-            Log.w(TAG, "BluetoothAdapter not initialized");
+            //Log.w(TAG, "BluetoothAdapter not initialized");
             return;
         }
         bluetoothGatt.disconnect();
@@ -234,7 +233,7 @@ public class BleService extends Service {
      */
     public void readCharacteristic(BluetoothGattCharacteristic characteristic) {
         if (bleAdapter == null || bluetoothGatt == null) {
-            Log.w(TAG, "BluetoothAdapter not initialized");
+            //Log.w(TAG, "BluetoothAdapter not initialized");
             return;
         }
         bluetoothGatt.readCharacteristic(characteristic);
@@ -249,7 +248,7 @@ public class BleService extends Service {
     public void setCharacteristicNotification(BluetoothGattCharacteristic characteristic,
                                               boolean enabled) {
         if (bleAdapter == null || bluetoothGatt == null) {
-            Log.w(TAG, "BluetoothAdapter not initialized");
+            //Log.w(TAG, "BluetoothAdapter not initialized");
             return;
         }
         bluetoothGatt.setCharacteristicNotification(characteristic, enabled);

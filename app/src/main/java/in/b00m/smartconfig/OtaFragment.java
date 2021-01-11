@@ -223,7 +223,7 @@ public class OtaFragment extends Fragment implements View.OnClickListener {
             case R.id.software_status_button:
                 update_software_append_textview.setText("");
                 Device_Type_Enum deviceTypeEnum = ((MainActivity)getActivity()).deviceTypeEnum;
-                Log.i(TAG,"deviceTypeEnum: " + deviceTypeEnum);
+                //Log.i(TAG,"deviceTypeEnum: " + deviceTypeEnum);
                 if (deviceTypeEnum!= null) {
                     String fileDownloadPath = Constants.DOWNLOAD_FILE_PATH_PREFIX;
                     //Log.i(TAG,"fileDownloadPath: " + fileDownloadPath);
@@ -231,24 +231,24 @@ public class OtaFragment extends Fragment implements View.OnClickListener {
                     switch (deviceTypeEnum){
                         case F_Device:
                             fileDownloadPath += "_fs.txt";
-                            Log.i(TAG,"fileDownloadPath: " + fileDownloadPath);
+                            //Log.i(TAG,"fileDownloadPath: " + fileDownloadPath);
 
                             break;
                         case S_Device:
                             fileDownloadPath += "_rs.txt";
-                            Log.i(TAG,"fileDownloadPath: " + fileDownloadPath);
+                            //Log.i(TAG,"fileDownloadPath: " + fileDownloadPath);
 
                             break;
                         case F5_Device:
                             fileDownloadPath = Constants.DOWNLOAD_FILE_PATH_PREFIX5;
                             fileDownloadPath += "_fs.txt";
-                            Log.i(TAG,"fileDownloadPath: " + fileDownloadPath);
+                            //Log.i(TAG,"fileDownloadPath: " + fileDownloadPath);
 
                             break;
                         case S5_Device:
                             fileDownloadPath = Constants.DOWNLOAD_FILE_PATH_PREFIX5;
                             fileDownloadPath += "_rs.txt";
-                            Log.i(TAG,"fileDownloadPath: " + fileDownloadPath);
+                            //Log.i(TAG,"fileDownloadPath: " + fileDownloadPath);
 
                             break;
 
@@ -281,8 +281,8 @@ public class OtaFragment extends Fragment implements View.OnClickListener {
         cancelAsyncTaskProcess = false;
         DeviceVersionStatus();
         statusFlagTrigger = false;
-        Log.e(TAG, newest_software_version_title_textview_update.getText().toString());
-        Log.e(TAG, current_sw_version_textview_update.getText().toString());
+        //Log.e(TAG, newest_software_version_title_textview_update.getText().toString());
+        //Log.e(TAG, current_sw_version_textview_update.getText().toString());
         final Handler handler = new Handler();
         handler.postDelayed(new Runnable() {
             @Override
@@ -350,14 +350,14 @@ public class OtaFragment extends Fragment implements View.OnClickListener {
                             System.out.println(output);
                         }
                     } else {
-                        Log.e(TAG, String.valueOf(response.getStatusLine().getStatusCode()));
+                        //Log.e(TAG, String.valueOf(response.getStatusLine().getStatusCode()));
                         throw new RuntimeException("Failed : HTTP error code : "
                                 + response.getStatusLine().getStatusCode());
                     }
                 }
             } catch (Exception ex) {
-                Log.e(TAG, "ex Code UploadError: " + ex);
-                Log.e(TAG, "url:" + urlUpload);
+                //Log.e(TAG, "ex Code UploadError: " + ex);
+                //Log.e(TAG, "url:" + urlUpload);
             }
             return null;
         }
@@ -366,7 +366,7 @@ public class OtaFragment extends Fragment implements View.OnClickListener {
         protected void onPostExecute(String result) {
             super.onPostExecute(result);
             showLoaderWithText(false, null);
-            Log.e(TAG, tab_ota_progressbar_textview.getText().toString());
+            //Log.e(TAG, tab_ota_progressbar_textview.getText().toString());
             if (tab_ota_progressbar_textview.getText().toString().contains("100")) {
                 final Handler handler = new Handler();
                 handler.postDelayed(new Runnable() {
@@ -470,7 +470,7 @@ public class OtaFragment extends Fragment implements View.OnClickListener {
                         bytesRead1 += n;
                     }
                 }
-                Log.e(TAG, "" + file1);
+                //Log.e(TAG, "" + file1);
                 return file1;
 
             } catch (Exception e) {
@@ -584,7 +584,7 @@ public class OtaFragment extends Fragment implements View.OnClickListener {
             //endless while loop until we flip the flag
             while (statusFlagTrigger == true) {
                 try {
-                    Log.d(TAG, "OtaProgress AsyncTask is running!!");
+                    //Log.d(TAG, "OtaProgress AsyncTask is running!!");
                     response = httpclient.execute(new HttpGet(uri[0]));
                     StatusLine statusLine = response.getStatusLine();
                     if (statusLine.getStatusCode() == HttpStatus.SC_OK || statusLine.getStatusCode() == HttpStatus.SC_NO_CONTENT) {

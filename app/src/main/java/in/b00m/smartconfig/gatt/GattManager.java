@@ -56,7 +56,7 @@ public class GattManager {
         mHandler = new android.os.Handler();
         mRunnable = new Runnable() {
             public void run() {
-                Log.i("tag", "10000 milliseconds BLE Connection timeout");
+                //Log.i("tag", "10000 milliseconds BLE Connection timeout");
                 if (!hasService) {
                     ((AppCompatActivity)mContext).runOnUiThread(new Runnable() {
                         @Override
@@ -81,13 +81,13 @@ public class GattManager {
     }
 
     public synchronized void cancelCurrentOperationBundle() {
-        Log.v("GattManager", "Cancelling current operation. Queue size before: " + mQueue.size());
+        //Log.v("GattManager", "Cancelling current operation. Queue size before: " + mQueue.size());
         if(mCurrentOperation != null && mCurrentOperation.getBundle() != null) {
             for(GattOperation op : mCurrentOperation.getBundle().getOperations()) {
                 mQueue.remove(op);
             }
         }
-        Log.v("GattManager", "Queue size after: " + mQueue.size());
+        //Log.v("GattManager", "Queue size after: " + mQueue.size());
         mCurrentOperation = null;
         drive();
     }
@@ -103,7 +103,7 @@ public class GattManager {
 //                                    newState));
 
                 if (status == 133) {
-                    Log.e("GattManager", "Got the status 133 bug, closing gatt");
+                    //Log.e("GattManager", "Got the status 133 bug, closing gatt");
                     gatt.close();
                     mGatts.remove(device.getAddress());
                     ((AppCompatActivity)mContext).runOnUiThread(new Runnable() {
@@ -123,7 +123,7 @@ public class GattManager {
                 }
 
                 if (newState == BluetoothProfile.STATE_CONNECTED) {
-                    Log.i("GattManager", "Gatt connected to device " + device.getAddress());
+                    //Log.i("GattManager", "Gatt connected to device " + device.getAddress());
                     ((AppCompatActivity)mContext).runOnUiThread(new Runnable() {
                         @Override
                         public void run() {
@@ -131,7 +131,7 @@ public class GattManager {
                         }
                     });
                 } else if (newState == BluetoothProfile.STATE_DISCONNECTED) {
-                    Log.i("GattManager", "Disconnected from gatt server " + device.getAddress() + ", newState: " + newState);
+                    //Log.i("GattManager", "Disconnected from gatt server " + device.getAddress() + ", newState: " + newState);
                     mGatts.remove(device.getAddress());
                     setCurrentOperation(null);
                     gatt.close();
@@ -178,7 +178,7 @@ public class GattManager {
             @Override
             public void onServicesDiscovered(final BluetoothGatt gatt, int status) {
                 super.onServicesDiscovered(gatt, status);
-                Log.d("GattManager", "services discovered, status: " + status);
+                //Log.d("GattManager", "services discovered, status: " + status);
 
                 ((AppCompatActivity)mContext).runOnUiThread(new Runnable() {
                     @Override
@@ -217,7 +217,7 @@ public class GattManager {
             @Override
             public void onCharacteristicWrite(BluetoothGatt gatt, BluetoothGattCharacteristic characteristic, int status) {
                 super.onCharacteristicWrite(gatt, characteristic, status);
-                Log.d("GattManager", "Characteristic " + characteristic.getUuid() + "written to on device " + device.getAddress());
+                //Log.d("GattManager", "Characteristic " + characteristic.getUuid() + "written to on device " + device.getAddress());
                 if (mCurrentOperation != null && mCurrentOperation.type() == GattOperation.OperationType.OPERATION_CHAR_WRITE)
                     ((GattCharacteristicWriteOperation) mCurrentOperation).onWrite(characteristic, status);
                 setCurrentOperation(null);
@@ -227,7 +227,7 @@ public class GattManager {
             @Override
             public void onCharacteristicChanged(BluetoothGatt gatt, BluetoothGattCharacteristic characteristic) {
                 super.onCharacteristicChanged(gatt, characteristic);
-//                    Log.d("GattManager", "Characteristic " + characteristic.getUuid() + "was changed, device: " + device.getAddress());
+//                    //Log.d("GattManager", "Characteristic " + characteristic.getUuid() + "was changed, device: " + device.getAddress());
                 if (mCharacteristicChangeListeners.containsKey(characteristic.getUuid())) {
                     for (CharacteristicChangeListener listener : mCharacteristicChangeListeners.get(characteristic.getUuid())) {
                         listener.onCharacteristicChanged(device.getAddress(), characteristic);
@@ -239,9 +239,9 @@ public class GattManager {
         boolean refreshed = false;
         while (!refreshed) {
             refreshed = refreshDeviceCache(temp_gatt);
-            Log.d("GattManager", "Refreshing device cache");
+            //Log.d("GattManager", "Refreshing device cache");
         }
-        Log.d("GattManager", "Device Cache Refreshed: " + refreshed);
+        //Log.d("GattManager", "Device Cache Refreshed: " + refreshed);
     }
     public synchronized void connectToDevice(final BluetoothDevice device, BluetoothGattCallback gattCallback) {
         BluetoothGatt temp_gatt = device.connectGatt(mContext, true, gattCallback);
@@ -249,28 +249,28 @@ public class GattManager {
         boolean refreshed = false;
         while (!refreshed) {
             refreshed = refreshDeviceCache(temp_gatt);
-            Log.d("GattManager", "Refreshing device cache");
+            //Log.d("GattManager", "Refreshing device cache");
         }
-        Log.d("GattManager", "Device Cache Refreshed: " + refreshed);
+        //Log.d("GattManager", "Device Cache Refreshed: " + refreshed);
     }
     public synchronized void queue(GattOperation gattOperation) {
         mQueue.add(gattOperation);
-        Log.v("GattManager", "Queueing Gatt operation, size will now become: " + mQueue.size());
+        //Log.v("GattManager", "Queueing Gatt operation, size will now become: " + mQueue.size());
         drive();
     }
     public synchronized void drive() {
         if(mCurrentOperation != null) {
-            Log.e("GattManager", "tried to drive, but currentOperation was not null, " + mCurrentOperation);
+            //Log.e("GattManager", "tried to drive, but currentOperation was not null, " + mCurrentOperation);
             return;
         }
         if( mQueue.size() == 0) {
-            Log.v("GattManager", "Queue empty, drive loop stopped.");
+            //Log.v("GattManager", "Queue empty, drive loop stopped.");
             mCurrentOperation = null;
             return;
         }
 
         final GattOperation operation = mQueue.poll();
-        Log.v("GattManager", "Driving Gatt queue, size will now become: " + mQueue.size());
+        //Log.v("GattManager", "Driving Gatt queue, size will now become: " + mQueue.size());
         setCurrentOperation(operation);
 
 
@@ -281,16 +281,16 @@ public class GattManager {
             @Override
             protected synchronized Void doInBackground(Void... voids) {
                 try {
-                    Log.v("GattManager", "Starting to do a background timeout");
+                    //Log.v("GattManager", "Starting to do a background timeout");
                     wait(operation.getTimoutInMillis());
                 } catch (InterruptedException e) {
-                    Log.v("GattManager", "was interrupted out of the timeout");
+                    //Log.v("GattManager", "was interrupted out of the timeout");
                 }
                 if(isCancelled()) {
-                    Log.v("GattManager", "The timeout was cancelled, so we do nothing.");
+                    //Log.v("GattManager", "The timeout was cancelled, so we do nothing.");
                     return null;
                 }
-                Log.v("GattManager", "Timeout ran to completion, time to cancel the entire operation bundle. Abort, abort!");
+                //Log.v("GattManager", "Timeout ran to completion, time to cancel the entire operation bundle. Abort, abort!");
                 cancelCurrentOperationBundle();
                 return null;
             }
@@ -307,7 +307,7 @@ public class GattManager {
             execute(mGatts.get(device.getAddress()), operation);
         } else {
 //            connectToDevice(device);
-            Log.e("GattManager", "Bluetooth Device not yet connected. Call GattManager.connectToDevice(btDevice) first.");
+            //Log.e("GattManager", "Bluetooth Device not yet connected. Call GattManager.connectToDevice(btDevice) first.");
         }
     }
     private void execute(BluetoothGatt gatt, GattOperation operation) {
@@ -371,7 +371,7 @@ public class GattManager {
             }
         }
         catch (Exception localException) {
-            Log.e("GattManager", "An exception occured while refreshing device");
+            //Log.e("GattManager", "An exception occured while refreshing device");
         }
         return false;
     }

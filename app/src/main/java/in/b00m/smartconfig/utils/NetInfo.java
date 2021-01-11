@@ -103,7 +103,7 @@ public class NetInfo {
                 }
             }
         } catch (SocketException e) {
-            Log.e(TAG, e.getMessage());
+            //Log.e(TAG, e.getMessage());
         }
         getCidr();
     }
@@ -114,7 +114,7 @@ public class NetInfo {
                 InetAddress ia = nis.nextElement();
                 if (!ia.isLoopbackAddress()) {
                     if (ia instanceof Inet6Address) {
-                        Log.i(TAG, "IPv6 detected and not supported yet!");
+                        //Log.i(TAG, "IPv6 detected and not supported yet!");
                         continue;
                     }
                     return ia.getHostAddress();
@@ -141,11 +141,11 @@ public class NetInfo {
                     cidr = IpToCidr(match);
                     return;
                 } else {
-                    Log.i(TAG, "cannot find cidr, using default /24");
+                    //Log.i(TAG, "cannot find cidr, using default /24");
                 }
             } catch (NumberFormatException e) {
                 e.printStackTrace();
-                Log.i(TAG, e.getMessage()+ " -> cannot find cidr, using default /24");
+                //Log.i(TAG, e.getMessage()+ " -> cannot find cidr, using default /24");
             }
         }
     }
@@ -167,7 +167,7 @@ public class NetInfo {
             }
         } catch (Exception e) {
             e.printStackTrace();
-            Log.e(TAG, "Can't use native command: " + e.getMessage());
+            //Log.e(TAG, "Can't use native command: " + e.getMessage());
             return null;
         }
         return null;

@@ -49,13 +49,13 @@ public class SetDatetimeAsyncTask extends AsyncTask<String, Void, Boolean> {
 
 	@Override
 	protected void onPostExecute(Boolean result) {
-		Log.d(TAG,"SetDatetimeAsyncTask onPost started");
+		//Log.d(TAG,"SetDatetimeAsyncTask onPost started");
 		super.onPostExecute(result);
 	}
 
 	@Override
 	protected Boolean doInBackground(String... params) {
-            Log.d(TAG,"SetDatetimeAsyncTask doInBackground started");
+            //Log.d(TAG,"SetDatetimeAsyncTask doInBackground started");
 
             try {
                 mDeviceVersion = NetworkUtil.getSLVersion(Constants.BASE_URL_NO_HTTP);
@@ -65,7 +65,7 @@ public class SetDatetimeAsyncTask extends AsyncTask<String, Void, Boolean> {
                 e.printStackTrace();
                 mDeviceVersion = DeviceVersion.UNKNOWN;
             }
-            Log.i(TAG,"SL device version: " + mDeviceVersion);
+            //Log.i(TAG,"SL device version: " + mDeviceVersion);
 
             if (mDeviceVersion == DeviceVersion.UNKNOWN||mDeviceVersion == null) {
                 return false;
@@ -95,7 +95,7 @@ public class SetDatetimeAsyncTask extends AsyncTask<String, Void, Boolean> {
 	}
 
 	private void print(String msg) {
-		Log.i(TAG, msg);
+		//Log.i(TAG, msg);
 	}
 
 }

@@ -182,7 +182,7 @@ public class DevicePickPopUpView extends RelativeLayout {
 				break;
 			}
 		}
-		Log.i("DevicePickPopUpView","Security type: " + newSecurityType);
+		//Log.i("DevicePickPopUpView","Security type: " + newSecurityType);
 		return newSecurityType;
 	}
 	
@@ -273,11 +273,11 @@ public class DevicePickPopUpView extends RelativeLayout {
 		
 		if (deviceConfiguration != null) {
 			deviceConfiguration.deviceWasChosen(result, securityType, password);
-			Log.i("DevicePickPopUpView", "device was chosen / AP Prov.: " + "\nSSID: " + result + "\nSecurity type: " + securityType + "\nPassword: " + password);
+			//Log.i("DevicePickPopUpView", "device was chosen / AP Prov.: " + "\nSSID: " + result + "\nSecurity type: " + securityType + "\nPassword: " + password);
 		}
 		if (newSmartConfigFragment != null) {
 			newSmartConfigFragment.deviceWasChosen(result, securityType, password);
-			Log.i("DevicePickPopUpView", "device was chosen / SC Prov.: " + "\nSSID: " + result + "\nSecurity type: " + securityType + "\nPassword: " + password);
+			//Log.i("DevicePickPopUpView", "device was chosen / SC Prov.: " + "\nSSID: " + result + "\nSecurity type: " + securityType + "\nPassword: " + password);
 		}
 	}
 	

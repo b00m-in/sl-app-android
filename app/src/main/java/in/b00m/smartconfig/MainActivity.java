@@ -356,7 +356,7 @@ public class MainActivity extends FragmentActivity {
                     e.printStackTrace();
                     prefs.longitude().put("77.5");
                     prefs.latitude().put("13");
-                    Log.i(TAG, "location set to default " + "77.5 " + "13");
+                    //Log.i(TAG, "location set to default " + "77.5 " + "13");
                     //mLogger.info(TAG, "location set to default " + "77.5 " + "13");
                 }
             }
@@ -513,7 +513,7 @@ public class MainActivity extends FragmentActivity {
      */
     public void clear() {//i-method that stops the mDNS discovery scan, and if the scan is indeed not in progress clears the devices array and saves the fact the devices array is empty to shared prefs
         mLogger.info("Stop mDNS discovery and clear devices and recent devices arrays and prefs");
-        Log.w(TAG, "scanForDevices stop scanning mDNS");
+        //Log.w(TAG, "scanForDevices stop scanning mDNS");
         stopScanning();
         if (!prefs.isScanning().get()) {
             prefs.devicesArray().put("[]");
@@ -765,7 +765,7 @@ public class MainActivity extends FragmentActivity {
         if (networkState == NetworkUtil.WIFI) {
             net.getWifiInfo();
             while (net.gatewayIp.equalsIgnoreCase("0.0.0.0")) {
-                Log.i(TAG, "in while - network ip: " + net.gatewayIp);
+                //Log.i(TAG, "in while - network ip: " + net.gatewayIp);
                 try {
                     //changed sleep time to 500 instead of 200
                     Thread.sleep(500);
@@ -774,7 +774,7 @@ public class MainActivity extends FragmentActivity {
                 }
                 net.getWifiInfo();
             }
-            Log.i(TAG, "after while network ip: " + net.gatewayIp);
+            //Log.i(TAG, "after while network ip: " + net.gatewayIp);
             String ipToPing = "";
             String[] parts = net.gatewayIp.split("\\.");
             for (int i = 0; i < 3; i++) {
@@ -782,7 +782,7 @@ public class MainActivity extends FragmentActivity {
             }
             mPing = new Ping(mPingCallback, net.gatewayIp);
             mPing.ipToPing = ipToPing + "255";
-            Log.i(TAG, "Will ping ip: " + mPing.ipToPing);
+            //Log.i(TAG, "Will ping ip: " + mPing.ipToPing);
             return true;
         }
         return false;
@@ -838,7 +838,7 @@ public class MainActivity extends FragmentActivity {
          */
         @Override
         public void pingCompleted() {
-            Log.i(TAG, "PingOrBcastCallback - Completed");
+            //Log.i(TAG, "PingOrBcastCallback - Completed");
             mLogger.info("PB - Completed");
         }
 
@@ -851,7 +851,7 @@ public class MainActivity extends FragmentActivity {
          */
         @Override
         public void pingDeviceFetched(JSONObject deviceJSON) {
-            Log.i(TAG, "SL Device was found via PING or Bcast : " + deviceJSON);
+            //Log.i(TAG, "SL Device was found via PING or Bcast : " + deviceJSON);
             try {
                 if (deviceJSON.getString("name").contains("html") || deviceJSON.getString("name").contains("HTML")) {
                     return; // ignore the html crap
@@ -880,7 +880,7 @@ public class MainActivity extends FragmentActivity {
                             }
                         }
                         if (addToDeviceList) {
-                            Log.i(TAG, "Add Device from list: " + deviceJSON1);
+                            //Log.i(TAG, "Add Device from list: " + deviceJSON1);
                             updateDevicesArray.put(deviceJSON1);
                         }
                     }
@@ -888,7 +888,7 @@ public class MainActivity extends FragmentActivity {
                     e.printStackTrace();
                 }
             }
-            Log.i(TAG, "Broadcasting d found by PB to app : " + deviceJSON);
+            //Log.i(TAG, "Broadcasting d found by PB to app : " + deviceJSON);
             devicesArray = updateDevicesArray;
             prefs.devicesArray().put(devicesArray.toString());
             Intent intent = new Intent();
@@ -904,7 +904,7 @@ public class MainActivity extends FragmentActivity {
          */
         @Override
         public void pingFailed(String errorMessage) {
-            Log.i(TAG, "PingCallback - pingFailed");
+            //Log.i(TAG, "PingCallback - pingFailed");
             mLogger.info("PB - failed");
         }
     };
@@ -927,13 +927,13 @@ public class MainActivity extends FragmentActivity {
              */
             @Override
             public void onDeviceResolved(JSONObject deviceJSON) {
-                Log.i(TAG, "Device was found via mDNS : " + deviceJSON);
+                //Log.i(TAG, "Device was found via mDNS : " + deviceJSON);
                 mLogger.info("SL Dev found by M: " + deviceJSON);
 
 
 
                 if ((prefs.scanningDisable().get()) && (!prefs.isSmartConfigActive().get())) {
-                    Log.i(TAG, "Device was found via mDNS : " + deviceJSON + " but scanning is disabled");
+                    //Log.i(TAG, "Device was found via mDNS : " + deviceJSON + " but scanning is disabled");
                     return;
                 }
                 //check if device already exist
@@ -956,7 +956,7 @@ public class MainActivity extends FragmentActivity {
                                 }
                             }
                             if (addToDeviceList) {
-                                Log.i(TAG, "Add Device from list: " + deviceJSON1);
+                                //Log.i(TAG, "Add Device from list: " + deviceJSON1);
                                 updateDevicesArray.put(deviceJSON1);
                             }
                         }
@@ -979,7 +979,7 @@ public class MainActivity extends FragmentActivity {
 
             @Override
             public void broadcastBle(String action, String address, final int status) {
-                Log.e("GOT TO BLE CALLBACK", "!" + address + "  STATUS" +" "+status);
+                //Log.e("GOT TO BLE CALLBACK", "!" + address + "  STATUS" +" "+status);
                 System.out.print("GOT TO BLE CALLBACK !" + address + "  STATUS" +" "+status);
 
                     switch (status) {
@@ -1036,7 +1036,7 @@ public class MainActivity extends FragmentActivity {
 
             @Override
             public void broadcastBle(String action, byte[] address, final int status) {
-                Log.e("GOT TO BLE CALLBACK", "!" + address + "  STATUS" +" "+status);
+                //Log.e("GOT TO BLE CALLBACK", "!" + address + "  STATUS" +" "+status);
                 System.out.print("GOT TO BLE CALLBACK !" + address + "  STATUS" +" "+status);
 
                 switch (status) {
@@ -1133,10 +1133,10 @@ public class MainActivity extends FragmentActivity {
                         if (age < 5) {
                             deviceJSON.remove("age");
                             deviceJSON.put("age", age + 1);
-                            Log.i(TAG, "Add item:" + deviceJSON);
+                            //Log.i(TAG, "Add item:" + deviceJSON);
                             updateDevicesArray.put(deviceJSON);
                         } else {
-                            Log.i(TAG, "Should remove item:" + i);
+                            //Log.i(TAG, "Should remove item:" + i);
                             // should refresh list
                             refreshList = true;//i-flag list as eligible for refreshing
                         }
@@ -1144,7 +1144,7 @@ public class MainActivity extends FragmentActivity {
                         e.printStackTrace();
                     }
                 }
-                Log.i(TAG, "update Devices Array length:" + updateDevicesArray.length());
+                //Log.i(TAG, "update Devices Array length:" + updateDevicesArray.length());
                 devicesArray = updateDevicesArray;
                 writeLock.lock();
                 try {
@@ -1160,11 +1160,11 @@ public class MainActivity extends FragmentActivity {
                     sendBroadcast(intent);
                 }
                 try {
-                    Log.w(TAG, "Start mDNS discovery");
+                    //Log.w(TAG, "Start mDNS discovery");
                     if (prefs.isSmartConfigActive().get()) {
-                        Log.w(TAG, "SmartConfig in action -  no mDNS discovery");
+                        //Log.w(TAG, "SmartConfig in action -  no mDNS discovery");
                     } else {
-                        Log.w(TAG, "SmartConfig not in action -  start mDNS discovery");
+                        //Log.w(TAG, "SmartConfig not in action -  start mDNS discovery");
                         if (firstTime) {
                             firstTime = false;
                             mDnsHelper.startDiscovery();
@@ -1174,13 +1174,13 @@ public class MainActivity extends FragmentActivity {
                         Thread.sleep(SmartConfigConstants.MAIN_SCAN_TIME);
                     }
                 } catch (InterruptedException e) {
-                    Log.e(TAG, "Failed to sleep during mDNS discovery");
+                    //Log.e(TAG, "Failed to sleep during mDNS discovery");
                     e.printStackTrace();
                 } finally {
                     if (prefs.isScanning().get() && !prefs.scanningDisable().get()) {
-                        Log.i(TAG, "Stopping mDNS discovery from scanForDevices");
-                        Log.w(TAG, "scanForDevices stop scanning mDNS");
-                        Log.i(TAG, "Stop mDNS scan notification");
+                        //Log.i(TAG, "Stopping mDNS discovery from scanForDevices");
+                        //Log.w(TAG, "scanForDevices stop scanning mDNS");
+                        //Log.i(TAG, "Stop mDNS scan notification");
                         Intent intent = new Intent();
                         intent.setAction(SmartConfigConstants.SCAN_FINISHED_BROADCAST_ACTION);
                         sendBroadcast(intent);
@@ -1194,7 +1194,7 @@ public class MainActivity extends FragmentActivity {
                     }
                 }
             } else {
-                Log.i(TAG, "already mDNS discovery");
+                //Log.i(TAG, "already mDNS discovery");
             }
         }
     }
@@ -1221,10 +1221,10 @@ public class MainActivity extends FragmentActivity {
                     mLogger.info("Smartconf in action - on rx only");
                 }
             } catch (InterruptedException e) {
-                Log.e(TAG, "Failed to sleep during mDNS stop");
+                //Log.e(TAG, "Failed to sleep during mDNS stop");
                 e.printStackTrace();
             } finally {
-                Log.i(TAG, "Stop mDNS scan notification");
+                //Log.i(TAG, "Stop mDNS scan notification");
                 Intent intent = new Intent();
                 intent.setAction(SmartConfigConstants.SCAN_FINISHED_BROADCAST_ACTION);
                 sendBroadcast(intent);
@@ -1562,7 +1562,7 @@ public class MainActivity extends FragmentActivity {
         public void onServiceConnected(ComponentName componentName, IBinder service) {
             mbleService = ((BluetoothLeService.LocalBinder) service).getService();
             if (mbleService.initialize(mbleService , bluetoothManager , mBluetoothAdapter,MainActivity.this)) {
-                Log.e("BlePopUp", "Unable to initialize Bluetooth");
+                //Log.e("BlePopUp", "Unable to initialize Bluetooth");
             }
         }
 
@@ -1612,7 +1612,7 @@ public class MainActivity extends FragmentActivity {
         switch (requestCode) {
             case Constants.PERMISSION_REQUEST_COARSE_LOCATION: {
                 if (this.checkSelfPermission(Manifest.permission.ACCESS_COARSE_LOCATION) == PackageManager.PERMISSION_GRANTED) {
-                    Log.d(TAG, "coarse location permission granted");
+                    //Log.d(TAG, "coarse location permission granted");
                 } else {
                     final AlertDialog.Builder builder = new AlertDialog.Builder(this);
                     builder.setTitle("Functionality limited");
@@ -1629,7 +1629,7 @@ public class MainActivity extends FragmentActivity {
             }
             case Constants.PERMISSION_REQUEST_STORAGE: {
                 if (this.checkSelfPermission(Manifest.permission.WRITE_EXTERNAL_STORAGE) == PackageManager.PERMISSION_GRANTED) {
-                    Log.d(TAG, "coarse location permission granted");
+                    //Log.d(TAG, "coarse location permission granted");
                 } else {
                     final AlertDialog.Builder builder = new AlertDialog.Builder(this);
                     builder.setTitle("Functionality limited");

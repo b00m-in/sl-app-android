@@ -343,7 +343,7 @@ public class ScanResultsPopUpView extends RelativeLayout {
 
 		print("SSID: " + ssid + "\nPASSWORD: " + password + "\nSECURITY: " + securityType);
 		mLogger.info("Chosen SSID from list to send to SL device in profile to connect to: " + "\nSSID: " + ssid + "\nPASS LEN: " + password.length() + "\nSECURITY: " + securityType);
-		Log.i(TAG,"Chosen SSID from list to send to SL device in profile to connect to: " + "\nSSID: " + ssid + "\nPASS LEN: " + password.length() + "\nSECURITY: " + securityType);
+		//Log.i(TAG,"Chosen SSID from list to send to SL device in profile to connect to: " + "\nSSID: " + ssid + "\nPASS LEN: " + password.length() + "\nSECURITY: " + securityType);
 
 		if (deviceConfiguration != null) {
 			buttonClickBool=true;
@@ -625,7 +625,7 @@ public class ScanResultsPopUpView extends RelativeLayout {
 					String securityTypeString = network.substring(0, 1);
 					String ssid = network.substring(1);
 					SecurityType securityType = SecurityType.parseString(securityTypeString);
-					Log.e(TAG,"*** SSID : "+ssid +"Security type : "+securityTypeString + "***");
+					//Log.e(TAG,"*** SSID : "+ssid +"Security type : "+securityTypeString + "***");
 					if (securityType != SecurityType.UNKNOWN)
 						mFullList.add(ssid);
 					mSecurityMapping.put(ssid, securityType);

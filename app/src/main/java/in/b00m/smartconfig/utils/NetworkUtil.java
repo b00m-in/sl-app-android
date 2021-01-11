@@ -126,7 +126,7 @@ public class NetworkUtil {
             return null;
         String networkName = null;
         int networkState = getConnectionStatus(context);
-        Log.i(TAG, "Network State:" + networkState);
+        //Log.i(TAG, "Network State:" + networkState);
         mLogger.info("Network state: " + networkState);
         if (networkState == NetworkUtil.WIFI) { //no wifi connection and alert dialog allowed //i-why no wifi connection?
             WifiManager wifiManager = (WifiManager) context.getSystemService(Context.WIFI_SERVICE);
@@ -296,7 +296,7 @@ public class NetworkUtil {
         for (int x = 0; x < configuredWifiList.size(); x++) {
             WifiConfiguration i = configuredWifiList.get(x);
             if (i.SSID != null && i.SSID.equals("\"" + ssid + "\"")) {
-                Log.w(TAG, "Removing network: " + i.SSID);
+                //Log.w(TAG, "Removing network: " + i.SSID);
                 wifiManager.removeNetwork(i.networkId);
                 return;
             }
@@ -314,14 +314,14 @@ public class NetworkUtil {
         } else {
             for (WifiConfiguration i : configuredWifiList) {
                 if (i.SSID != null && i.SSID.equals("\"" + ssid + "\"")) {
-                    Log.i(TAG, "Wifi configuration for " + ssid + " already exist, so we will use it");
+                    //Log.i(TAG, "Wifi configuration for " + ssid + " already exist, so we will use it");
                     return i;
                 }
             }
 
-            Log.i(TAG, "Wifi configuration for " + ssid + " doesn't exist, so we will create new one");
-            Log.i(TAG, "SSID: " + ssid);
-            Log.i(TAG, "Security: " + securityType);
+            //Log.i(TAG, "Wifi configuration for " + ssid + " doesn't exist, so we will create new one");
+            //Log.i(TAG, "SSID: " + ssid);
+            //Log.i(TAG, "Security: " + securityType);
             WifiConfiguration wc = new WifiConfiguration();
 
             wc.SSID = "\"" + ssid + "\"";
@@ -360,14 +360,14 @@ public class NetworkUtil {
                     break;
             }
 
-            Log.i(TAG, "New wifi configuration with id " + wifiManager.addNetwork(wc));
-            Log.i(TAG, "Saving configuration " + wifiManager.saveConfiguration());
-            Log.i(TAG, "wc.networkId " + wc.networkId);
+            //Log.i(TAG, "New wifi configuration with id " + wifiManager.addNetwork(wc));
+            //Log.i(TAG, "Saving configuration " + wifiManager.saveConfiguration());
+            //Log.i(TAG, "wc.networkId " + wc.networkId);
 
             configuredWifiList = wifiManager.getConfiguredNetworks();
             for (WifiConfiguration i : configuredWifiList) {
                 if (i.SSID != null && i.SSID.equals("\"" + ssid + "\"")) {
-                    Log.i(TAG, "Returning wifiConfiguration with id " + i.networkId);
+                    //Log.i(TAG, "Returning wifiConfiguration with id " + i.networkId);
                     return i;
                 }
             }
@@ -395,8 +395,8 @@ public class NetworkUtil {
 
         for (WifiConfiguration i : configuredWifiList) {
             if (i.SSID != null && i.SSID.equals("\"" + ssid + "\"")) {
-                Log.i(TAG, "Trying to disconnect (success = " + wifiManager.disconnect() + ")");
-                Log.i(TAG, "Trying to connect to " + i.SSID + " (success = " + wifiManager.enableNetwork(i.networkId, true) + ")");
+                //Log.i(TAG, "Trying to disconnect (success = " + wifiManager.disconnect() + ")");
+                //Log.i(TAG, "Trying to connect to " + i.SSID + " (success = " + wifiManager.enableNetwork(i.networkId, true) + ")");
                 return;
             }
         }
@@ -440,7 +440,7 @@ public class NetworkUtil {
         }
 
         int res = wifiManager.addNetwork(wc);
-        Log.i(TAG, "addNetwork: " + res);
+        //Log.i(TAG, "addNetwork: " + res);
         wifiManager.disconnect();
         wifiManager.enableNetwork(res, true);
         wifiManager.saveConfiguration();
@@ -469,23 +469,23 @@ public class NetworkUtil {
     public static Boolean addProfile(String baseUrl, SecurityType securityType, String ssid, String password, String priorityString, DeviceVersion version, String configurer, String coords ) {
 
         String url = baseUrl;
-        Log.i(TAG,"REDIRECT- addProfile / url: " + url);
+        //Log.i(TAG,"REDIRECT- addProfile / url: " + url);
 
         switch (version) {
             case R1:
                 url = HTTP_ + url;
                 url += "/profiles_add.html";
-                Log.i(TAG,"REDIRECT- addProfile / url: " + url);
+                //Log.i(TAG,"REDIRECT- addProfile / url: " + url);
                 break;
             case R2:
-                Log.i(TAG,"REDIRECT- addProfile / didRedirect: " + didRedirect);
+                //Log.i(TAG,"REDIRECT- addProfile / didRedirect: " + didRedirect);
                 if (didRedirect) {
                     url = HTTPS_ + url;
                 } else {
                     url = HTTP_ + url;
                 }
                 url += "/api/1/wlan/profile_add";
-                Log.i(TAG,"REDIRECT- addProfile / url: " + url);
+                //Log.i(TAG,"REDIRECT- addProfile / url: " + url);
                 break;
             case UNKNOWN:
                 break;
@@ -535,23 +535,23 @@ public class NetworkUtil {
     public static Boolean moveStateMachineAfterProfileAddition(String baseUrl, String ssid, DeviceVersion version) throws CertificateException {
 
         String url = baseUrl;
-        Log.i(TAG,"REDIRECT- moveStateMachineAfterProfileAddition / url: " + url);
+        //Log.i(TAG,"REDIRECT- moveStateMachineAfterProfileAddition / url: " + url);
 
         switch (version) {
             case R1:
                 url = HTTP_ + url;
                 url += "/add_profile.html";
-                Log.i(TAG,"REDIRECT- moveStateMachineAfterProfileAddition / url: " + url);
+                //Log.i(TAG,"REDIRECT- moveStateMachineAfterProfileAddition / url: " + url);
                 break;
             case R2:
-                Log.i(TAG,"REDIRECT- moveStateMachineAfterProfileAddition / didRedirect: " + didRedirect);
+                //Log.i(TAG,"REDIRECT- moveStateMachineAfterProfileAddition / didRedirect: " + didRedirect);
                 if (didRedirect) {
                     url = HTTPS_ + url;
                 } else {
                     url = HTTP_ + url;
                 }
                 url += "/api/1/wlan/confirm_req";
-                Log.i(TAG,"REDIRECT- moveStateMachineAfterProfileAddition / url: " + url);
+                //Log.i(TAG,"REDIRECT- moveStateMachineAfterProfileAddition / url: " + url);
                 break;
             case UNKNOWN:
                 break;
@@ -584,14 +584,14 @@ public class NetworkUtil {
 
     public static DeviceVersion getSLVersion(String baseUrl) throws IOException, URISyntaxException {
         didRedirect = false;
-        Log.i(TAG,"REDIRECT- getSLVersion / did redirect: " + didRedirect);
-        Log.i(TAG,"REDIRECT- getSLVersion / base url: " + baseUrl);
+        //Log.i(TAG,"REDIRECT- getSLVersion / did redirect: " + didRedirect);
+        //Log.i(TAG,"REDIRECT- getSLVersion / base url: " + baseUrl);
         String url = baseUrl + "/param_product_version.txt";
 //        String url ="https://mysimplelink.net"+ "/param_product_version.txt";
-        Log.i(TAG,"REDIRECT- getSLVersion / url: " + url);
+        //Log.i(TAG,"REDIRECT- getSLVersion / url: " + url);
         if (!baseUrl.startsWith("http")) {
             url = HTTP_ + baseUrl + "/param_product_version.txt";
-            Log.i(TAG,"REDIRECT- getSLVersion / url: " + url);
+            //Log.i(TAG,"REDIRECT- getSLVersion / url: " + url);
         }
         DeviceVersion version = DeviceVersion.UNKNOWN;
 
@@ -615,22 +615,22 @@ public class NetworkUtil {
             int urlConResponseCode = httpURLConnection.getResponseCode();
             httpURLConnection.getInputStream().close();
             httpURLConnection.disconnect();
-            Log.i(TAG,"REDIRECT- getSLVersion / response code: " + urlConResponseCode);
+            //Log.i(TAG,"REDIRECT- getSLVersion / response code: " + urlConResponseCode);
             if (urlConResponseCode == HttpURLConnection.HTTP_MOVED_TEMP) {
                 //wasRedirected
                 didRedirect = true;
-                Log.i(TAG,"REDIRECT- getSLVersion / did redirect: " + didRedirect);
+                //Log.i(TAG,"REDIRECT- getSLVersion / did redirect: " + didRedirect);
                 if (baseUrl.startsWith("http")) {
                     baseUrl = baseUrl.substring(baseUrl.indexOf(":"),baseUrl.length());
                 }
                 url = HTTPS_ + baseUrl + "/param_product_version.txt";
-                Log.i(TAG,"REDIRECT- getSLVersion / redirected url: " + url);
+                //Log.i(TAG,"REDIRECT- getSLVersion / redirected url: " + url);
             }
             HttpClient client = getNewHttpClient();
             HttpGet slResult = new HttpGet(url);
             HttpResponse response = client.execute(slResult);
             String html = EntityUtils.toString(response.getEntity());
-            Log.i(TAG,"REDIRECT- getSLVersion / html: " + html);
+            //Log.i(TAG,"REDIRECT- getSLVersion / html: " + html);
             if (html.equals("R1.0") || html.contains("1.0")) {
                 version = DeviceVersion.R1;
             } else if (html.equals("R2.0") || html.equals("2.0") || html.contains("2.0")) {
@@ -646,7 +646,7 @@ public class NetworkUtil {
                 HttpGet slResult = new HttpGet(url);
                 HttpResponse response = client.execute(slResult);
                 String html = EntityUtils.toString(response.getEntity());
-                Log.i(TAG, "REDIRECT 1- getSLVersion / html: " + html);
+                //Log.i(TAG, "REDIRECT 1- getSLVersion / html: " + html);
                 if (html.equals("R1.0") || html.contains("1.0")) {
                     version = DeviceVersion.R1;
                 } else if (html.equals("R2.0") || html.equals("2.0") || html.contains("2.0")) {
@@ -658,7 +658,7 @@ public class NetworkUtil {
                 slResult.setURI(new URI(url));
                 HttpResponse response = client.execute(slResult);
                 String html = EntityUtils.toString(response.getEntity());
-                Log.i(TAG,"REDIRECT 2- getSLVersion / html: " + html);
+                //Log.i(TAG,"REDIRECT 2- getSLVersion / html: " + html);
                 if (html.equals("R1.0") || html.contains("1.0")) {
                     version = DeviceVersion.R1;
                 } else if (html.equals("R2.0") || html.equals("2.0") || html.contains("2.0")) {
@@ -673,23 +673,23 @@ public class NetworkUtil {
 
         String deviceName = "";
         String url = baseUrl;
-        Log.i(TAG,"REDIRECT- getDeviceName / url: " + url);
+        //Log.i(TAG,"REDIRECT- getDeviceName / url: " + url);
 
         switch (version) {
             case R1:
                 url = HTTP_ + url;
                 url += "/param_device_name.txt";
-                Log.i(TAG,"REDIRECT- getDeviceName / url: " + url);
+                //Log.i(TAG,"REDIRECT- getDeviceName / url: " + url);
                 break;
             case R2:
-                Log.i(TAG,"REDIRECT- getDeviceName / didRedirect: " + didRedirect);
+                //Log.i(TAG,"REDIRECT- getDeviceName / didRedirect: " + didRedirect);
                 if (didRedirect) {
                     url = HTTPS_ + url;
                 } else {
                     url = HTTP_ + url;
                 }
                 url += "/__SL_G_DNP";
-                Log.i(TAG,"REDIRECT- getDeviceName / url: " + url);
+                //Log.i(TAG,"REDIRECT- getDeviceName / url: " + url);
                 break;
             case UNKNOWN:
                 break;
@@ -713,7 +713,7 @@ public class NetworkUtil {
             deviceName = name;
         } catch (Exception e) {
             e.printStackTrace();
-            Log.e(TAG, "Failed to fetch device name from board");
+            //Log.e(TAG, "Failed to fetch device name from board");
         }
         return deviceName;
     }
@@ -721,28 +721,28 @@ public class NetworkUtil {
     public static ArrayList<String> getSSIDListFromDevice(String baseUrl, DeviceVersion version) throws IOException {
 
         String url = baseUrl;
-        Log.i(TAG,"REDIRECT- getSSIDListFromDevice / url: " + url);
+        //Log.i(TAG,"REDIRECT- getSSIDListFromDevice / url: " + url);
 
         switch (version) {
             case R1:
                 url = HTTP_ + url;
-                Log.i(TAG,"REDIRECT- getSSIDListFromDevice / url: " + url);
+                //Log.i(TAG,"REDIRECT- getSSIDListFromDevice / url: " + url);
                 break;
             case R2:
-                Log.i(TAG,"REDIRECT- getSSIDListFromDevice / didRedirect: " + didRedirect);
+                //Log.i(TAG,"REDIRECT- getSSIDListFromDevice / didRedirect: " + didRedirect);
                 if (didRedirect) {
                     url = HTTPS_ + url;
                 } else {
                     url = HTTP_ + url;
                 }
-                Log.i(TAG,"REDIRECT- getSSIDListFromDevice / url: " + url);
+                //Log.i(TAG,"REDIRECT- getSSIDListFromDevice / url: " + url);
                 break;
             case UNKNOWN:
                 break;
         }
 
         url = url + "/netlist.txt";
-        Log.i(TAG,"REDIRECT- getSSIDListFromDevice / url: " + url);
+        //Log.i(TAG,"REDIRECT- getSSIDListFromDevice / url: " + url);
 
         ArrayList<String> list = new ArrayList<>();
 
@@ -781,12 +781,12 @@ public class NetworkUtil {
         HttpClient client = getNewHttpClient();
         List<NameValuePair> stateParam;
         String rescanUrl = url;
-        Log.i(TAG,"REDIRECT- rescanNetworksOnDevice / rescanUrl: " + rescanUrl);
+        //Log.i(TAG,"REDIRECT- rescanNetworksOnDevice / rescanUrl: " + rescanUrl);
         mLogger.info("*AP* Rescanning for list of available access points from SL device with url: " + url);
         switch (version) {
             case R1:
                 rescanUrl = HTTP_ + rescanUrl;
-                Log.i(TAG,"REDIRECT- rescanNetworksOnDevice / rescanUrl: " + rescanUrl);
+                //Log.i(TAG,"REDIRECT- rescanNetworksOnDevice / rescanUrl: " + rescanUrl);
                 stateParam = new ArrayList<NameValuePair>(1);
                 try {
                     HttpPost rescanPost = new HttpPost(rescanUrl);
@@ -802,14 +802,14 @@ public class NetworkUtil {
                 break;
             case R2:
                 stateParam = new ArrayList<NameValuePair>(2);
-                Log.i(TAG,"REDIRECT- rescanNetworksOnDevice / didRedirect: " + didRedirect);
+                //Log.i(TAG,"REDIRECT- rescanNetworksOnDevice / didRedirect: " + didRedirect);
                 if (didRedirect) {
                     rescanUrl = HTTPS_ + rescanUrl;
                 } else {
                     rescanUrl = HTTP_ + rescanUrl;
                 }
                 rescanUrl += "/api/1/wlan/en_ap_scan";
-                Log.i(TAG,"REDIRECT- rescanNetworksOnDevice / rescanUrl: " + rescanUrl);
+                //Log.i(TAG,"REDIRECT- rescanNetworksOnDevice / rescanUrl: " + rescanUrl);
 
                 try {
                     HttpPost rescanPost = new HttpPost(rescanUrl);
@@ -854,22 +854,22 @@ public class NetworkUtil {
 
     public static Boolean setDatetime(String newDate, String baseUrl, DeviceVersion version) throws CertificateException {
         String url = baseUrl;
-        Log.i(TAG,"REDIRECT- setNewDeviceName / url: " + url);
+        //Log.i(TAG,"REDIRECT- setNewDeviceName / url: " + url);
         switch (version) {
             case R1:
                 url = HTTP_ + url;
                 url += "/mode_config";
-                Log.i(TAG,"REDIRECT- setNewDeviceName / url: " + url);
+                //Log.i(TAG,"REDIRECT- setNewDeviceName / url: " + url);
                 break;
             case R2:
-                Log.i(TAG,"REDIRECT- setDatetime / didRedirect: " + didRedirect);
+                //Log.i(TAG,"REDIRECT- setDatetime / didRedirect: " + didRedirect);
                 if (didRedirect) {
                     url = HTTPS_ + url;
                 } else {
                     url = HTTP_ + url;
                 }
                 url += "/api/1/wlan/en_ap_scan/set_time";
-                Log.i(TAG,"REDIRECT- setDateTime / url: " + url);
+                //Log.i(TAG,"REDIRECT- setDateTime / url: " + url);
                 break;
             case UNKNOWN:
                 break;
@@ -894,15 +894,15 @@ public class NetworkUtil {
 
     public static Boolean setOwner(String referer, String coords, String baseUrl, DeviceVersion version) throws CertificateException {
         String url = baseUrl;
-        Log.i(TAG,"REDIRECT- setNewDeviceOwner / url: " + url);
+        //Log.i(TAG,"REDIRECT- setNewDeviceOwner / url: " + url);
         switch (version) {
             case R1:
                 url = HTTP_ + url;
                 url += "/set_owner";
-                Log.i(TAG,"REDIRECT- setNewDeviceOwner / url: " + url);
+                //Log.i(TAG,"REDIRECT- setNewDeviceOwner / url: " + url);
                 break;
             case R2:
-                Log.i(TAG,"REDIRECT- setOwner / didRedirect: " + didRedirect);
+                //Log.i(TAG,"REDIRECT- setOwner / didRedirect: " + didRedirect);
                 if (didRedirect) {
                     url = HTTPS_ + url;
                 } else {
@@ -913,7 +913,7 @@ public class NetworkUtil {
                 //url += coords;
                 url += "/m0v/set_owner/";
                 mLogger.info("setOwner url " + url); 
-                Log.i(TAG,"REDIRECT- setOwner / url: " + url);
+                //Log.i(TAG,"REDIRECT- setOwner / url: " + url);
                 break;
             case UNKNOWN:
                 break;
@@ -935,29 +935,29 @@ public class NetworkUtil {
             flag = true;
         } catch (Exception e) {
             e.printStackTrace();
-            Log.i(TAG,"setOwner exception: " + e.toString());
+            //Log.i(TAG,"setOwner exception: " + e.toString());
             flag = false;
         }
         return flag;
 }
     public static Boolean setNewDeviceName(String newName, String baseUrl, DeviceVersion version) throws CertificateException {
         String url = baseUrl;
-        Log.i(TAG,"REDIRECT- setNewDeviceName / url: " + url);
+        //Log.i(TAG,"REDIRECT- setNewDeviceName / url: " + url);
         switch (version) {
             case R1:
                 url = HTTP_ + url;
                 url += "/mode_config";
-                Log.i(TAG,"REDIRECT- setNewDeviceName / url: " + url);
+                //Log.i(TAG,"REDIRECT- setNewDeviceName / url: " + url);
                 break;
             case R2:
-                Log.i(TAG,"REDIRECT- setNewDeviceName / didRedirect: " + didRedirect);
+                //Log.i(TAG,"REDIRECT- setNewDeviceName / didRedirect: " + didRedirect);
                 if (didRedirect) {
                     url = HTTPS_ + url;
                 } else {
                     url = HTTP_ + url;
                 }
                 url += "/api/1/netapp/set_urn";
-                Log.i(TAG,"REDIRECT- setNewDeviceName / url: " + url);
+                //Log.i(TAG,"REDIRECT- setNewDeviceName / url: " + url);
                 break;
             case UNKNOWN:
                 break;
@@ -982,15 +982,15 @@ public class NetworkUtil {
 
     public static Boolean setIotUuid(String newName, String baseUrl) throws CertificateException {
         String url = baseUrl;
-        Log.i(TAG,"REDIRECT- setIotUuid / url: " + url);
-        Log.i(TAG,"REDIRECT- setIotUuid / didRedirect: " + didRedirect);
+        //Log.i(TAG,"REDIRECT- setIotUuid / url: " + url);
+        //Log.i(TAG,"REDIRECT- setIotUuid / didRedirect: " + didRedirect);
         if(didRedirect) {
             url = HTTPS_ + url;
         } else {
             url = HTTP_ + url;
         }
         url += "/api/1/iotlink/uuid";
-        Log.i(TAG,"REDIRECT- setIotUuid / url: " + url);
+        //Log.i(TAG,"REDIRECT- setIotUuid / url: " + url);
         if (newName.equals(""))
             return false;
         Boolean flag = false;
@@ -1026,27 +1026,27 @@ public class NetworkUtil {
 
     public static String getCGFResultFromDevice(String baseUrl, DeviceVersion version) {
         String url = baseUrl;
-        Log.i(TAG,"REDIRECT- getCGFResultFromDevice / url: " + url);
+        //Log.i(TAG,"REDIRECT- getCGFResultFromDevice / url: " + url);
         if (url.startsWith("http")) {
             url = url.substring(url.indexOf(":"),url.length());
         }
-        Log.i(TAG,"REDIRECT- getCGFResultFromDevice / url: " + url);
+        //Log.i(TAG,"REDIRECT- getCGFResultFromDevice / url: " + url);
 
         switch (version) {
             case R1:
                 url = HTTP_ + url;
                 url += "/param_cfg_result.txt";
-                Log.i(TAG,"REDIRECT- getCGFResultFromDevice / R1 - url: " + url);
+                //Log.i(TAG,"REDIRECT- getCGFResultFromDevice / R1 - url: " + url);
                 break;
             case R2:
-                Log.i(TAG,"REDIRECT- getCGFResultFromDevice / R2 - didRedirect: " + didRedirect);
+                //Log.i(TAG,"REDIRECT- getCGFResultFromDevice / R2 - didRedirect: " + didRedirect);
                 if (didRedirect) {
                     url = HTTPS_ + url;
                 } else {
                     url = HTTP_ + url;
                 }
                 url += "/__SL_G_MCR";
-                Log.i(TAG,"REDIRECT- getCGFResultFromDevice / R2 - url: " + url);
+                //Log.i(TAG,"REDIRECT- getCGFResultFromDevice / R2 - url: " + url);
                 break;
             case UNKNOWN:
                 break;
@@ -1069,17 +1069,17 @@ public class NetworkUtil {
             HttpResponse response = client.execute(cfgResult);
             result = EntityUtils.toString(response.getEntity());
             if (result.equals("")) {
-                Log.w(TAG, "CFG result returned empty!");
+                //Log.w(TAG, "CFG result returned empty!");
                 mLogger.info("CFG result returned empty!");
                 result = "Timeout";
             } else {
-                Log.i(TAG, "CFG result returned: " + result);
+                //Log.i(TAG, "CFG result returned: " + result);
                 mLogger.info("CFG result returned: " + result);
             }
 
         } catch (Exception e) {
             e.printStackTrace();
-            Log.e(TAG, "Failed to get CFG result");
+            //Log.e(TAG, "Failed to get CFG result");
             mLogger.info("Failed to get CFG result");
             result = "Timeout";
         }
@@ -1089,11 +1089,11 @@ public class NetworkUtil {
 
     public static String getCGFResultFromCloud(String baseUrl, DeviceVersion version) {
         String url = baseUrl;
-        Log.i(TAG,"REDIRECT- getCGFResultFromCloud / url: " + url);
+        //Log.i(TAG,"REDIRECT- getCGFResultFromCloud / url: " + url);
         if (url.startsWith("http")) {
             url = url.substring(url.indexOf(":"),url.length());
         }
-        Log.i(TAG,"REDIRECT- getCGFResultFromCloud / url: " + url);
+        //Log.i(TAG,"REDIRECT- getCGFResultFromCloud / url: " + url);
         if(didRedirect) {
             url = HTTPS_ + url;
         } else {
@@ -1119,17 +1119,17 @@ public class NetworkUtil {
             HttpResponse response = client.execute(cfgResult);
             result = EntityUtils.toString(response.getEntity());
             if (result.equals("")) {
-                Log.w(TAG, "CFG result returned empty!");
+                //Log.w(TAG, "CFG result returned empty!");
                 mLogger.info("CFG result returned empty!");
                 result = "Timeout";
             } else {
-                Log.i(TAG, "CFG result returned: " + result);
+                //Log.i(TAG, "CFG result returned: " + result);
                 mLogger.info("CFG result returned: " + result);
             }
 
         } catch (Exception e) {
             e.printStackTrace();
-            Log.e(TAG, "Failed to get CFG result");
+            //Log.e(TAG, "Failed to get CFG result");
             mLogger.info("Failed to get CFG result");
             result = "Timeout";
         }
@@ -1139,7 +1139,7 @@ public class NetworkUtil {
 
     public static Boolean loginToCloud(String baseUrl, String email, String pswd) {
         String url = baseUrl;
-        Log.i(TAG,"REDIRECT- loginToCloud / url: " + url);
+        //Log.i(TAG,"REDIRECT- loginToCloud / url: " + url);
         mLogger.info("REDIRECT- loginToCloud / didRedirect: " + didRedirect);
         if(didRedirect) {
             url = HTTPS_ + url;
@@ -1147,7 +1147,7 @@ public class NetworkUtil {
             url = HTTPS_ + url;
         }
         url += "/api/login";
-        Log.i(TAG,"REDIRECT- loginToCloud / url: " + url);
+        //Log.i(TAG,"REDIRECT- loginToCloud / url: " + url);
         mLogger.info("*AP* loginToCloud: " + url + " " + email + pswd);
         if (email.equals("") || pswd.equals(""))
             return false;
@@ -1187,7 +1187,7 @@ public class NetworkUtil {
 
     public static Boolean registerWithCloud(String baseUrl, String fullname, String phone, String email, String pswd, String confirm) {
         String url = baseUrl;
-        Log.i(TAG,"REDIRECT- RegisterWithCloud / url: " + url);
+        //Log.i(TAG,"REDIRECT- RegisterWithCloud / url: " + url);
         mLogger.info("REDIRECT- registerWithCloud / didRedirect: " + didRedirect);
         if(didRedirect) {
             url = HTTPS_ + url;
@@ -1195,7 +1195,7 @@ public class NetworkUtil {
             url = HTTPS_ + url;
         }
         url += "/api/register";
-        Log.i(TAG,"REDIRECT- registerWithCloud / url: " + url);
+        //Log.i(TAG,"REDIRECT- registerWithCloud / url: " + url);
         mLogger.info("*AP* registerWithCloud: " + url + " " + email + pswd);
         if (email.equals("") || pswd.equals(""))
             return false;
@@ -1294,20 +1294,20 @@ public class NetworkUtil {
 
     public static Device_Type_Enum slDeviceOTAAndType(String baseUrl) {
 
-        Log.i(TAG, "slDeviceOTAAndType started");
+        //Log.i(TAG, "slDeviceOTAAndType started");
 
 //		String url = baseUrl + "/device?appid";
         String url = baseUrl + "/device?appname";
-        Log.i(TAG, "slDeviceOTAAndType url: " + url);
-        Log.i(TAG, "REDIRECT- slDeviceOTAAndType / url: " + url);
+        //Log.i(TAG, "slDeviceOTAAndType url: " + url);
+        //Log.i(TAG, "REDIRECT- slDeviceOTAAndType / url: " + url);
 
-        Log.i(TAG, "REDIRECT- slDeviceOTAAndType / didRedirect: " + didRedirect);
+        //Log.i(TAG, "REDIRECT- slDeviceOTAAndType / didRedirect: " + didRedirect);
         if (didRedirect) {
             url = HTTPS_ + url;
         } else {
             url = HTTP_ + url;
         }
-        Log.i(TAG, "REDIRECT- slDeviceOTAAndType / url: " + url);
+        //Log.i(TAG, "REDIRECT- slDeviceOTAAndType / url: " + url);
 
         Device_Type_Enum deviceTypeEnum = null;
 
@@ -1322,7 +1322,7 @@ public class NetworkUtil {
             HttpGet httpGet = new HttpGet(url);
             HttpResponse httpResponse = httpClient.execute(httpGet);
             String stringResponse = EntityUtils.toString(httpResponse.getEntity());
-            Log.i(TAG, "slDeviceOTAAndType response: " + stringResponse);
+            //Log.i(TAG, "slDeviceOTAAndType response: " + stringResponse);
 
             if (stringResponse.equals("appname=out_of_box_fs") ) {
                 deviceTypeEnum = Device_Type_Enum.F_Device;
@@ -1341,12 +1341,12 @@ public class NetworkUtil {
             }
         } catch (ClientProtocolException e) {
             e.printStackTrace();
-            Log.e(TAG, e.getMessage());
+            //Log.e(TAG, e.getMessage());
         } catch (IOException e) {
             e.printStackTrace();
-            Log.e(TAG, e.getMessage());
+            //Log.e(TAG, e.getMessage());
         }
-        Log.i(TAG, "slDeviceOTAAndType result: " + deviceTypeEnum);
+        //Log.i(TAG, "slDeviceOTAAndType result: " + deviceTypeEnum);
         return deviceTypeEnum;
 
     }
@@ -1355,15 +1355,15 @@ public class NetworkUtil {
 
         String url = baseUrl;
         url += "/__SL_G_PIP";
-        Log.i(TAG, "REDIRECT- getDeviceIp / url: " + url);
-        Log.i(TAG, "REDIRECT- getDeviceIp / didRedirect: " + didRedirect);
+        //Log.i(TAG, "REDIRECT- getDeviceIp / url: " + url);
+        //Log.i(TAG, "REDIRECT- getDeviceIp / didRedirect: " + didRedirect);
         if (didRedirect) {
             url = HTTPS_ + url;
         } else {
             url = HTTP_ + url;
         }
 
-        Log.i(TAG, "REDIRECT- getDeviceIp / url: " + url);
+        //Log.i(TAG, "REDIRECT- getDeviceIp / url: " + url);
         String stringResponse = "";
         try {
             HttpParams httpParams = new BasicHttpParams();
@@ -1375,7 +1375,7 @@ public class NetworkUtil {
             HttpGet httpGet = new HttpGet(url);
             HttpResponse httpResponse = httpClient.execute(httpGet);
             stringResponse = EntityUtils.toString(httpResponse.getEntity());
-            Log.i(TAG, "getDeviceIp result: " + stringResponse);
+            //Log.i(TAG, "getDeviceIp result: " + stringResponse);
 
         } catch (ClientProtocolException e) {
             e.printStackTrace();

@@ -47,7 +47,7 @@ public class TimerReceiver extends Service {
     @Override
     public void onCreate() {
         super.onCreate();
-        Log.i(TAG, "Starting  delay timer...");
+        //Log.i(TAG, "Starting  delay timer...");
         cdt = new CountDownTimer(10000, 1000) {
             @Override
             public void onTick(long millisUntilFinished) {
@@ -57,7 +57,7 @@ public class TimerReceiver extends Service {
 
             @Override
             public void onFinish() {
-                Log.i(TAG, "Delay Timer finished");
+                //Log.i(TAG, "Delay Timer finished");
                 cdt.start();
             }
         };
@@ -69,7 +69,7 @@ public class TimerReceiver extends Service {
     public void onDestroy() {
 
         cdt.cancel();
-        Log.i(TAG, "Timer cancelled");
+        //Log.i(TAG, "Timer cancelled");
         super.onDestroy();
     }
 

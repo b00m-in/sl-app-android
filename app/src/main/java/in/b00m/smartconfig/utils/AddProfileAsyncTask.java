@@ -55,14 +55,14 @@ public class AddProfileAsyncTask extends AsyncTask<ArrayList<Object>, Void, Bool
 
 	@Override
 	protected void onPostExecute(Boolean result) {
-		Log.d(TAG,"AddProfileAsyncTask onPost started");
+		//Log.d(TAG,"AddProfileAsyncTask onPost started");
 		mAddProfileAsyncTaskCallback.addProfileCompleted();
 		super.onPostExecute(result);
 	}
 
 	@Override
 	protected Boolean doInBackground(ArrayList<Object>... params) {
-		Log.d(TAG,"AddProfileAsyncTask doInBackground started");
+		//Log.d(TAG,"AddProfileAsyncTask doInBackground started");
 
 		ArrayList<Object> list = params[0];
 		String deviceName = (String)list.get(0);
@@ -74,7 +74,7 @@ public class AddProfileAsyncTask extends AsyncTask<ArrayList<Object>, Void, Bool
                 String configurer = (String)list.get(6);
                 String coords = (String)list.get(7);
 
-		Log.d(TAG,"AddProfileAsyncTask doInBackground " + ssidToAdd + " " + ssidToAddSecurityKey);
+		//Log.d(TAG,"AddProfileAsyncTask doInBackground " + ssidToAdd + " " + ssidToAddSecurityKey);
 		try {
 			mDeviceVersion = NetworkUtil.getSLVersion(Constants.BASE_URL_NO_HTTP);
 		} catch (IOException e) {
@@ -83,7 +83,7 @@ public class AddProfileAsyncTask extends AsyncTask<ArrayList<Object>, Void, Bool
 			e.printStackTrace();
             mDeviceVersion = DeviceVersion.UNKNOWN;
 		}
-		Log.i(TAG,"SL device version: " + mDeviceName);
+		//Log.i(TAG,"SL device version: " + mDeviceName);
 
 		if (mDeviceVersion == DeviceVersion.UNKNOWN||mDeviceVersion == null) {
 			mAddProfileAsyncTaskCallback.addProfileFailed("Failed to get version of the device");
@@ -120,7 +120,7 @@ public class AddProfileAsyncTask extends AsyncTask<ArrayList<Object>, Void, Bool
                         }
                 } catch (CertificateException e) {
                         e.printStackTrace();
-                        Log.i(TAG,"setOwner exception: " + e.toString());
+                        //Log.i(TAG,"setOwner exception: " + e.toString());
                 }
 
 		if ( !iotUuid.equals("") ) {
@@ -174,7 +174,7 @@ public class AddProfileAsyncTask extends AsyncTask<ArrayList<Object>, Void, Bool
 	}
 
 	private void print(String msg) {
-		Log.i(TAG, msg);
+		//Log.i(TAG, msg);
 		mAddProfileAsyncTaskCallback.addProfileMsg(msg);
 	}
 

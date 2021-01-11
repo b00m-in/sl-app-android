@@ -317,7 +317,7 @@ public class DeviceConfiguration extends Fragment {
 								}, true);
 							} else {
 								mLogger.info("Initial network is null - will not attempt to connect");
-								Log.i(TAG,"Initial network is null - will not attempt to connect");
+								//Log.i(TAG,"Initial network is null - will not attempt to connect");
 								showToastWithMessage("No initial network to connect to");
 							}
 					}
@@ -337,7 +337,7 @@ public class DeviceConfiguration extends Fragment {
 	public BroadcastReceiver scanFinishedReceiver = new BroadcastReceiver() {
 		@Override
 		public void onReceive(Context context, Intent intent) {
-			Log.i(TAG, "DeviceConfiguration scanFinishedReceiver, scanningnMDNS:" + scanningnMDNS);
+			//Log.i(TAG, "DeviceConfiguration scanFinishedReceiver, scanningnMDNS:" + scanningnMDNS);
 
 			if (!deviceFound) {
 				//check the list
@@ -349,7 +349,7 @@ public class DeviceConfiguration extends Fragment {
 						public void run() {
 							if (!deviceFound) {
 								scanningnMDNS = false;
-								Log.i(TAG, "DeviceConfiguration - scanFinishedReceiver, scanningnMDNS:" + scanningnMDNS);
+								//Log.i(TAG, "DeviceConfiguration - scanFinishedReceiver, scanningnMDNS:" + scanningnMDNS);
 								mLogger.info("*AP* DeviceConfiguration - scanFinishedReceiver");
 								mLogger.info("*AP* mDNS finished - requested SL device not found in local network as STA. Cfg verification retrieval will be executed by connecting to SL device as AP");
 								checkParams();
@@ -357,7 +357,7 @@ public class DeviceConfiguration extends Fragment {
 //								isSearching = false;
 								if (progressDialog != null && progressDialog.isShowing()) {
 									progressDialog.dismiss();
-									Log.i(TAG, "scanFinishedReceiver, deviceFound:true");
+									//Log.i(TAG, "scanFinishedReceiver, deviceFound:true");
 									mLogger.info("*AP* scanFinishedReceiver,SL deviceFound:true");
 									print("Found the requested device");
 									confirmResult(true);
@@ -380,7 +380,7 @@ public class DeviceConfiguration extends Fragment {
 	public BroadcastReceiver deviceFoundReceiver = new BroadcastReceiver() {
 		@Override
 		public void onReceive(Context context, Intent intent) {
-			Log.i(TAG, "DeviceConfiguration receive device found, scanningnMDNS:" + scanningnMDNS);
+			//Log.i(TAG, "DeviceConfiguration receive device found, scanningnMDNS:" + scanningnMDNS);
 			if (!scanningnMDNS)
 				return;
                         //isSearching = false;
@@ -388,11 +388,11 @@ public class DeviceConfiguration extends Fragment {
 			try {
 				String jsonString = intent.getExtras().getString("newDevice");
 				deviceJSON = new JSONObject(jsonString);
-				Log.w(TAG, "Detected a new device (jsonString: " + jsonString + ")");
+				//Log.w(TAG, "Detected a new device (jsonString: " + jsonString + ")");
 				mLogger.info("*AP* Detected a new SL device (jsonString: " + jsonString + ")");
 			} catch (Exception e) {
 				e.printStackTrace();
-				Log.e(TAG, "Failed to create JSON of device");
+				//Log.e(TAG, "Failed to create JSON of device");
 				mLogger.info("*AP* Failed to create JSON of SL device");
 			}
 			Boolean nameIsValid = false;
@@ -401,34 +401,34 @@ public class DeviceConfiguration extends Fragment {
 			try {
 				name = deviceJSON != null ? deviceJSON.getString("name") : null;
 				host = deviceJSON != null ? deviceJSON.getString("host") : null;
-				Log.w(TAG, "checking if " + name + " equals " + mDeviceName);
+				//Log.w(TAG, "checking if " + name + " equals " + mDeviceName);
 				mLogger.info("*AP* Checking if the SL device found is the correct SL device - does \"" + name + "\" equal \"" + mDeviceName + "\"");
 				if (name != null && name.equals(mDeviceName)) {
 					nameIsValid = true;
-					Log.w(TAG, "name is valid");
+					//Log.w(TAG, "name is valid");
 				}
 				else {
 					nameIsValid = false;
-					Log.w(TAG, "name is not valid");
+					//Log.w(TAG, "name is not valid");
 				}
 			} catch (Exception e) {
 				e.printStackTrace();
 			}
 			if (nameIsValid) {
-				Log.w(TAG, "set SL device as mDevice");
+				//Log.w(TAG, "set SL device as mDevice");
 				mDevice =  new Device(name, host);
 				if ((progressDialog != null && progressDialog.isShowing()) || isSearching) {
 					isSearching = false;
 					if (progressDialog != null && progressDialog.isShowing())
 					progressDialog.dismiss();
-					Log.i(TAG, "deviceFoundReceiver device found");
+					//Log.i(TAG, "deviceFoundReceiver device found");
 					print("Found the requested device");
 					((MainActivity) getActivity()).stopPing();
 					deviceFound = true;
 					scanningnMDNS = false;
 					confirmResult(true);
-					Log.i(TAG, "Found the device, stopping the MDNS discovery");
-					Log.w(TAG, "deviceFoundReceiver stop scanning mdns");
+					//Log.i(TAG, "Found the device, stopping the MDNS discovery");
+					//Log.w(TAG, "deviceFoundReceiver stop scanning mdns");
 					mLogger.info("Found the device, stopping M discovery");
 					mLogger.info("*AP* Name is valid - found the correct SL device, stopping M discovery + Ping");
 				}
@@ -459,7 +459,7 @@ public class DeviceConfiguration extends Fragment {
 		if (cgfTryNumber == Constants.ATTEMPTS_TO_GET_CGF_RESULTS) {
 			deviceFound = false;
 			if (viaWifi) {
-				Log.i(TAG, "getCFG - viaWifi = true - going to checkParams");
+				//Log.i(TAG, "getCFG - viaWifi = true - going to checkParams");
 				mLogger.info("*AP* Max attempts at cfg verification via SL device as STA reached, and passed parameter is true - starting attempts at verification via SL device as AP");
 				checkParams();
 			} else {
@@ -684,7 +684,7 @@ public class DeviceConfiguration extends Fragment {
             //Check to see if the starting network is null
             startingSSID = ((MainActivity)getActivity()).mStartingWifiNetwork;
             String connectedWifi = NetworkUtil.getConnectedSSID(getActivity());
-            Log.i(TAG,"StartingSSID: " + startingSSID);
+            //Log.i(TAG,"StartingSSID: " + startingSSID);
             if (startingSSID ==  null && connectedWifi== null ) {
                     mLogger.info("*AP* Showing \"no wifi activity\" dialog, because the starting network is null and we are not connected to any network now");
                     AlertDialog wifiDialog = new AlertDialog.Builder(getActivity()). //create a dialog
@@ -705,14 +705,14 @@ public class DeviceConfiguration extends Fragment {
                                     if (!wifiManager.isWifiEnabled())
                                             wifiManager.setWifiEnabled(true);
                                     initiateScan();
-                                    Log.e(TAG,"Scan running from Afterviews #3");
+                                    //Log.e(TAG,"Scan running from Afterviews #3");
                             }
                     }).create();
                     wifiDialog.show();
             }
             else {
                     initiateScan();
-                    Log.e(TAG,"Scan running from Afterviews #2");
+                    //Log.e(TAG,"Scan running from Afterviews #2");
             }
             tab_device_configuration_loader_layout.setOnTouchListener(new View.OnTouchListener() {
                     @SuppressLint("ClickableViewAccessibility")
@@ -856,7 +856,7 @@ public class DeviceConfiguration extends Fragment {
 		mLogger.info("*AP* Connected now to: " + "\"" + ssid + "\"" + ", and setting it as new starting SSID network");
 		((MainActivity)getActivity()).mStartingWifiNetwork = ssid;
 		initiateScan();
-		Log.e(TAG,"scanning running inside result #1");
+		//Log.e(TAG,"scanning running inside result #1");
 	}
 
 	/**
@@ -1059,7 +1059,7 @@ public class DeviceConfiguration extends Fragment {
 
 		} else {
 			mLogger.info("Initial network is null - will not attempt to connect");
-			Log.i(TAG,"Initial network is null - will not attempt to connect");
+			//Log.i(TAG,"Initial network is null - will not attempt to connect");
 			showToastWithMessage("No initial network to connect to");
 		}
                 if (moveToDevice) {
@@ -1135,7 +1135,7 @@ public class DeviceConfiguration extends Fragment {
 	 */
 	@UiThread
 	public void print(String string) {
-		Log.i(TAG, string);
+		//Log.i(TAG, string);
 		if( tab_device_configuration_loader_label != null) {
 			tab_device_configuration_loader_label.setText(string);
 		}
@@ -1238,7 +1238,7 @@ public class DeviceConfiguration extends Fragment {
 	void scanForDevices() {
 		deviceFound = false;
 		scanningnMDNS = true;
-		Log.i(TAG, "DeviceConfiguration - scanForDevices, scanningnMDNS:" + scanningnMDNS);
+		//Log.i(TAG, "DeviceConfiguration - scanForDevices, scanningnMDNS:" + scanningnMDNS);
 		final Handler handler = new Handler();
 		handler.postDelayed(new Runnable() {
 			@Override
@@ -1296,11 +1296,11 @@ public class DeviceConfiguration extends Fragment {
 			if (Build.VERSION.SDK_INT >= Build.VERSION_CODES.HONEYCOMB) {
 				new AddProfileAsyncTask(mAddProfileAsyncTaskCallback).executeOnExecutor(AsyncTask.THREAD_POOL_EXECUTOR, passing);
 				//print for testing
-				Log.e(TAG,"profile added #1");
+				//Log.e(TAG,"profile added #1");
 			} else {
 				new AddProfileAsyncTask(mAddProfileAsyncTaskCallback).execute(passing);
 				//print for testing
-				Log.e(TAG,"profile added #2");
+				//Log.e(TAG,"profile added #2");
 			}
 			if (tab_device_configuration_device_name_editText.hasFocus() || tab_device_configuration_password_check_editText.hasFocus() || tab_device_configuration_iot_uuid_name_editText.hasFocus()) {
 				InputMethodManager inputMethodManager = (InputMethodManager) getActivity().getSystemService(Activity.INPUT_METHOD_SERVICE);
@@ -1382,7 +1382,7 @@ public class DeviceConfiguration extends Fragment {
 						}
 					}
 				} catch (NullPointerException e) {
-					Log.e(TAG, "GetDeviceVersion, onPostExecute, ui was null");
+					//Log.e(TAG, "GetDeviceVersion, onPostExecute, ui was null");
 				}
 			}
 			else {
@@ -1390,7 +1390,7 @@ public class DeviceConfiguration extends Fragment {
 					tab_device_configuration_router_layout.setVisibility(View.GONE);
 					resetDeviceToConfigureView();
 				} catch (NullPointerException e) {
-					Log.e(TAG, "GetDeviceVersion, onPostExecute, ui was null");
+					//Log.e(TAG, "GetDeviceVersion, onPostExecute, ui was null");
 				}
 				((MainActivity)getActivity()).showSuccessDialog(Constants.DEVICE_LIST_FAILED_TO_GET_RESULTS, getString(R.string.pop_up_close), null, PopupType.Failure, null, null);
 			}
@@ -1559,7 +1559,7 @@ public class DeviceConfiguration extends Fragment {
 
 		@Override
 		protected void onPostExecute(String result) {
-			Log.i(TAG, "Cfg result from SL: " + result);
+			//Log.i(TAG, "Cfg result from SL: " + result);
 			mLogger.info("*AP* Cfg result text: " + result);
 			if (result != null) {
 				showLoaderWithText(false, "");
@@ -1573,7 +1573,7 @@ public class DeviceConfiguration extends Fragment {
 						SharedPreferences.Editor editor = sharedpreferences.edit();
 						editor.putString(Name, simplelinkDeviceIp);
 						editor.commit();
-						Log.i(TAG, "Entered IP into SP: " + mDevice.host);
+						//Log.i(TAG, "Entered IP into SP: " + mDevice.host);
 						mLogger.info("*AP* Entered IP into SP: " + mDevice.host);
 					} catch (NullPointerException e) {
 						e.printStackTrace();
@@ -1610,7 +1610,7 @@ public class DeviceConfiguration extends Fragment {
 			}
 			mLogger.info("*AP* Getting cfg result from SL device: " + baseUrl);
 			resultString = NetworkUtil.getCGFResultFromDevice(baseUrl, deviceVersion);
-			Log.i(TAG, "Getting cfg result from SL (" + resultString + ")");
+			//Log.i(TAG, "Getting cfg result from SL (" + resultString + ")");
 			mLogger.info("*AP* Got cfg result from SL device: " + resultString);
 			CFG_Result_Enum result_Enum = NetworkUtil.cfgEnumForResponse(resultString);
 			result = NetworkUtil.getErrorMsgForCFGResult(result_Enum);
@@ -1631,15 +1631,15 @@ public class DeviceConfiguration extends Fragment {
 		protected Device_Type_Enum doInBackground(String... params) {
 			Device_Type_Enum deviceTypeEnum = null;
 			try {
-				Log.i(TAG, "OTAAndType doInBackground");
+				//Log.i(TAG, "OTAAndType doInBackground");
 				String baseUrl = "://" + mDevice.host;
-				Log.i(TAG, "OTAAndType baseUrl: " + baseUrl);
+				//Log.i(TAG, "OTAAndType baseUrl: " + baseUrl);
 				try {
 					deviceTypeEnum = NetworkUtil.slDeviceOTAAndType(baseUrl);
 				} catch (Exception e) {
 					e.printStackTrace();
 				}
-				Log.i(TAG, "OTAAndType: " + deviceTypeEnum);
+				//Log.i(TAG, "OTAAndType: " + deviceTypeEnum);
 			} catch (NullPointerException e) {
 				e.printStackTrace();
 			}
@@ -1649,9 +1649,9 @@ public class DeviceConfiguration extends Fragment {
 		@Override
 		protected void onPostExecute(Device_Type_Enum deviceTypeEnum) {
 			super.onPostExecute(deviceTypeEnum);
-			Log.i(TAG, "OTAAndType onPost, result: " + deviceTypeEnum);
+			//Log.i(TAG, "OTAAndType onPost, result: " + deviceTypeEnum);
 			mainActivity.deviceTypeEnum = deviceTypeEnum;
-			Log.i(TAG,"OTAAndType set result to main: " + mainActivity.deviceTypeEnum);
+			//Log.i(TAG,"OTAAndType set result to main: " + mainActivity.deviceTypeEnum);
 			mainActivity.clearAllTabs();
 			if (startingSSID != null && startingSSID.equalsIgnoreCase(WifiNetworkUtils.getInstance(mainActivity).getConnectedSSID())) {
 				//refresh tabs in order to display extra tabs - and move to Devices tab
@@ -1839,12 +1839,12 @@ public class DeviceConfiguration extends Fragment {
 					progressDialog.dismiss();
 					if (!deviceFound) {
 						scanningnMDNS = false;
-						Log.i(TAG, "showProgressDialog - dismiss, scanningnMDNS:" + scanningnMDNS);
+						//Log.i(TAG, "showProgressDialog - dismiss, scanningnMDNS:" + scanningnMDNS);
 						mLogger.info("*AP* Requested SL device has not been found as a STA in the local network." +
 								" Cfg verification retrieval will be executed by connecting to SL device as AP");
 						checkParams();
 					} else {
-						Log.i(TAG, "showProgressDialog - dismiss, deviceFound:true");
+						//Log.i(TAG, "showProgressDialog - dismiss, deviceFound:true");
 						print("Found the requested device");
 						confirmResult(true);
 					}
@@ -1858,7 +1858,7 @@ public class DeviceConfiguration extends Fragment {
         @Override
         protected void onPostExecute(String ip) {
             super.onPostExecute(ip);
-            Log.i(TAG, "GetDeviceIP - OnPostExecute, ip: " + ip);
+            //Log.i(TAG, "GetDeviceIP - OnPostExecute, ip: " + ip);
             mLogger.info("*SC* GetDeviceIP - onPostExecute, ip: " + ip);
             if (!ip.equals("")) {
                 if (chosenWifiSSID != null) {
@@ -1871,7 +1871,7 @@ public class DeviceConfiguration extends Fragment {
 
         @Override
         protected String doInBackground(String... params) {
-            Log.i(TAG,"GetDeviceIP - DoInBackground");
+            //Log.i(TAG,"GetDeviceIP - DoInBackground");
             mLogger.info("*SC* GetDeviceIP - doInBackground");
             String deviceIp = "";
             deviceIp = NetworkUtil.getDeviceIp(Constants.BASE_URL_NO_HTTP);
@@ -1926,7 +1926,7 @@ public class DeviceConfiguration extends Fragment {
                     if (chosenWifiSSID.equalsIgnoreCase(network.SSID)) {
                         //get capabilities of current connection
                         String Capabilities = network.capabilities;
-                        Log.d(TAG, network.SSID + " capabilities : " + Capabilities);
+                        //Log.d(TAG, network.SSID + " capabilities : " + Capabilities);
                         if (Capabilities.contains("WPA2")) {
                             tab_device_configuration_start_button.setImageResource(R.drawable.start_configuration_button_off);
                             ssidToAddSecurityType = ssidToAddSecurityType.WPA2;
@@ -1934,9 +1934,9 @@ public class DeviceConfiguration extends Fragment {
                             ssidToAddPriority = "0";
                             mIsReady = false;
                             setToReady(mIsReady);
-                            Log.v(TAG, "+++++++++++++++++++++++++");
-                            Log.v(TAG, "++++++++++WPA2+++++++++++");
-                            Log.v(TAG, "+++++++++++++++++++++++++");
+                            //Log.v(TAG, "+++++++++++++++++++++++++");
+                            //Log.v(TAG, "++++++++++WPA2+++++++++++");
+                            //Log.v(TAG, "+++++++++++++++++++++++++");
                         } else if (Capabilities.contains("WPA")) {
                             tab_device_configuration_start_button.setImageResource(R.drawable.start_configuration_button_off);
                             ssidToAddSecurityType = ssidToAddSecurityType.WPA1;
@@ -1944,9 +1944,9 @@ public class DeviceConfiguration extends Fragment {
                             ssidToAddPriority = "0";
                             mIsReady = false;
                             setToReady(mIsReady);
-                            Log.v(TAG, "+++++++++++++++++++++++++");
-                            Log.v(TAG, "++++++++++WPA1+++++++++++");
-                            Log.v(TAG, "+++++++++++++++++++++++++");
+                            //Log.v(TAG, "+++++++++++++++++++++++++");
+                            //Log.v(TAG, "++++++++++WPA1+++++++++++");
+                            //Log.v(TAG, "+++++++++++++++++++++++++");
                             Toast.makeText(getActivity(), "WPA", Toast.LENGTH_LONG).show();
                         } else if (Capabilities.contains("WEP")) {
                             tab_device_configuration_start_button.setImageResource(R.drawable.start_configuration_button_off);
@@ -1955,14 +1955,14 @@ public class DeviceConfiguration extends Fragment {
                             ssidToAddPriority = "0";
                             mIsReady = false;
                             setToReady(mIsReady);
-                            Log.v(TAG, "+++++++++++++++++++++++++");
-                            Log.v(TAG, "+++++++++++WEP+++++++++++");
-                            Log.v(TAG, "+++++++++++++++++++++++++");
+                            //Log.v(TAG, "+++++++++++++++++++++++++");
+                            //Log.v(TAG, "+++++++++++WEP+++++++++++");
+                            //Log.v(TAG, "+++++++++++++++++++++++++");
 
                         } else if (Capabilities.contains("ESS")) {
-                            Log.v(TAG, "+++++++++++++++++++++++++");
-                            Log.v(TAG, "+++++++++++OPEN+++++++++++");
-                            Log.v(TAG, "+++++++++++++++++++++++++");
+                            //Log.v(TAG, "+++++++++++++++++++++++++");
+                            //Log.v(TAG, "+++++++++++OPEN+++++++++++");
+                            //Log.v(TAG, "+++++++++++++++++++++++++");
                             ssidToAdd = chosenWifiSSID;
                             ssidToAddPriority = "0";
                             ssidToAddSecurityKey = "";

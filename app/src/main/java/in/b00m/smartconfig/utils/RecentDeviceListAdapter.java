@@ -86,7 +86,7 @@ public class RecentDeviceListAdapter extends BaseAdapter {
 					recentDevices.add(new Device(recentDevicesArray.getJSONObject(i).getString("name"), recentDevicesArray.getJSONObject(i).getString("host")));
 				}
 				else {
-					Log.e(TAG, "Wont add the recent device cause it is already in devices data");
+					//Log.e(TAG, "Wont add the recent device cause it is already in devices data");
 				}
 			}
 		} catch (JSONException e) {

@@ -19,7 +19,7 @@ public class GattDescriptorWriteOperation extends GattOperation {
     }
     @Override
     public void execute(BluetoothGatt gatt) {
-        Log.d("GattDescWriteOperation", "Writing to " + mDescriptor);
+        //Log.d("GattDescWriteOperation", "Writing to " + mDescriptor);
         BluetoothGattDescriptor descriptor = gatt.getService(mService).getCharacteristic(mCharacteristic).getDescriptor(mDescriptor);
         gatt.writeDescriptor(descriptor);
     }

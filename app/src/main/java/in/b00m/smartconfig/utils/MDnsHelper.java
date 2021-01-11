@@ -93,7 +93,7 @@ public class MDnsHelper implements ServiceListener, ServiceTypeListener {
 			if (!multicastLock.isHeld()) {
 				multicastLock.acquire();
 			} else {
-				Log.i(TAG, "Muticast lock already held...");
+				//Log.i(TAG, "Muticast lock already held...");
 			}
 			try {
 				if (jmdns == null) {
@@ -101,13 +101,13 @@ public class MDnsHelper implements ServiceListener, ServiceTypeListener {
 					jmdns.addServiceTypeListener(this);
 				}
 
-				Log.w(TAG, "Starting MDNS discovery");
+				//Log.w(TAG, "Starting MDNS discovery");
 			} catch (IOException e) {
-				Log.e(TAG, e.getMessage());
+				//Log.e(TAG, e.getMessage());
 			} finally {
 				if (jmdns != null) {
 					isDiscovering = true;
-					Log.i(TAG, "discovering services");
+					//Log.i(TAG, "discovering services");
 				}
 			}
 		}
@@ -124,7 +124,7 @@ public class MDnsHelper implements ServiceListener, ServiceTypeListener {
 			if (multicastLock.isHeld()) {
 				multicastLock.release();
 			} else {
-				Log.i(TAG, "Multicast lock already released");
+				//Log.i(TAG, "Multicast lock already released");
 			}
 			jmdns.closeState();
 			jmdns.cancelState();
@@ -142,7 +142,7 @@ public class MDnsHelper implements ServiceListener, ServiceTypeListener {
 			} catch (InterruptedException e) {
 			}
 			isDiscovering = false;
-			Log.w(TAG, "MDNS discovery stopped");
+			//Log.w(TAG, "MDNS discovery stopped");
 
 		}
 	}
@@ -151,7 +151,7 @@ public class MDnsHelper implements ServiceListener, ServiceTypeListener {
 	public void restartDiscovery() {
 		synchronized(this) {
 
-			Log.w(TAG, "restartDiscovery");
+			//Log.w(TAG, "restartDiscovery");
 			try {
 				if (jmdns != null) {
 					jmdns.closeState();
@@ -170,28 +170,28 @@ public class MDnsHelper implements ServiceListener, ServiceTypeListener {
 					//jmdns = JmDNS.create(deviceIpAddress, "SmartConfig");
 					jmdns = new JmDNSImpl(deviceIpAddress, "SmartConfig");
 					jmdns.addServiceTypeListener(this);
-					Log.w(TAG, "reStarting MDNS discovery");
+					//Log.w(TAG, "reStarting MDNS discovery");
 				}
 			} catch (Exception e) {
-				Log.e(TAG, e.getMessage());
+				//Log.e(TAG, e.getMessage());
 			}
 		}
 	}
 
 	@Override
 	public void serviceAdded(ServiceEvent service) {
-		Log.i(TAG, "serviceAdded: " + service + " Nice String:" + service.getInfo().getNiceTextString());
+		//Log.i(TAG, "serviceAdded: " + service + " Nice String:" + service.getInfo().getNiceTextString());
 
 	}
 
 	@Override
 	public void serviceRemoved(ServiceEvent service) {
-		Log.i(TAG, "serviceRemoved: " + service);
+		//Log.i(TAG, "serviceRemoved: " + service);
 	}
 
 	@Override
 	public void serviceResolved(ServiceEvent service) {
-		Log.i(TAG, "serviceResolved " + service);
+		//Log.i(TAG, "serviceResolved " + service);
 
 		if (service.getInfo().getNiceTextString().contains(SMARTCONFIG_IDENTIFIER)){
 			JSONObject deviceJSON = new JSONObject();
@@ -199,7 +199,7 @@ public class MDnsHelper implements ServiceListener, ServiceTypeListener {
 				deviceJSON.put("name", service.getName());
 				deviceJSON.put("host", service.getInfo().getHostAddresses()[0]);
 				deviceJSON.put("age", 0);
-				Log.i(TAG, "Publishing device found to application,  name: " + service.getName());
+				//Log.i(TAG, "Publishing device found to application,  name: " + service.getName());
 				callback.onDeviceResolved(deviceJSON);
 			} catch (JSONException e) {
 				e.printStackTrace();
@@ -219,14 +219,14 @@ public class MDnsHelper implements ServiceListener, ServiceTypeListener {
 			result = InetAddress.getByAddress(byteaddr);
 		} catch (UnknownHostException e) {
 			e.printStackTrace();
-			Log.e(TAG, "getDeviceIpAddress Error: " + e.getMessage());
+			//Log.e(TAG, "getDeviceIpAddress Error: " + e.getMessage());
 		}
 		return result;
 	}
 
 	@Override
 	public void serviceTypeAdded(ServiceEvent event) {
-		Log.i(TAG, "serviceTypeAdded: " + event);
+		//Log.i(TAG, "serviceTypeAdded: " + event);
 		if (event.getType().contains(SERVICE_TYPE)) {
 			jmdns.addServiceListener(event.getType(), this);
 		}
@@ -234,6 +234,6 @@ public class MDnsHelper implements ServiceListener, ServiceTypeListener {
 
 	@Override
 	public void subTypeForServiceTypeAdded(ServiceEvent event) {
-		Log.i(TAG, "subTypeForServiceTypeAdded: " + event);
+		//Log.i(TAG, "subTypeForServiceTypeAdded: " + event);
 	}
 }
