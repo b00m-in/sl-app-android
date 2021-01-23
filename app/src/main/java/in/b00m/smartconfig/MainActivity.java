@@ -316,7 +316,7 @@ public class MainActivity extends FragmentActivity {
         sharedpreferences = this.getSharedPreferences(mypreference,Context.MODE_PRIVATE);
         SharedPreferences.Editor editor = sharedpreferences.edit();
         if (Build.VERSION.SDK_INT >= Build.VERSION_CODES.M) {
-            if(this.checkSelfPermission(Manifest.permission.ACCESS_COARSE_LOCATION)!= PackageManager.PERMISSION_GRANTED) {
+            if(this.checkSelfPermission(Manifest.permission.ACCESS_COARSE_LOCATION)!= PackageManager.PERMISSION_GRANTED && this.checkSelfPermission(Manifest.permission.ACCESS_FINE_LOCATION) != PackageManager.PERMISSION_GRANTED) {
                 final AlertDialog.Builder builder = new AlertDialog.Builder(this);
                 builder.setTitle("this app needs location access");
                 builder.setMessage("please grant location access so this app can detect beacons.");
@@ -324,6 +324,7 @@ public class MainActivity extends FragmentActivity {
                 builder.setOnDismissListener(new DialogInterface.OnDismissListener() {
                     @Override
                     public void onDismiss(DialogInterface dialogInterface) {
+                        requestPermissions(new String[]{Manifest.permission.ACCESS_FINE_LOCATION}, Constants.PERMISSION_REQUEST_FINE_LOCATION);
                         requestPermissions(new String[]{Manifest.permission.ACCESS_COARSE_LOCATION}, Constants.PERMISSION_REQUEST_COARSE_LOCATION);
                     }
                 });
@@ -1126,6 +1127,7 @@ public class MainActivity extends FragmentActivity {
     @Background
 
     public void scanForDevices() {
+        //Log.i(TAG, "scanForDevices start");
         startPing();
         //killMDNSBackgroundScan responsible to disable mdns scans when the app is in background (solving cpu problem)
         if (!killMDNSBackgroundScan) {
@@ -1209,6 +1211,7 @@ public class MainActivity extends FragmentActivity {
                 //Log.i(TAG, "already mDNS discovery");
             }
         }
+        //Log.i(TAG, "scanForDevices end");
     }
 
     /**
@@ -1622,6 +1625,23 @@ public class MainActivity extends FragmentActivity {
                                            String permissions[],
                                            int[] grantResults) {
         switch (requestCode) {
+            case Constants.PERMISSION_REQUEST_FINE_LOCATION: {
+                if (this.checkSelfPermission(Manifest.permission.ACCESS_FINE_LOCATION) == PackageManager.PERMISSION_GRANTED) {
+                    //Log.d(TAG, "fine location permission granted");
+                } else {
+                    final AlertDialog.Builder builder = new AlertDialog.Builder(this);
+                    builder.setTitle("Functionality limited");
+                    builder.setMessage("location access has not been granted, this app will not be able active Ble.");
+                    builder.setPositiveButton(android.R.string.ok, null);
+                    builder.setOnDismissListener(new DialogInterface.OnDismissListener() {
+                        @Override
+                        public void onDismiss(DialogInterface dialog) {
+                        }
+                    });
+                    builder.show();
+                }
+                return;
+            }
             case Constants.PERMISSION_REQUEST_COARSE_LOCATION: {
                 if (this.checkSelfPermission(Manifest.permission.ACCESS_COARSE_LOCATION) == PackageManager.PERMISSION_GRANTED) {
                     //Log.d(TAG, "coarse location permission granted");
@@ -1641,7 +1661,7 @@ public class MainActivity extends FragmentActivity {
             }
             case Constants.PERMISSION_REQUEST_STORAGE: {
                 if (this.checkSelfPermission(Manifest.permission.WRITE_EXTERNAL_STORAGE) == PackageManager.PERMISSION_GRANTED) {
-                    //Log.d(TAG, "coarse location permission granted");
+                    //Log.d(TAG, "storage permission granted");
                 } else {
                     final AlertDialog.Builder builder = new AlertDialog.Builder(this);
                     builder.setTitle("Functionality limited");

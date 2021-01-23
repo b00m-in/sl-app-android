@@ -60,12 +60,15 @@
                     android:layout_alignParentLeft="true"
                     android:layout_centerVertical="true"
                     android:layout_marginLeft="5dp"
-                    android:layout_toLeftOf="@+id/tab_device_configuration_device_to_configure_question_button"
+                    android:layout_toLeftOf="@+id/lan_tab_ssid_textview"
                     android:maxLines="1"
                     android:textStyle="bold"
                     android:text="SSID :"
                     android:textAppearance="?android:attr/textAppearanceSmall"
                     android:textSize="16sp" />
+                    <!--
+                    android:layout_toLeftOf="@+id/tab_device_configuration_device_to_configure_question_button"
+                    -->
                 <View
                     android:layout_width="match_parent"
                     android:layout_height="1dp"

@@ -111,9 +111,9 @@
                     android:textColor="@android:color/white"
                     android:textAppearance="?android:attr/textAppearanceSmall"
                     android:textSize="16sp"
-                    android:layout_below="@+id/tab_lan_cloud_label"
-                    android:layout_alignLeft="@+id/tab_lan_cloud_label"
-                    android:layout_alignStart="@+id/tab_lan_cloud_label" />
+                    android:layout_below="@+id/lan_tab_ssid_textview"
+                    android:layout_alignLeft="@+id/tab_device_configuration_router_label"
+                    android:layout_alignStart="@+id/tab_device_configuration_router_label" />
 
 
                 <TextView

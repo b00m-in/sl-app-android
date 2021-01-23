@@ -33,7 +33,7 @@
         android:layout_width="match_parent"
         android:layout_height="wrap_content"
         android:paddingTop="20dp"
-        android:layout_below="@+id/tab_device_configuration_sc_layout"
+        android:layout_below="@+id/tab_lan_headline_layout"
         android:layout_centerHorizontal="true"
         android:layout_marginTop="30dp">
 

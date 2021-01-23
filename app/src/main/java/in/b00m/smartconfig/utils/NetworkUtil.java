@@ -1392,8 +1392,11 @@ public class NetworkUtil {
             KeyStore trustStore = KeyStore.getInstance(KeyStore.getDefaultType());
             trustStore.load(null, null);
             caInput = context.getResources().openRawResource(R.raw.b00m_trusted_ca_cert);
-            Certificate ca = CertificateFactory.getInstance("X.509").generateCertificate(caInput);
-            trustStore.setCertificateEntry("DSTRootCAX3"/*"dummyrootcacert"*/, ca);
+            X509Certificate ca = (X509Certificate)CertificateFactory.getInstance("X.509").generateCertificate(caInput);
+            String alias = ca.getIssuerX500Principal().getName();
+            //Log.i(TAG, "principal: " + alias);
+            //trustStore.setCertificateEntry("DSTRootCAX3"/*"dummyrootcacert"*/, ca);
+            trustStore.setCertificateEntry(alias/*"dummyrootcacert"*/, ca);
 
             // Create a TrustManager that trusts the Certificate in our KeyStore
             String tmfAlgorithm = TrustManagerFactory.getDefaultAlgorithm();
@@ -1420,9 +1423,10 @@ public class NetworkUtil {
             HttpConnectionParams.setConnectionTimeout(params, 5000);
             HttpConnectionParams.setSoTimeout(params, 25000);
             HttpClient client = new DefaultHttpClient(ccm, params);
-        return client;
+            return client;
         } catch (Exception e) {
-        return new DefaultHttpClient();
+            e.printStackTrace();
+            return new DefaultHttpClient();
         }
     }
 }

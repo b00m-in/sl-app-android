@@ -3,12 +3,12 @@ apply plugin: 'com.android.application'
 
 android {
 
-    compileSdkVersion 26
-    buildToolsVersion '28.0.3'
+    compileSdkVersion 29
+    buildToolsVersion '29.0.3'
     defaultConfig {
         applicationId "in.b00m.smartconfig"
         minSdkVersion 21
-        targetSdkVersion 26
+        targetSdkVersion 29
 
         javaCompileOptions {
             annotationProcessorOptions {
@@ -16,21 +16,44 @@ android {
             }
         }
     }
+    signingConfigs {
+        release {
+            storeFile file(RELEASE_STORE_FILE)
+            storePassword RELEASE_STORE_PASSWORD
+            keyAlias RELEASE_KEY_ALIAS
+            keyPassword RELEASE_KEY_PASSWORD
+        }
+    }
+    compileOptions {
+        sourceCompatibility JavaVersion.VERSION_1_8
+        targetCompatibility JavaVersion.VERSION_1_8
+    }
+    buildTypes {
+        release {
+	    signingConfig signingConfigs.release
+            minifyEnabled false
+            //runProguard false
+            //proguardFile getDefaultProguardFile('proguard-android.txt')
+        }
+    }
 }
 
 dependencies {
-    implementation 'com.android.support:design:26.1.0'
+    //implementation 'com.android.support:design:26.1.0'
     implementation 'org.slf4j:slf4j-api:1.7.25'
     implementation 'com.github.tony19:logback-android:1.1.1-11'
     implementation 'com.android.support:appcompat-v7:26.1.0'
-    implementation 'com.android.support:support-v4:26.1.0'
+    //implementation 'com.android.support:support-v4:26.1.0'
+    implementation 'com.android.support:support-v4:28.0.0'
     implementation 'com.android.support:percent:26.1.0'
-    annotationProcessor "org.androidannotations:androidannotations:4.3.1"
-    implementation 'org.androidannotations:androidannotations-api:4.3.1'
+    annotationProcessor "org.androidannotations:androidannotations:4.8.0"
+    implementation 'org.androidannotations:androidannotations-api:4.8.0'
+    //implementation 'com.android.support:support-annotations:28.0.0'
     implementation 'fr.avianey.com.viewpagerindicator:library:2.4.1@aar'
     implementation files('libs/jmdns-3.4.2-r353-1.jar')
     implementation files('libs/jsoup-1.8.1.jar')
     implementation files('libs/smartconfiglib2.jar')
     implementation files('libs/apache-httpcomponents-httpcore.jar')
     implementation files('libs/httpclient-4.0.3.jar')
+    implementation 'commons-logging:commons-logging-api:1.1'
 }
