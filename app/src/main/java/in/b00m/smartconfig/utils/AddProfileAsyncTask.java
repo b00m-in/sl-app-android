@@ -55,14 +55,14 @@ public class AddProfileAsyncTask extends AsyncTask<ArrayList<Object>, Void, Bool
 
 	@Override
 	protected void onPostExecute(Boolean result) {
-		//Log.d(TAG,"AddProfileAsyncTask onPost started");
+		////Log.d(TAG,"AddProfileAsyncTask onPost started");
 		mAddProfileAsyncTaskCallback.addProfileCompleted();
 		super.onPostExecute(result);
 	}
 
 	@Override
 	protected Boolean doInBackground(ArrayList<Object>... params) {
-		//Log.d(TAG,"AddProfileAsyncTask doInBackground started");
+		////Log.d(TAG,"AddProfileAsyncTask doInBackground started");
 
 		ArrayList<Object> list = params[0];
 		String deviceName = (String)list.get(0);
@@ -79,11 +79,13 @@ public class AddProfileAsyncTask extends AsyncTask<ArrayList<Object>, Void, Bool
 			mDeviceVersion = NetworkUtil.getSLVersion(Constants.BASE_URL_NO_HTTP);
 		} catch (IOException e) {
 			e.printStackTrace();
+                        //Log.e(TAG, "AddProfile getSLVersion exception: " + e.toString());
 		} catch (URISyntaxException e) {
 			e.printStackTrace();
-            mDeviceVersion = DeviceVersion.UNKNOWN;
+                        //Log.e(TAG, "AddProfile getSLVersion exception: " + e.toString());
+                        mDeviceVersion = DeviceVersion.UNKNOWN;
 		}
-		//Log.i(TAG,"SL device version: " + mDeviceName);
+		////Log.i(TAG,"SL device version: " + mDeviceName);
 
 		if (mDeviceVersion == DeviceVersion.UNKNOWN||mDeviceVersion == null) {
 			mAddProfileAsyncTaskCallback.addProfileFailed("Failed to get version of the device");
@@ -105,6 +107,7 @@ public class AddProfileAsyncTask extends AsyncTask<ArrayList<Object>, Void, Bool
                             print("Set Date " + dateTime);
                         }
                 } catch (CertificateException e) {
+                        //Log.e(TAG, "AddProfile exception: " + e.toString());
                         e.printStackTrace();
                 }
 
@@ -120,7 +123,7 @@ public class AddProfileAsyncTask extends AsyncTask<ArrayList<Object>, Void, Bool
                         }
                 } catch (CertificateException e) {
                         e.printStackTrace();
-                        //Log.i(TAG,"setOwner exception: " + e.toString());
+                        //Log.e(TAG,"setOwner exception: " + e.toString());
                 }
 
 		if ( !iotUuid.equals("") ) {
@@ -146,7 +149,7 @@ public class AddProfileAsyncTask extends AsyncTask<ArrayList<Object>, Void, Bool
                             return false;
                         }
                     } catch (CertificateException e) {
-				e.printStackTrace();
+                            e.printStackTrace();
                     }
 		}
 		else {     
@@ -165,16 +168,17 @@ public class AddProfileAsyncTask extends AsyncTask<ArrayList<Object>, Void, Bool
 
 		print("Starting configuration verification");
 		try {
-			NetworkUtil.moveStateMachineAfterProfileAddition(Constants.BASE_URL_NO_HTTP, ssidToAdd, mDeviceVersion);
+                    NetworkUtil.moveStateMachineAfterProfileAddition(Constants.BASE_URL_NO_HTTP, ssidToAdd, mDeviceVersion);
 		} catch (CertificateException e) {
-			e.printStackTrace();
+                    //Log.e(TAG, "moveStateMachineAfterProfileAddition exception: " + e.toString());
+                    e.printStackTrace();
 		}
 
 		return true;
 	}
 
 	private void print(String msg) {
-		//Log.i(TAG, msg);
+		////Log.i(TAG, msg);
 		mAddProfileAsyncTaskCallback.addProfileMsg(msg);
 	}
 

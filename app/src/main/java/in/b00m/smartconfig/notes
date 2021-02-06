@@ -1,0 +1,4 @@
+DeviceConfiguration: 
+
+	@OnActivityResult(Constants.WIFI_SETTINGS_INTENT_RESULTS)
+	void onSettingsResult(int resultCode, Intent returnIntent) {

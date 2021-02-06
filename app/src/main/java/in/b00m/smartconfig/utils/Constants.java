@@ -103,7 +103,7 @@ public interface Constants {
 	String DEVICE_LIST_FAILED_TO_GET_RESULTS = 			"Application cannot configure the selected device. Either you have selected a non-SimpleLink device or  you have selected a SimpleLink device which supports only legacy provisioning sequence. Please choose another SimpleLink device";
 	String DEVICE_LIST_FAILED_TO_RESCAN = 				"Failed to perform rescan on device";
 	String DEVICE_LIST_MUST_SUPPLY_PASSWORD = 			"You must supply password for this network";
-	String DEVICE_LIST_MUST_LOGIN = 				"You must login or register first";
+	String DEVICE_LIST_MUST_LOGIN = 				"You must login/register first under the Setting tab";
 	String DEVICE_LIST_MUST_SUPPLY_SSID = 				"You must choose a legit network";
 	String DEVICE_LIST_FAILED_ADDING_PROFILE = 			"Failed adding the profile";
 	String DEVICE_LIST_FAILED_CONFIRMATION_VIA_DEVICE = "Failed confirmation via device";

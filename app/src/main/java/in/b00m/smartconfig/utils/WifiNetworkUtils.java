@@ -47,9 +47,12 @@ import android.content.Context;
 import android.content.Intent;
 import android.content.IntentFilter;
 import android.net.ConnectivityManager;
+import android.net.LinkProperties;
 import android.net.Network;
+import android.net.NetworkCapabilities;
 import android.net.NetworkInfo;
 import android.net.NetworkInfo.State;
+import android.net.NetworkRequest;
 import android.net.wifi.ScanResult;
 import android.net.wifi.WifiConfiguration;
 import android.net.wifi.WifiInfo;
@@ -72,20 +75,22 @@ public class WifiNetworkUtils {
 	private Boolean mConnectAfterDisconnected = false;
 	private WifiManager wifiManager;
 	private BitbiteNetworkUtilsCallback mTempBitbiteNetworkUtilsCallback;
+        private ConnectivityManager.NetworkCallback mNetworkCallback;
 	private Logger mLogger;
 	private ConnectivityManager mConnectivityManager;
+        protected Network mNetwork;
 	private Boolean isInitial3GEnabled;
 
 	public static WifiNetworkUtils getInstance(Context context) {
-		if (instance.mContext == null) {
-			instance.mContext = context;
-			instance.wifiManager = (WifiManager) instance.mContext.getSystemService(Context.WIFI_SERVICE);
-			instance.mLogger = LoggerFactory.getLogger(WifiNetworkUtils.class);
-			instance.mConnectivityManager = (ConnectivityManager)instance.mContext.getSystemService(Context.CONNECTIVITY_SERVICE);
-			instance.isInitial3GEnabled = isLollipopAndUp() ? instance.isMobileDataEnabledLollipop() : instance.isMobileDataEnabled();
-		}
-		
-		return instance; 
+            if (instance.mContext == null) {
+                instance.mContext = context;
+                instance.wifiManager = (WifiManager) instance.mContext.getSystemService(Context.WIFI_SERVICE);
+                instance.mLogger = LoggerFactory.getLogger(WifiNetworkUtils.class);
+                instance.mConnectivityManager = (ConnectivityManager)instance.mContext.getSystemService(Context.CONNECTIVITY_SERVICE);
+                instance.isInitial3GEnabled = isLollipopAndUp() ? instance.isMobileDataEnabledLollipop() : instance.isMobileDataEnabled();
+            }
+            
+            return instance; 
 	}
 
 	public void onResume() {
@@ -117,13 +122,34 @@ public class WifiNetworkUtils {
 		}
 		return networkName;
 	}
+
+        public Network getCurrentNetwork() {
+            return mNetwork;
+        }
+
+        public void setCurrentNetwork(Network currentNetwork) {
+            mNetwork = currentNetwork;
+        }
+
+        public ConnectivityManager getConnectivityManager() {
+            return mConnectivityManager;
+        }
+    
+        public Boolean unregisterMnetworkCallback() {
+            if (mConnectivityManager != null && mNetworkCallback != null ) {
+                Log.i(TAG, "Unregistering network callback");
+                mConnectivityManager.unregisterNetworkCallback(mNetworkCallback);
+                return true;
+            } else {
+                return false; 
+            }
+        }
 	
 	public List<WifiConfiguration> getSavedNetworks(Context context) {
 		return wifiManager.getConfiguredNetworks();
 	}
 	
 	public void connectToWifi(WifiConfiguration configuration, Context context, BitbiteNetworkUtilsCallback callback, Boolean withTimer) {
-
 		try {
 			mBitbiteNetworkUtilsCallback = callback;
 			mConfigurationToConnectAfterDisconnecting = configuration;
@@ -192,6 +218,86 @@ public class WifiNetworkUtils {
 		}
 	}
 
+        // callers must call unregisterMnetworkcallback
+        public void connectToWifi29AndUp(NetworkRequest req, Context context, BitbiteNetworkUtilsCallback bcallback, Boolean withTimer, ConnectivityManager.NetworkCallback ncallback) {
+		try {
+			mBitbiteNetworkUtilsCallback = bcallback;
+                        mNetworkCallback = ncallback;
+
+			if (req == null) {
+				mLogger.error("WifiConfiguration was null.. can't connect to null silly....");
+				//Log.e(TAG, "WifiConfiguration was null.. can't connect to null silly....");
+				mBitbiteNetworkUtilsCallback.failedToConnectToNetwork(WifiConnectionFailure.Unknown);
+				return;
+			}
+
+                        /*ConnectivityManager.NetworkCallback callback = new ConnectivityManager.NetworkCallback(){
+                            @Override
+                            public void onAvailable(Network network) {
+                                if (Build.VERSION.SDK_INT >= Build.VERSION_CODES.LOLLIPOP) {
+                                    //Log.i(TAG, "onAvailable " + network.toString() + " " + network.getClass().getName());
+                                    mNetwork = network;
+                                }
+                                NetworkCapabilities nc = mConnectivityManager.getNetworkCapabilities(network);
+
+                                if (!nc.hasCapability(NetworkCapabilities.NET_CAPABILITY_INTERNET)) {
+                                    //Log.i(TAG, "mysimplelink available");
+                                    bcallback.successfullyConnectedToNetwork("mysimplelink");
+                                } else {
+                                    //Log.i(TAG, "Boomin available");
+                                    bcallback.successfullyConnectedToNetwork("BOOMIN");
+                                }
+				//bcallback.successfulConnectionToNetwork(network);
+                            }
+
+                            @Override
+                            public void onUnavailable() {
+                                if (Build.VERSION.SDK_INT >= Build.VERSION_CODES.LOLLIPOP) {
+                                    //Log.i(TAG, "onUnavailable ");
+                                }
+				bcallback.failedToConnectToNetwork(WifiConnectionFailure.Unknown);
+                            }
+
+                            @Override
+                            public void onCapabilitiesChanged(Network network, NetworkCapabilities networkCapabilities) {
+                                try {
+                                    if (Build.VERSION.SDK_INT >= Build.VERSION_CODES.LOLLIPOP) {
+                                        //Log.i(TAG, "onCapabilitiesChanged " + networkCapabilities.getLinkDownstreamBandwidthKbps());
+                                        //Log.i(TAG, "onCapabilitiesChanged has wifi? " + networkCapabilities.hasTransport(NetworkCapabilities.TRANSPORT_WIFI));
+                                        //Log.i(TAG, "onCapabilitiesChanged has internet? " + networkCapabilities.hasCapability(NetworkCapabilities.NET_CAPABILITY_INTERNET));
+                                    }
+                                } catch (Exception e) {
+                                    e.printStackTrace();
+                                }
+                            }
+                            @Override
+                            public void onLinkPropertiesChanged(Network network, LinkProperties linkProperties) {
+                                try {
+                                    if (Build.VERSION.SDK_INT >= Build.VERSION_CODES.LOLLIPOP) {
+                                        //Log.i(TAG, "onLinkPropertiesChanged " + linkProperties.getInterfaceName());
+                                        //Log.i(TAG, "onLinkPropertiesChanged " + linkProperties.getRoutes());
+                                        //Log.i(TAG, "onLinkPropertiesChanged " + linkProperties.getDhcpServerAddress());
+                                        //Log.i(TAG, "onLinkPropertiesChanged " + linkProperties.getDomains());
+                                        //Log.i(TAG, "onLinkPropertiesChanged " + linkProperties.getDnsServers());
+                                        //Log.i(TAG, "onLinkPropertiesChanged " + linkProperties.getLinkAddresses());
+                                    }
+                                } catch (Exception e) {
+                                    e.printStackTrace();
+                                }
+                            }
+                        };*/
+                        mConnectivityManager.registerNetworkCallback(req, mNetworkCallback); 
+                        mConnectivityManager.requestNetwork(req, mNetworkCallback, 10000); 
+
+		} catch (Exception e) {
+			e.printStackTrace();
+                        //Log.e(TAG, "Exception connecttowifi29andup" + req );
+			mLogger.error("Exception with input: " + req + " " + context + " " + bcallback + " " + withTimer);
+			if (mBitbiteNetworkUtilsCallback != null)
+                            mBitbiteNetworkUtilsCallback.failedToConnectToNetwork(WifiConnectionFailure.Unknown);
+		}
+        }
+
 	public static Boolean isLollipopAndUp() {
 		int currentApiVersion = android.os.Build.VERSION.SDK_INT;
 		return currentApiVersion >= android.os.Build.VERSION_CODES.LOLLIPOP;
@@ -224,43 +330,49 @@ public class WifiNetworkUtils {
 				return;
 			mLogger.info("State: " + state + " Network:\"" + network +"\"");
 			if (state != null) {
-				switch (state) {
-					case CONNECTED:
-						if (network == null) {
-							network = getConnectedSSID();
-						}
-						if (network.contains("sphone")) {
-							return;
-						}
-						NetworkInfo networkInfo = mConnectivityManager.getActiveNetworkInfo();
-						if (network.equals(mConfigurationToConnectAfterDisconnecting.SSID) && !mConfigurationToConnectAfterDisconnecting.SSID.equals("")) {
-							mLogger.info("Connected to desired network: \"" + network + "\"");
-							successfullyConnectToWifi(network, mBitbiteNetworkUtilsCallback);
-							disconnectCallback();
-						} else if (mConfigurationToConnectAfterDisconnecting.SSID.replaceAll("\"", "").equals(network)) {
-							mLogger.info("Connected to desired network: \"" + network + "\"");
-							successfullyConnectToWifi(network, mBitbiteNetworkUtilsCallback);
-							disconnectCallback();
-						}
-						break;
-					case CONNECTING:
-						break;
-					case DISCONNECTED:
-
-						if (mConnectAfterDisconnected) {
-							mConnectAfterDisconnected = false;
-							//Log.i(TAG, "Connecting after disconnecting: " + wifiManager.enableNetwork(mConfigurationToConnectAfterDisconnecting.networkId, true));
-						}
-						break;
-					case DISCONNECTING:
-						break;
-					case SUSPENDED:
-						break;
-					case UNKNOWN:
-						break;
-					default:
-						break;
-				}
+                            switch (state) {
+                                case CONNECTED:
+                                    if (network == null) {
+                                            network = getConnectedSSID();
+                                    }
+                                    if (network.contains("sphone")) {
+                                            return;
+                                    }
+                                    Network activeNetwork = mConnectivityManager.getActiveNetwork();
+                                    if (activeNetwork != null) {
+                                        //Log.i(TAG, "activeNetwork Handle: " + activeNetwork.getNetworkHandle());
+                                    } else {
+                                        //Log.i(TAG, "activeNetwork null");
+                                    }
+            
+                                    /*NetworkInfo networkInfo = mConnectivityManager.getActiveNetworkInfo();
+                                    if (network.equals(mConfigurationToConnectAfterDisconnecting.SSID) && !mConfigurationToConnectAfterDisconnecting.SSID.equals("")) {
+                                        mLogger.info("Connected to desired network: \"" + network + "\"");
+                                        successfullyConnectToWifi(network, mBitbiteNetworkUtilsCallback);
+                                        disconnectCallback();
+                                    } else if (mConfigurationToConnectAfterDisconnecting.SSID.replaceAll("\"", "").equals(network)) {
+                                        mLogger.info("Connected to desired network: \"" + network + "\"");
+                                        successfullyConnectToWifi(network, mBitbiteNetworkUtilsCallback);
+                                        disconnectCallback();
+                                    }*/
+                                    break;
+                                case CONNECTING:
+                                    break;
+                                case DISCONNECTED:
+                                    if (mConnectAfterDisconnected) {
+                                        mConnectAfterDisconnected = false;
+                                        //Log.i(TAG, "Connecting after disconnecting: " + wifiManager.enableNetwork(mConfigurationToConnectAfterDisconnecting.networkId, true));
+                                    }
+                                    break;
+                                case DISCONNECTING:
+                                    break;
+                                case SUSPENDED:
+                                    break;
+                                case UNKNOWN:
+                                    break;
+                                default:
+                                    break;
+                            }
 			}
 		}
 	};
@@ -351,37 +463,40 @@ public class WifiNetworkUtils {
 	}
 
 	public void timeoutDialogFinished() {
-	if(mConfigurationToConnectAfterDisconnecting.SSID.equals("")) {
-		if (mTempBitbiteNetworkUtilsCallback == null || mConfigurationToConnectAfterDisconnecting == null)
-			mBitbiteNetworkUtilsCallback.failedToConnectToNetwork(WifiConnectionFailure.Timeout);
-		}
-		String connectedNetwork = getConnectedSSID();
-		mLogger.info("Timeout dialog was finished, Callback:" + mTempBitbiteNetworkUtilsCallback + " Needed WiFi: \"" + mConfigurationToConnectAfterDisconnecting.SSID + "\" Connected to: \"" + connectedNetwork + "\"");
-		mBitbiteNetworkUtilsCallback = mTempBitbiteNetworkUtilsCallback;
-		mTempBitbiteNetworkUtilsCallback = null;
-		if (mBitbiteNetworkUtilsCallback == null || mConfigurationToConnectAfterDisconnecting == null)
-			return;
-		if (mConfigurationToConnectAfterDisconnecting.SSID.replaceAll("\"", "").equals(connectedNetwork)) {
-			successfullyConnectToWifi(mConfigurationToConnectAfterDisconnecting.SSID, mBitbiteNetworkUtilsCallback);
-		}
-		else
-			mBitbiteNetworkUtilsCallback.failedToConnectToNetwork(WifiConnectionFailure.Timeout);
+            if(mConfigurationToConnectAfterDisconnecting.SSID.equals("")) {
+                    if (mTempBitbiteNetworkUtilsCallback == null || mConfigurationToConnectAfterDisconnecting == null)
+                            mBitbiteNetworkUtilsCallback.failedToConnectToNetwork(WifiConnectionFailure.Timeout);
+                    }
+                    String connectedNetwork = getConnectedSSID();
+                    mLogger.info("Timeout dialog was finished, Callback:" + mTempBitbiteNetworkUtilsCallback + " Needed WiFi: \"" + mConfigurationToConnectAfterDisconnecting.SSID + "\" Connected to: \"" + connectedNetwork + "\"");
+                    mBitbiteNetworkUtilsCallback = mTempBitbiteNetworkUtilsCallback;
+                    mTempBitbiteNetworkUtilsCallback = null;
+                    if (mBitbiteNetworkUtilsCallback == null || mConfigurationToConnectAfterDisconnecting == null)
+                            return;
+                    if (mConfigurationToConnectAfterDisconnecting.SSID.replaceAll("\"", "").equals(connectedNetwork)) {
+                            successfullyConnectToWifi(mConfigurationToConnectAfterDisconnecting.SSID, mBitbiteNetworkUtilsCallback);
+                    }
+                    else
+                            mBitbiteNetworkUtilsCallback.failedToConnectToNetwork(WifiConnectionFailure.Timeout);
 	}
 	
 	public interface BitbiteNetworkUtilsCallback {
 		void successfullyConnectedToNetwork(String ssid);
+		void successfulConnectionToNetwork(Network activeNetwork);
 		void failedToConnectToNetwork(WifiConnectionFailure failure);
 	}
 
 	private Boolean isActiveNetworkWifi() {
 		NetworkInfo networkInfo = mConnectivityManager.getActiveNetworkInfo();
 		if (networkInfo == null)
-			return true;
+			return true;//??
 		if(networkInfo.getType() == ConnectivityManager.TYPE_WIFI || networkInfo.getType() == ConnectivityManager.TYPE_WIMAX) {
+			//Log.i(TAG, "We are in WIFI");
 			mLogger.error("We are in WIFI");
 			return true;
 		}
 		else {
+			//Log.i(TAG, "We are not in WIFI");
 			mLogger.error("We are not in WIFI");
 			return false;
 		}
@@ -389,31 +504,31 @@ public class WifiNetworkUtils {
 	
 	@TargetApi(Build.VERSION_CODES.LOLLIPOP)
 	private void lollipopChangeDefaultNetwork(final ConnectivityManager cm, Context context) {
-		Network[] array = cm.getAllNetworks();
-		for (Network network : array) {
-			NetworkInfo info = cm.getNetworkInfo(network);
-			mLogger.info("Network: \"" + network + "\"\nInfo: " + info);
-			
-			if (info.getType() == ConnectivityManager.TYPE_WIFI) {
-				mLogger.info("Setting the network: \"" + network + "\" as default (" + ConnectivityManager.setProcessDefaultNetwork(network) + ")");
-			}
-		}
+            Network[] array = cm.getAllNetworks();
+            for (Network network : array) {
+                NetworkInfo info = cm.getNetworkInfo(network);
+                mLogger.info("Network: \"" + network + "\"\nInfo: " + info);
+                
+                if (info.getType() == ConnectivityManager.TYPE_WIFI) {
+                        mLogger.info("Setting the network: \"" + network + "\" as default (" + ConnectivityManager.setProcessDefaultNetwork(network) + ")");
+                }
+            }
 	}
 	
 	@SuppressWarnings({"rawtypes", "unchecked"})
 	private void setMobileDataEnabled(boolean enabled) {
-		try {
-			final Class conmanClass = Class.forName(mConnectivityManager.getClass().getName());
-		    final Field iConnectivityManagerField = conmanClass.getDeclaredField("mService");
-		    iConnectivityManagerField.setAccessible(true);
-		    final Object iConnectivityManager = iConnectivityManagerField.get(mConnectivityManager);
-		    final Class iConnectivityManagerClass = Class.forName(iConnectivityManager.getClass().getName());
-			final Method setMobileDataEnabledMethod = iConnectivityManagerClass.getDeclaredMethod("setMobileDataEnabled", Boolean.TYPE);
-		    setMobileDataEnabledMethod.setAccessible(true);
-		    setMobileDataEnabledMethod.invoke(iConnectivityManager, enabled);
-		} catch (Exception e) {
-			e.printStackTrace();
-		}
+            try {
+                final Class conmanClass = Class.forName(mConnectivityManager.getClass().getName());
+                final Field iConnectivityManagerField = conmanClass.getDeclaredField("mService");
+                iConnectivityManagerField.setAccessible(true);
+                final Object iConnectivityManager = iConnectivityManagerField.get(mConnectivityManager);
+                final Class iConnectivityManagerClass = Class.forName(iConnectivityManager.getClass().getName());
+                    final Method setMobileDataEnabledMethod = iConnectivityManagerClass.getDeclaredMethod("setMobileDataEnabled", Boolean.TYPE);
+                setMobileDataEnabledMethod.setAccessible(true);
+                setMobileDataEnabledMethod.invoke(iConnectivityManager, enabled);
+            } catch (Exception e) {
+                e.printStackTrace();
+            }
 	}
 	
 	@TargetApi(Build.VERSION_CODES.LOLLIPOP)
@@ -421,36 +536,36 @@ public class WifiNetworkUtils {
 		TelephonyManager telephonyService = (TelephonyManager) mContext.getSystemService(Context.TELEPHONY_SERVICE);
         
         switch (telephonyService.getDataState()) {
-		case TelephonyManager.DATA_DISCONNECTED:
-			//Log.i(TAG, "DATA_DISCONNECTED");
-			break;
-		case TelephonyManager.DATA_CONNECTING:
-			//Log.i(TAG, "DATA_CONNECTING");
-			break;
-		case TelephonyManager.DATA_SUSPENDED:
-			//Log.i(TAG, "DATA_SUSPENDED");
-			break;
-		case TelephonyManager.DATA_CONNECTED:
-			//Log.i(TAG, "DATA_CONNECTED");
-			return true;
-		}
-		return false;
+            case TelephonyManager.DATA_DISCONNECTED:
+                    //Log.i(TAG, "DATA_DISCONNECTED");
+                    break;
+            case TelephonyManager.DATA_CONNECTING:
+                    //Log.i(TAG, "DATA_CONNECTING");
+                    break;
+            case TelephonyManager.DATA_SUSPENDED:
+                    //Log.i(TAG, "DATA_SUSPENDED");
+                    break;
+            case TelephonyManager.DATA_CONNECTED:
+                    //Log.i(TAG, "DATA_CONNECTED");
+                    return true;
+            }
+            return false;
 	}
 	
 	@SuppressWarnings({"rawtypes", "unchecked"})
 	public Boolean isMobileDataEnabled(){ 
 	    try {
 	    	final Class conmanClass = Class.forName(mConnectivityManager.getClass().getName());
-		    final Field iConnectivityManagerField = conmanClass.getDeclaredField("mService");
+                final Field iConnectivityManagerField = conmanClass.getDeclaredField("mService");
 		    iConnectivityManagerField.setAccessible(true);
-		    final Object iConnectivityManager = iConnectivityManagerField.get(mConnectivityManager);
-		    final Class iConnectivityManagerClass = Class.forName(iConnectivityManager.getClass().getName());
+                final Object iConnectivityManager = iConnectivityManagerField.get(mConnectivityManager);
+                final Class iConnectivityManagerClass = Class.forName(iConnectivityManager.getClass().getName());
 		    
-		    final Method getMobileDataEnabledMethod = iConnectivityManagerClass.getDeclaredMethod("getMobileDataEnabled");
-		    getMobileDataEnabledMethod.setAccessible(true);
-		    Boolean flag = (Boolean) getMobileDataEnabledMethod.invoke(iConnectivityManager);
+                final Method getMobileDataEnabledMethod = iConnectivityManagerClass.getDeclaredMethod("getMobileDataEnabled");
+                getMobileDataEnabledMethod.setAccessible(true);
+                Boolean flag = (Boolean) getMobileDataEnabledMethod.invoke(iConnectivityManager);
 		    //Log.i(TAG, "3G data was initialised " + flag);
-		    return flag;
+                return flag;
 	    } catch (Exception e) {
 			e.printStackTrace();
 	    	//Log.e(TAG, "Failed to know if 3G was enabled");

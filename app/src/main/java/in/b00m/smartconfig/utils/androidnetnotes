@@ -1,0 +1,17 @@
+
+
+Network
+
+NetworkRequest
+
+NetworkCapabilites
+
+
+
+https://stackoverflow.com/questions/45940861/android-8-cleartext-http-traffic-not-permitted
+
+https://stackoverflow.com/questions/309424/how-do-i-read-convert-an-inputstream-into-a-string-in-java
+
+
+01-31 14:33:49.196   918  4360 E InputDispatcher: Window handle Window{78155b7 u0 com.android.settings/com.android.settings.wifi.NetworkRequestDialogActivity} has no registered input channel
+

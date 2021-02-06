@@ -120,7 +120,7 @@ public class HelpFragment extends Fragment {
 		mPager.setAdapter(null);
 		
 		FragmentTransaction transaction = getActivity().getSupportFragmentManager().beginTransaction();
-		transaction.setCustomAnimations(R.anim.fragment_fade_out, R.anim.fragment_fade_out);
+		//transaction.setCustomAnimations(R.anim.fragment_fade_out, R.anim.fragment_fade_out);
 		transaction.remove(this);
 		transaction.setTransitionStyle(FragmentTransaction.TRANSIT_FRAGMENT_OPEN);
 		transaction.commit();

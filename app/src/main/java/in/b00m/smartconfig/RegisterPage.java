@@ -109,13 +109,13 @@ public class RegisterPage  extends Fragment{
 
 	@Click
 	void register_fragment_register_button() {
-		//mPager.setAdapter(null);
-		
-		/*FragmentTransaction transaction = getActivity().getSupportFragmentManager().beginTransaction();
-		transaction.setCustomAnimations(R.anim.fragment_fade_out, R.anim.fragment_fade_out);
-		transaction.remove(this);
-		transaction.setTransitionStyle(FragmentTransaction.TRANSIT_FRAGMENT_OPEN);
-		transaction.commit();*/
+            //mPager.setAdapter(null);
+            
+            /*FragmentTransaction transaction = getActivity().getSupportFragmentManager().beginTransaction();
+            transaction.setCustomAnimations(R.anim.fragment_fade_out, R.anim.fragment_fade_out);
+            transaction.remove(this);
+            transaction.setTransitionStyle(FragmentTransaction.TRANSIT_FRAGMENT_OPEN);
+            transaction.commit();*/
             //Boolean ok = PostLogin(login_email_edittext.getText().toString(), login_pswd_edittext.getText().toString());
             if (Build.VERSION.SDK_INT >= Build.VERSION_CODES.HONEYCOMB) {
                     new GetRegisterResult().executeOnExecutor(AsyncTask.THREAD_POOL_EXECUTOR, register_fullname_edittext.getText().toString(), register_phone_edittext.getText().toString(), register_email_edittext.getText().toString(), register_pswd_edittext.getText().toString(), register_confirm_edittext.getText().toString());
@@ -135,58 +135,57 @@ public class RegisterPage  extends Fragment{
         }
 
 	class GetRegisterResult extends AsyncTask<String, Void, Boolean> {
+            private Boolean mIsViaWifi;
 
-		private Boolean mIsViaWifi;
+            @Override
+            protected void onPostExecute(Boolean result) {
+                mLogger.info("*AP* register result text: " + result);
+                super.onPostExecute(result);
+                if (result) {
+                    resp.setText("Registered as " + prefs.sub().get());
+                    ((MainActivity) getActivity()).clearAllTabs();
+                    ((MainActivity) getActivity()).initTabs(prefs.startTab().get());
+                } else {
+                    resp.setText("There was a problem"); //result.toString());
+                }
+            }
 
-		@Override
-		protected void onPostExecute(Boolean result) {
-                    mLogger.info("*AP* register result text: " + result);
-                    super.onPostExecute(result);
-                    if (result) {
-                        resp.setText("Registered as " + prefs.sub().get());
-                        ((MainActivity) getActivity()).clearAllTabs();
-                        ((MainActivity) getActivity()).initTabs(prefs.startTab().get());
-                    } else {
-                        resp.setText("There was a problem"); //result.toString());
+            @Override
+            protected Boolean doInBackground(String... params) {
+                    mLogger.info("GetRegisterResult doInBackground called");
+                    if(!params[3].equals(params[4])) {
+                        mLogger.info("*AP* Error pswd mismatch: " + params[3] + " " + params[4]);
+                        return false;
                     }
-		}
-
-		@Override
-		protected Boolean doInBackground(String... params) {
-			mLogger.info("GetRegisterResult doInBackground called");
-                        if(!params[3].equals(params[4])) {
-                            mLogger.info("*AP* Error pswd mismatch: " + params[3] + " " + params[4]);
-                            return false;
-                        }
-                        String baseUrl = "://pv.b00m.in";
-                        mLogger.info("*AP* Registering with cloud: " + baseUrl + " " + params[0] + " " + params[1]);
-                        Boolean result = NetworkUtil.registerWithCloud(baseUrl, params[0], params[1], params[2], params[3], params[4]);
-                        if (result) {
-                            prefs.sub().put(params[2]);
-                        }
-			return result;
-		}
+                    String baseUrl = "://pv.b00m.in";
+                    mLogger.info("*AP* Registering with cloud: " + baseUrl + " " + params[0] + " " + params[1]);
+                    Boolean result = NetworkUtil.registerWithCloud(baseUrl, params[0], params[1], params[2], params[3], params[4]);
+                    if (result) {
+                        prefs.sub().put(params[2]);
+                    }
+                    return result;
+            }
 	}
 
 	@Click
 	void register_fragment_close_button() {
-		//mPager.setAdapter(null);
-		
-		FragmentTransaction transaction = getActivity().getSupportFragmentManager().beginTransaction();
-		transaction.setCustomAnimations(R.anim.fragment_fade_out, R.anim.fragment_fade_out);
-		transaction.remove(this);
-		transaction.setTransitionStyle(FragmentTransaction.TRANSIT_FRAGMENT_OPEN);
-		transaction.commit();
+            //mPager.setAdapter(null);
+            
+            FragmentTransaction transaction = getActivity().getSupportFragmentManager().beginTransaction();
+            //transaction.setCustomAnimations(R.anim.fragment_fade_out, R.anim.fragment_fade_out);
+            transaction.remove(this);
+            transaction.setTransitionStyle(FragmentTransaction.TRANSIT_FRAGMENT_OPEN);
+            transaction.commit();
 	}
 	@Click
 	void register_fragment_cancel_button() {
-		//mPager.setAdapter(null);
-		
-		FragmentTransaction transaction = getActivity().getSupportFragmentManager().beginTransaction();
-		transaction.setCustomAnimations(R.anim.fragment_fade_out, R.anim.fragment_fade_out);
-		transaction.remove(this);
-		transaction.setTransitionStyle(FragmentTransaction.TRANSIT_FRAGMENT_OPEN);
-		transaction.commit();
+            //mPager.setAdapter(null);
+            
+            FragmentTransaction transaction = getActivity().getSupportFragmentManager().beginTransaction();
+            //transaction.setCustomAnimations(R.anim.fragment_fade_out, R.anim.fragment_fade_out);
+            transaction.remove(this);
+            transaction.setTransitionStyle(FragmentTransaction.TRANSIT_FRAGMENT_FADE);
+            transaction.commit();
 	}
 	public void onBackPressed() {
 		// ignore the back button

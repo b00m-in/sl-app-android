@@ -36,9 +36,18 @@
 package in.b00m.smartconfig.utils;
 
 import java.io.BufferedInputStream;
+import java.io.BufferedOutputStream;
+import java.io.BufferedReader;
+import java.io.BufferedWriter;
 import java.io.FileInputStream;
 import java.io.IOException;
 import java.io.InputStream;
+import java.io.InputStreamReader;
+import java.io.OutputStream;
+import java.io.OutputStreamWriter;
+import java.nio.charset.StandardCharsets;
+import java.net.InetAddress;
+import java.net.URLConnection;
 import java.net.HttpURLConnection;
 import java.net.URI;
 import java.net.URISyntaxException;
@@ -52,7 +61,12 @@ import java.security.cert.X509Certificate;
 import java.util.ArrayList;
 import java.util.Collections;
 import java.util.Comparator;
+import java.util.HashMap;
+import java.util.Iterator;
 import java.util.List;
+import java.util.Map;
+import java.util.stream.Stream;
+import java.util.stream.Collectors;
 import org.apache.http.HttpResponse;
 import org.apache.http.HttpStatus;
 import org.apache.http.HttpVersion;
@@ -80,13 +94,25 @@ import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 import android.content.Context;
 import android.net.ConnectivityManager;
+import android.net.LinkProperties;
+import android.net.Network;
 import android.net.NetworkInfo;
+import android.net.NetworkCapabilities;
+import android.net.NetworkRequest;
+import android.net.Uri;
+import android.net.Uri.Builder;
 import android.net.wifi.ScanResult;
 import android.net.wifi.WifiConfiguration;
+import android.net.NetworkSpecifier;
+import android.net.wifi.WifiNetworkSpecifier;
+import android.net.wifi.WifiNetworkSuggestion;
 import android.net.wifi.WifiInfo;
 import android.net.wifi.WifiManager;
+import android.os.Build;
 import android.util.Log;
 
+import in.b00m.smartconfig.utils.WifiNetworkUtils.BitbiteNetworkUtilsCallback;
+import in.b00m.smartconfig.utils.WifiNetworkUtils.WifiConnectionFailure;
 import in.b00m.smartconfig.R;
 
 import javax.net.ssl.SSLContext;
@@ -109,16 +135,29 @@ public class NetworkUtil {
     public NetworkUtil (Context _context){
         context=_context;
     }
+
     public static int getConnectionStatus(Context context) {
         ConnectivityManager cm = (ConnectivityManager) context.getSystemService(Context.CONNECTIVITY_SERVICE);
-        NetworkInfo activeNetwork = cm.getActiveNetworkInfo();
-        if (activeNetwork != null) {
-            if (activeNetwork.getType() == ConnectivityManager.TYPE_WIFI)
-                return WIFI;
-            if (activeNetwork.getType() == ConnectivityManager.TYPE_MOBILE)
-                return MOBILE;
+        //NetworkInfo activeNetwork = cm.getActiveNetworkInfo(); // getActiveNetworkInfo deprecated in 29
+        Network activeNetwork = cm.getActiveNetwork();
+        NetworkCapabilities nc = cm.getNetworkCapabilities(activeNetwork);
+        //if (netInfo != null && netInfo.getType() == ConnectivityManager.TYPE_WIFI) {
+        if (activeNetwork == null) {
+            Log.i(TAG, "activeNetwork is null");
+            return NOT_CONNECTED;
+        } else if (activeNetwork != null && nc.hasTransport(NetworkCapabilities.TRANSPORT_WIFI) && nc.hasCapability(NetworkCapabilities.NET_CAPABILITY_INTERNET)) {
+            Log.i(TAG, "nonnull activeNetwork with wifi transport and internet capability!");
+            return WIFI;
+        } else if(activeNetwork != null && nc.hasTransport(NetworkCapabilities.TRANSPORT_WIFI)) {
+        //if (activeNetwork != null) {// || mNetwork != null) {
+            //if (activeNetwork.getType() == ConnectivityManager.TYPE_WIFI) // getType deprecated in 28
+            Log.i(TAG, "nonnull activeNetwork with wifi transport");
+            return WIFI;
+            //if (activeNetwork.getType() == ConnectivityManager.TYPE_MOBILE)
+            //    return MOBILE;
+        } else {
+            return NOT_CONNECTED;
         }
-        return NOT_CONNECTED;
     }
 
     public static String getConnectedSSID(Context context) {
@@ -129,6 +168,7 @@ public class NetworkUtil {
         //Log.i(TAG, "Network State:" + networkState);
         mLogger.info("Network state: " + networkState);
         if (networkState == NetworkUtil.WIFI) { //no wifi connection and alert dialog allowed //i-why no wifi connection?
+            //Log.i(TAG, "Calling wifi manager:" + networkState);
             WifiManager wifiManager = (WifiManager) context.getSystemService(Context.WIFI_SERVICE);
             if (wifiManager != null) {
                 WifiInfo wifiInfo = wifiManager.getConnectionInfo();
@@ -136,7 +176,7 @@ public class NetworkUtil {
                     networkName = wifiInfo.getSSID().replaceAll("\"", "");
                 }
             }
-        }
+        } 
         if (networkName == null || networkName.equals("<unknown ssid>") || networkName.equals("0x") || networkName.equals("")) {
             networkName = null;
         }
@@ -150,6 +190,95 @@ public class NetworkUtil {
         if (connectionStatus == NetworkUtil.MOBILE)
             return "Connected to Mobile Data";
         return "No internet connection";
+    }
+
+    public static Boolean wifiNetReq(Context context) {
+        //Log.i(TAG, "Creating initial network request" );
+        WifiNetworkUtils.getInstance(context).unregisterMnetworkCallback();
+        NetworkRequest nreq = getNetworkRequest(context, "guess", SecurityType.WPA2, null, true);
+        //Log.i(TAG, "wifiNetReq calling wifi manager ... ");
+        final WifiManager wifiMgr = (WifiManager) context.getSystemService(Context.WIFI_SERVICE);
+        final WifiNetworkSuggestion suggestion = new WifiNetworkSuggestion.Builder()
+            .setPriority(2).build();
+        final List<WifiNetworkSuggestion> suggestionsList =
+            new ArrayList<WifiNetworkSuggestion>(); 
+        suggestionsList.add(suggestion);
+        wifiMgr.addNetworkSuggestions(suggestionsList);
+        BitbiteNetworkUtilsCallback bcallback = new BitbiteNetworkUtilsCallback() {
+            @Override
+            public void successfullyConnectedToNetwork(String ssid) {
+                //no need to add toast
+                Log.i(TAG, "wifiNetReq succesfully connected to network" + ssid );
+            }
+            @Override
+            public void failedToConnectToNetwork(WifiConnectionFailure failure) {
+                Log.i(TAG, "wifiNetReq failed to connect to initial network ");
+            }
+            @Override
+            public void successfulConnectionToNetwork(Network activeNetwork) {
+                Log.i(TAG, "wifiNetReq: successful connection to :" + activeNetwork.toString());
+            }
+        };
+        ConnectivityManager.NetworkCallback ncallback = new ConnectivityManager.NetworkCallback(){
+            @Override
+            public void onAvailable(Network network) {
+                if (Build.VERSION.SDK_INT >= Build.VERSION_CODES.LOLLIPOP) {
+                    //Log.i(TAG, "onAvailable " + network.toString() + " " + network.getClass().getName());
+                    WifiNetworkUtils.getInstance(context).setCurrentNetwork(network);
+                }
+                ConnectivityManager myConnManager = (ConnectivityManager) context.getSystemService(Context.CONNECTIVITY_SERVICE);
+                NetworkCapabilities nc = myConnManager.getNetworkCapabilities(network);
+
+                if (!nc.hasCapability(NetworkCapabilities.NET_CAPABILITY_INTERNET)) {
+                    Log.i(TAG, "wifiNetReq: mysimplelink available");
+                    bcallback.successfullyConnectedToNetwork("mysimplelink");
+                } else {
+                    Log.i(TAG, "wifiNetReq: Boomin available");
+                    bcallback.successfullyConnectedToNetwork("BOOMIN");
+                }
+                //bcallback.successfulConnectionToNetwork(network);
+            }
+
+            @Override
+            public void onUnavailable() {
+                if (Build.VERSION.SDK_INT >= Build.VERSION_CODES.LOLLIPOP) {
+                    //Log.i(TAG, "wifiNetReq: onUnavailable ");
+                }
+                bcallback.failedToConnectToNetwork(WifiConnectionFailure.Unknown);
+            }
+
+            @Override
+            public void onCapabilitiesChanged(Network network, NetworkCapabilities networkCapabilities) {
+                try {
+                    if (Build.VERSION.SDK_INT >= Build.VERSION_CODES.LOLLIPOP) {
+                        //Log.i(TAG, "wifiNetReq: onCapabilitiesChanged " + networkCapabilities.getLinkDownstreamBandwidthKbps());
+                        //Log.i(TAG, "wifiNetReq: onCapabilitiesChanged has wifi? " + networkCapabilities.hasTransport(NetworkCapabilities.TRANSPORT_WIFI));
+                        //Log.i(TAG, "wifiNetReq: onCapabilitiesChanged has internet? " + networkCapabilities.hasCapability(NetworkCapabilities.NET_CAPABILITY_INTERNET));
+                    }
+                } catch (Exception e) {
+                    //Log.e(TAG, e.getMessage());
+                    e.printStackTrace();
+                }
+            }
+            @Override
+            public void onLinkPropertiesChanged(Network network, LinkProperties linkProperties) {
+                try {
+                    if (Build.VERSION.SDK_INT >= Build.VERSION_CODES.LOLLIPOP) {
+                        //Log.i(TAG, "onLinkPropertiesChanged " + linkProperties.getInterfaceName());
+                        //Log.i(TAG, "onLinkPropertiesChanged " + linkProperties.getRoutes());
+                        //Log.i(TAG, "onLinkPropertiesChanged " + linkProperties.getDhcpServerAddress()); // only available in Api 30
+                        //Log.i(TAG, "onLinkPropertiesChanged " + linkProperties.getDomains());
+                        //Log.i(TAG, "onLinkPropertiesChanged " + linkProperties.getDnsServers());
+                        //Log.i(TAG, "onLinkPropertiesChanged " + linkProperties.getLinkAddresses());
+                    }
+                } catch (Exception e) {
+                    //Log.e(TAG, e.getMessage());
+                    e.printStackTrace();
+                }
+            }
+        };
+        WifiNetworkUtils.getInstance(context).connectToWifi29AndUp(nreq, context, bcallback, true, ncallback);
+        return true;
     }
 
     public static List<ScanResult> getWifiScanResults(Boolean sorted, Context context) {
@@ -303,6 +432,50 @@ public class NetworkUtil {
         }
     }
 
+    public static NetworkRequest getNetworkRequest(Context context, String ssid, SecurityType securityType, String password, Boolean internet) {
+        WifiNetworkSpecifier wifiNetworkSpecifier;
+        WifiNetworkSpecifier.Builder builder = new WifiNetworkSpecifier.Builder();
+        if(!internet) {
+            //builder.setSsidPattern(new PatternMatcher(ssid, PatternMatcher.PATTERN_PREFIX))
+            builder.setSsid(ssid);
+            switch (securityType) {
+                case OPEN:
+                    break;
+                case WEP:
+                    break;
+                case WPA1:
+                    //Log.i(TAG, "WPA1 unsupported");
+                    break;
+                case WPA2:
+                    if (password != null) {
+                        builder.setWpa2Passphrase(password);
+                    } else {
+                    }
+                    break;
+                case UNKNOWN:
+                    if (password == null) {
+                    } else {
+                    }
+                    break;
+                default:
+                    break;
+            }
+        }
+        NetworkRequest.Builder networkRequestBuilder = new NetworkRequest.Builder();
+        networkRequestBuilder.addTransportType(NetworkCapabilities.TRANSPORT_WIFI);     
+        networkRequestBuilder.addCapability(NetworkCapabilities.NET_CAPABILITY_NOT_RESTRICTED);
+        networkRequestBuilder.addCapability(NetworkCapabilities.NET_CAPABILITY_TRUSTED);            
+        if (internet){
+            networkRequestBuilder.addCapability(NetworkCapabilities.NET_CAPABILITY_INTERNET);   
+        } 
+        else{ 
+            wifiNetworkSpecifier = builder.build();
+            networkRequestBuilder.setNetworkSpecifier(wifiNetworkSpecifier);
+        }
+        NetworkRequest networkRequest = networkRequestBuilder.build();
+        return networkRequest;
+    }
+
     public static WifiConfiguration getWifiConfigurationWithInfo(Context context, String ssid, SecurityType securityType, String password) {
         List<WifiConfiguration> configuredWifiList = null;
         WifiManager wifiManager = getWifiManager(context);
@@ -360,8 +533,16 @@ public class NetworkUtil {
                     break;
             }
 
-            //Log.i(TAG, "New wifi configuration with id " + wifiManager.addNetwork(wc));
-            //Log.i(TAG, "Saving configuration " + wifiManager.saveConfiguration());
+            
+            if (Build.VERSION.SDK_INT < Build.VERSION_CODES.Q) {
+                wifiManager.addNetwork(wc);
+                wifiManager.saveConfiguration();
+                //Log.i(TAG, "New wifi configuration with id " + wifiManager.addNetwork(wc));
+                //Log.i(TAG, "Saving configuration " + wifiManager.saveConfiguration());
+            } else {
+                wifiManager.addNetwork(wc);
+                wifiManager.saveConfiguration();
+            }
             //Log.i(TAG, "wc.networkId " + wc.networkId);
 
             configuredWifiList = wifiManager.getConfiguredNetworks();
@@ -491,7 +672,7 @@ public class NetworkUtil {
                 break;
         }
 
-        Boolean flag;
+        Boolean flag = false;
         if (securityType == SecurityType.UNKNOWN) {
             if (password.matches("")) {
                 flag = NetworkUtil.addProfile(baseUrl, SecurityType.OPEN, ssid, password, priorityString, version, configurer, coords);
@@ -501,7 +682,7 @@ public class NetworkUtil {
             }
         } else {
             try {
-                HttpClient client = getNewHttpClient();
+                /*HttpClient client = getNewHttpClient();
                 String addProfileUrl = url;
                 HttpPost addProfilePost = new HttpPost(addProfileUrl);
                 addProfilePost.setHeader("Referer", configurer);
@@ -523,10 +704,64 @@ public class NetworkUtil {
                 }
                 addProfilePost.setEntity(new UrlEncodedFormEntity(nameValuePairs));
                 client.execute(addProfilePost);
-                flag = true;
+                flag = true;*/
+                // Setting up the parameters and encoded url for post request
+                Uri.Builder builder = new Uri.Builder();
+                Map<String, String> nameValuePairs = new HashMap<>(4);
+                ssid = new String(ssid.getBytes("UTF-8"), "ISO-8859-1");
+                nameValuePairs.put("__SL_P_P.A", ssid);
+                nameValuePairs.put("__SL_P_P.B", String.valueOf(SecurityType.getIntValue(securityType)));
+                password = URLEncoder.encode(password, "UTF-8");
+                nameValuePairs.put("__SL_P_P.C", password);
+                try {
+                    int priority = Integer.parseInt(priorityString);
+                    nameValuePairs.put("__SL_P_P.D", String.valueOf(priority));
+                } catch (NumberFormatException e) {
+                    e.printStackTrace();
+                    nameValuePairs.put("__SL_P_P.D", String.valueOf(0));
+                }
+                // Is this the best way to iterate over a map?
+                Iterator entries = nameValuePairs.entrySet().iterator();
+                while(entries.hasNext()) {
+                    Map.Entry entry = (Map.Entry) entries.next();
+                    builder.appendQueryParameter(entry.getKey().toString(), entry.getValue().toString());
+                    entries.remove();
+                }
+                String reqBody = builder.build().getEncodedQuery();
+                //Log.i(TAG, "addProfile - getting network instance to connect to: " + url);
+                //Log.i(TAG, "addProfile - reqBody: " + reqBody);
+                Network cn = WifiNetworkUtils.getInstance(context).getCurrentNetwork();
+                int timeoutConnection = 5000;
+                int timeoutSocket = 10000;
+                URL urlObj = new URL(url);
+                HttpURLConnection httpURLConnection = (HttpURLConnection)cn.openConnection(urlObj);
+                httpURLConnection.setDoOutput(true);
+                httpURLConnection.setRequestProperty("Referer", configurer);
+                httpURLConnection.setRequestProperty("Etag", coords);
+                OutputStream outpost = new BufferedOutputStream(httpURLConnection.getOutputStream());
+                //httpURLConnection.connect(); // presumably getting the ouput stream from the connection makes a connection?
+                BufferedWriter writer = new BufferedWriter(new OutputStreamWriter(outpost, "utf-8"));
+                writer.write(reqBody);
+                writer.flush();
+                writer.close();
+                outpost.close();
+                int urlConResponseCode = httpURLConnection.getResponseCode();
+                String ver = "";
+                if (urlConResponseCode == HttpURLConnection.HTTP_OK
+                   || urlConResponseCode == HttpURLConnection.HTTP_NO_CONTENT 
+                   || urlConResponseCode == HttpURLConnection.HTTP_ACCEPTED) {
+                    //InputStream in = new BufferedInputStream(httpURLConnection.getInputStream()); 
+                    ver = new BufferedReader(new InputStreamReader(httpURLConnection.getInputStream())).lines().collect(Collectors.joining("\n"));
+                    //Log.i(TAG,"addProfile response: " + ver);
+                    flag = true;
+                } else {
+                    //Log.i(TAG, "addProfile urlResponseCode: " + urlConResponseCode);
+                }
             } catch (Exception e) {
+                //Log.e(TAG, "addProfile exception:" + e.toString());
                 e.printStackTrace();
                 flag = false;
+            } finally {
             }
         }
         return flag;
@@ -556,26 +791,65 @@ public class NetworkUtil {
             case UNKNOWN:
                 break;
         }
-        Boolean flag;
-        HttpClient client = getNewHttpClient();
+        Boolean flag = false;
+        //HttpClient client = getNewHttpClient();
         try {
-            String stateMachineUrl = url;
-            HttpPost stateMachinePost = new HttpPost(stateMachineUrl);
+            //String stateMachineUrl = url;
+            //HttpPost stateMachinePost = new HttpPost(stateMachineUrl);
 
+            Map<String, String> nameValuePairs = new HashMap<>(1);
             switch (version) {
                 case R1:
-                    List<NameValuePair> stateParam = new ArrayList<>(1);
+                    /*List<NameValuePair> stateParam = new ArrayList<>(1);
                     stateParam.add(new BasicNameValuePair("__SL_P_UAN", ssid));
-                    stateMachinePost.setEntity(new UrlEncodedFormEntity(stateParam));
+                    stateMachinePost.setEntity(new UrlEncodedFormEntity(stateParam));*/
+                    nameValuePairs.put("__SL_P_UAN", ssid);
                     break;
                 case R2:
+                    // even though this is not needed, it's left here to avoid a null request body further along
+                    nameValuePairs.put("__SL_P_UAN", ssid);
                     break;
                 case UNKNOWN:
                     break;
             }
-            client.execute(stateMachinePost);
-            flag = true;
+            //client.execute(stateMachinePost);
+            //flag = true;
+            Uri.Builder builder = new Uri.Builder();
+            // Is this the best way to iterate over a map?
+            Iterator entries = nameValuePairs.entrySet().iterator();
+            while(entries.hasNext()) {
+                Map.Entry entry = (Map.Entry) entries.next();
+                builder.appendQueryParameter(entry.getKey().toString(), entry.getValue().toString());
+                entries.remove();
+            }
+            String reqBody = builder.build().getEncodedQuery();
+            //Log.i(TAG, "moveStateMachine - getting network instance to connect to: " + url);
+            //Log.i(TAG, "moveStateMachine - reqBody: " + reqBody);
+            Network cn = WifiNetworkUtils.getInstance(context).getCurrentNetwork();
+            URL urlObj = new URL(url);
+            HttpURLConnection httpURLConnection = (HttpURLConnection)cn.openConnection(urlObj);
+            httpURLConnection.setDoOutput(true);
+            OutputStream outpost = new BufferedOutputStream(httpURLConnection.getOutputStream());
+            //httpURLConnection.connect(); // presumably getting the ouput stream from the connection makes a connection?
+            BufferedWriter writer = new BufferedWriter(new OutputStreamWriter(outpost, "utf-8"));
+            writer.write(reqBody);
+            writer.flush();
+            writer.close();
+            outpost.close();
+            int urlConResponseCode = httpURLConnection.getResponseCode();
+            String ver = "";
+            if (urlConResponseCode == HttpURLConnection.HTTP_OK
+               || urlConResponseCode == HttpURLConnection.HTTP_NO_CONTENT
+               || urlConResponseCode == HttpURLConnection.HTTP_ACCEPTED) {
+                //InputStream in = new BufferedInputStream(httpURLConnection.getInputStream()); 
+                ver = new BufferedReader(new InputStreamReader(httpURLConnection.getInputStream())).lines().collect(Collectors.joining("\n"));
+                //Log.i(TAG,"moveStateMachine response: " + ver);
+                flag = true;
+            } else {
+                //Log.i(TAG, "moveStateMachine urlResponseCode: " + urlConResponseCode);
+            }
         } catch (Exception e) {
+            //Log.e(TAG, "moveStateMachine exception: " + e.toString());
             e.printStackTrace();
             flag = false;
         }
@@ -584,11 +858,10 @@ public class NetworkUtil {
 
     public static DeviceVersion getSLVersion(String baseUrl) throws IOException, URISyntaxException {
         didRedirect = false;
-        //Log.i(TAG,"REDIRECT- getSLVersion / did redirect: " + didRedirect);
-        //Log.i(TAG,"REDIRECT- getSLVersion / base url: " + baseUrl);
+        //Log.i(TAG,"NOREDIRECT- getSLVersion / did redirect: " + didRedirect);
+        //Log.i(TAG,"NOREDIRECT- getSLVersion / base url: " + baseUrl);
         String url = baseUrl + "/param_product_version.txt";
-//        String url ="https://mysimplelink.net"+ "/param_product_version.txt";
-        //Log.i(TAG,"REDIRECT- getSLVersion / url: " + url);
+        //Log.i(TAG,"NOREDIRECT- getSLVersion / url: " + url);
         if (!baseUrl.startsWith("http")) {
             url = HTTP_ + baseUrl + "/param_product_version.txt";
             //Log.i(TAG,"REDIRECT- getSLVersion / url: " + url);
@@ -596,26 +869,41 @@ public class NetworkUtil {
         DeviceVersion version = DeviceVersion.UNKNOWN;
 
         try {
+            //Log.i(TAG, "NOREDIRECT - Getting network instance");
+            Network cn = WifiNetworkUtils.getInstance(context).getCurrentNetwork();
+            InetAddress ip =  cn.getByName("mysimplelink.net");
+            //Log.i(TAG, "Ip: " + ip); 
             HttpParams httpParameters = new BasicHttpParams();
             // Set the timeout in milliseconds until a connection is established.
             // The default value is zero, that means the timeout is not used.
-            int timeoutConnection = 3000;
+            int timeoutConnection = 5000;
             HttpConnectionParams.setConnectionTimeout(httpParameters, timeoutConnection);
             // Set the default socket timeout (SO_TIMEOUT)
             // in milliseconds which is the timeout for waiting for data.
-            int timeoutSocket = 5000;
+            int timeoutSocket = 10000;
             HttpConnectionParams.setSoTimeout(httpParameters, timeoutSocket);
             URL urlObj = new URL(url);
-            HttpURLConnection httpURLConnection = (HttpURLConnection) urlObj.openConnection();
-            httpURLConnection.setReadTimeout(5000);
+            HttpURLConnection httpURLConnection = (HttpURLConnection)cn.openConnection(urlObj);
+            //HttpURLConnection httpURLConnection = (HttpURLConnection) urlObj.openConnection();
+            httpURLConnection.setReadTimeout(10000);
             httpURLConnection.addRequestProperty("Accept-Language", "en-US,en;q=0.8");
-            httpURLConnection.addRequestProperty("User-Agent", "Mozilla");
-            httpURLConnection.addRequestProperty("Referer", "google.com");
+            //httpURLConnection.addRequestProperty("User-Agent", "Mozilla");
+            //httpURLConnection.addRequestProperty("Referer", "google.com");
+            //Log.i(TAG, "Connecting to SL via http for device version ..");
             httpURLConnection.connect();
             int urlConResponseCode = httpURLConnection.getResponseCode();
+            String ver = "";
+            if (urlConResponseCode == HttpURLConnection.HTTP_OK) {
+                //InputStream in = new BufferedInputStream(httpURLConnection.getInputStream()); 
+                ver = new BufferedReader(new InputStreamReader(httpURLConnection.getInputStream())).lines().collect(Collectors.joining("\n"));
+                //Log.i(TAG,"slversion: " + ver);
+            } else {
+                //Log.i(TAG, "urlResponseCode: " + urlConResponseCode);
+            }
             httpURLConnection.getInputStream().close();
             httpURLConnection.disconnect();
-            //Log.i(TAG,"REDIRECT- getSLVersion / response code: " + urlConResponseCode);
+
+            //Log.i(TAG,"NOREDIRECT- getSLVersion / response code: " + urlConResponseCode);
             if (urlConResponseCode == HttpURLConnection.HTTP_MOVED_TEMP) {
                 //wasRedirected
                 didRedirect = true;
@@ -626,6 +914,7 @@ public class NetworkUtil {
                 url = HTTPS_ + baseUrl + "/param_product_version.txt";
                 //Log.i(TAG,"REDIRECT- getSLVersion / redirected url: " + url);
             }
+            /*//Log.i(TAG, "Creating http client to connect to SL via http for device version ..");
             HttpClient client = getNewHttpClient();
             HttpGet slResult = new HttpGet(url);
             HttpResponse response = client.execute(slResult);
@@ -635,11 +924,17 @@ public class NetworkUtil {
                 version = DeviceVersion.R1;
             } else if (html.equals("R2.0") || html.equals("2.0") || html.contains("2.0")) {
                 version = DeviceVersion.R2;
+            }*/
+            if (ver.equals("R1.0") || ver.contains("1.0")) {
+                version = DeviceVersion.R1;
+            } else if (ver.equals("R2.0") || ver.equals("2.0") || ver.contains("2.0")) {
+                version = DeviceVersion.R2;
             }
         } catch (Exception e) {
-    //  solution when we get exception on first try
+            //  solution when we get exception on first try
             e.printStackTrace();
             System.out.println(e);
+            //Log.e(TAG, "Exception getSLVersion " + e.toString());
 
             if(didRedirect) {
                 HttpClient client = getNewHttpClient();
@@ -670,7 +965,6 @@ public class NetworkUtil {
     }
 
     public static String getDeviceName(String baseUrl, DeviceVersion version) {
-
         String deviceName = "";
         String url = baseUrl;
         //Log.i(TAG,"REDIRECT- getDeviceName / url: " + url);
@@ -719,7 +1013,6 @@ public class NetworkUtil {
     }
 
     public static ArrayList<String> getSSIDListFromDevice(String baseUrl, DeviceVersion version) throws IOException {
-
         String url = baseUrl;
         //Log.i(TAG,"REDIRECT- getSSIDListFromDevice / url: " + url);
 
@@ -747,9 +1040,10 @@ public class NetworkUtil {
         ArrayList<String> list = new ArrayList<>();
 
         mLogger.info("*AP* Getting list of available access points from SL device, from url: " + url);
+        //Log.e(TAG, "getssidlistfromdevice getting list");
 
         try {
-            HttpParams httpParameters = new BasicHttpParams();
+            /*HttpParams httpParameters = new BasicHttpParams();
             // Set the timeout in milliseconds until a connection is established.
             // The default value is zero, that means the timeout is not used.
             int timeoutConnection = 3000;
@@ -763,13 +1057,47 @@ public class NetworkUtil {
             HttpResponse response = client.execute(request);
             String responseString = EntityUtils.toString(response.getEntity());
             mLogger.info("*AP* Got netlist with results: " + responseString);
-            String[] names = responseString.split(";");
+            */
+            //Log.i(TAG, "getssidlistfromdevice - Getting network instance");
+            Network cn = WifiNetworkUtils.getInstance(context).getCurrentNetwork();
+            HttpParams httpParameters = new BasicHttpParams();
+            // Set the timeout in milliseconds until a connection is established.
+            // The default value is zero, that means the timeout is not used.
+            int timeoutConnection = 5000;
+            HttpConnectionParams.setConnectionTimeout(httpParameters, timeoutConnection);
+            // Set the default socket timeout (SO_TIMEOUT)
+            // in milliseconds which is the timeout for waiting for data.
+            int timeoutSocket = 10000;
+            HttpConnectionParams.setSoTimeout(httpParameters, timeoutSocket);
+            URL urlObj = new URL(url);
+            HttpURLConnection httpURLConnection = (HttpURLConnection)cn.openConnection(urlObj);
+            //HttpURLConnection httpURLConnection = (HttpURLConnection) urlObj.openConnection();
+            httpURLConnection.setReadTimeout(10000);
+            httpURLConnection.addRequestProperty("Accept-Language", "en-US,en;q=0.8");
+            //httpURLConnection.addRequestProperty("User-Agent", "Mozilla");
+            //httpURLConnection.addRequestProperty("Referer", "google.com");
+            httpURLConnection.connect();
+            int urlConResponseCode = httpURLConnection.getResponseCode();
+            String ver = "";
+            if (urlConResponseCode == HttpURLConnection.HTTP_OK) {
+                //InputStream in = new BufferedInputStream(httpURLConnection.getInputStream()); 
+                ver = new BufferedReader(new InputStreamReader(httpURLConnection.getInputStream())).lines().collect(Collectors.joining("\n"));
+                //Log.i(TAG,"ssids available: " + ver);
+            } else {
+                //Log.i(TAG, "getssidlistfromdevice urlResponseCode: " + urlConResponseCode);
+            }
+            httpURLConnection.getInputStream().close();
+            httpURLConnection.disconnect();
+
+            //Log.i(TAG,"NOREDIRECT- getSLVersion / response code: " + urlConResponseCode);
+            String[] names = ver.split(";");//responseString.split(";");
             for (String name : names) {
                 if (!name.equals("X"))
                     list.add(name);
             }
         } catch (Exception e) {
             e.printStackTrace();
+            //Log.e(TAG, "Exception getssidlistfromdevice " + e.toString());
             mLogger.error("Failed to get netlist: " + e.getMessage());
             return null;
         }
@@ -874,18 +1202,57 @@ public class NetworkUtil {
             case UNKNOWN:
                 break;
         }
-        Boolean flag;
-        HttpClient client = getNewHttpClient();
+        Boolean flag = false;
+        //HttpClient client = getNewHttpClient();
         try {
-            String stateMachineUrl = url;
+            /*String stateMachineUrl = url;
             HttpPost rescanPost = new HttpPost(stateMachineUrl);
             List<NameValuePair> stateParam = new ArrayList<>(1);
             newDate = new String(newDate.getBytes("UTF-8"), "ISO-8859-1");
             stateParam.add(new BasicNameValuePair("__SL_P_S.J", newDate));
             rescanPost.setEntity(new UrlEncodedFormEntity(stateParam));
             client.execute(rescanPost);
-            flag = true;
+            flag = true;*/
+            Uri.Builder builder = new Uri.Builder();
+            Map<String, String> nameValuePairs = new HashMap<>(1);
+            nameValuePairs.put("__SL_P_S.J", newDate);
+            // Is this the best way to iterate over a map?
+            Iterator entries = nameValuePairs.entrySet().iterator();
+            while(entries.hasNext()) {
+                Map.Entry entry = (Map.Entry) entries.next();
+                builder.appendQueryParameter(entry.getKey().toString(), entry.getValue().toString());
+                entries.remove();
+            }
+            String reqBody = builder.build().getEncodedQuery();
+            //Log.i(TAG, "setDateTime- getting network instance to connect to: " + url);
+            //Log.i(TAG, "setDateTime- reqBody: " + reqBody);
+            Network cn = WifiNetworkUtils.getInstance(context).getCurrentNetwork();
+            int timeoutConnection = 5000;
+            int timeoutSocket = 10000;
+            URL urlObj = new URL(url);
+            HttpURLConnection httpURLConnection = (HttpURLConnection)cn.openConnection(urlObj);
+            httpURLConnection.setDoOutput(true);
+            OutputStream outpost = new BufferedOutputStream(httpURLConnection.getOutputStream());
+            //httpURLConnection.connect(); // presumably getting the ouput stream from the connection makes a connection?
+            BufferedWriter writer = new BufferedWriter(new OutputStreamWriter(outpost, "utf-8"));
+            writer.write(reqBody);
+            writer.flush();
+            writer.close();
+            outpost.close();
+            int urlConResponseCode = httpURLConnection.getResponseCode();
+            String ver = "";
+            if (urlConResponseCode == HttpURLConnection.HTTP_OK
+               || urlConResponseCode == HttpURLConnection.HTTP_NO_CONTENT
+               || urlConResponseCode == HttpURLConnection.HTTP_ACCEPTED) {
+                //InputStream in = new BufferedInputStream(httpURLConnection.getInputStream()); 
+                ver = new BufferedReader(new InputStreamReader(httpURLConnection.getInputStream())).lines().collect(Collectors.joining("\n"));
+                //Log.i(TAG,"setDateTime response: " + ver + " responsecode: " + urlConResponseCode);
+                flag = true;
+            } else {
+                //Log.i(TAG, "setDateTime urlResponseCode: " + urlConResponseCode);
+            }
         } catch (Exception e) {
+            //Log.e(TAG, "setDateTime exception:" + e.toString());
             e.printStackTrace();
             flag = false;
         }
@@ -918,28 +1285,71 @@ public class NetworkUtil {
             case UNKNOWN:
                 break;
         }
-        Boolean flag;
-        HttpClient client = getNewHttpClient();
+        Boolean flag = false;
+        //HttpClient client = getNewHttpClient();
         try {
-            String stateMachineUrl = url;
+            /*String stateMachineUrl = url;
             HttpPost addOwnerPost = new HttpPost(stateMachineUrl);
             addOwnerPost.setHeader("Referer", referer);
             addOwnerPost.setHeader("Etag", coords);
             mLogger.info("setOwner headers " + url + " "  + referer + " " + coords); 
+            */
             //addOwnerPost.setHeader("Content-Length", Integer.toString(referer.length()));
             // List<NameValuePair> stateParam = new ArrayList<>(1);
             // configurer = new String(configurer.getBytes("UTF-8"), "ISO-8859-1");
             // stateParam.add(new BasicNameValuePair("configurer", configurer));
             // addOwnerPost.setEntity(new UrlEncodedFormEntity(stateParam));
-            client.execute(addOwnerPost);
-            flag = true;
+            //
+            /*client.execute(addOwnerPost);
+            flag = true;*/
+            Uri.Builder builder = new Uri.Builder();
+            Map<String, String> nameValuePairs = new HashMap<>(1);
+            nameValuePairs.put("referer", referer);
+            // Is this the best way to iterate over a map?
+            Iterator entries = nameValuePairs.entrySet().iterator();
+            while(entries.hasNext()) {
+                Map.Entry entry = (Map.Entry) entries.next();
+                builder.appendQueryParameter(entry.getKey().toString(), entry.getValue().toString());
+                entries.remove();
+            }
+            String reqBody = builder.build().getEncodedQuery();
+            //Log.i(TAG, "setOwner- getting network instance to connect to: " + url);
+            //Log.i(TAG, "setOwner- reqBody: " + reqBody);
+            Network cn = WifiNetworkUtils.getInstance(context).getCurrentNetwork();
+            int timeoutConnection = 5000;
+            int timeoutSocket = 10000;
+            URL urlObj = new URL(url);
+            HttpURLConnection httpURLConnection = (HttpURLConnection)cn.openConnection(urlObj);
+            httpURLConnection.setDoOutput(true);
+            httpURLConnection.setRequestProperty("Referer", referer);
+            httpURLConnection.setRequestProperty("Etag", coords);
+            OutputStream outpost = new BufferedOutputStream(httpURLConnection.getOutputStream());
+            //httpURLConnection.connect(); // presumably getting the ouput stream from the connection makes a connection?
+            BufferedWriter writer = new BufferedWriter(new OutputStreamWriter(outpost, "utf-8"));
+            writer.write(reqBody);
+            writer.flush();
+            writer.close();
+            outpost.close();
+            int urlConResponseCode = httpURLConnection.getResponseCode();
+            String ver = "";
+            if (urlConResponseCode == HttpURLConnection.HTTP_OK
+               || urlConResponseCode == HttpURLConnection.HTTP_NO_CONTENT
+               || urlConResponseCode == HttpURLConnection.HTTP_ACCEPTED) {
+                //InputStream in = new BufferedInputStream(httpURLConnection.getInputStream()); 
+                ver = new BufferedReader(new InputStreamReader(httpURLConnection.getInputStream())).lines().collect(Collectors.joining("\n"));
+                //Log.i(TAG,"setOwner response: " + ver);
+                flag = true;
+            } else {
+                //Log.i(TAG, "setOwner urlResponseCode: " + urlConResponseCode);
+            }
         } catch (Exception e) {
             e.printStackTrace();
-            //Log.i(TAG,"setOwner exception: " + e.toString());
+            //Log.e(TAG,"setOwner exception: " + e.toString());
             flag = false;
         }
         return flag;
 }
+
     public static Boolean setNewDeviceName(String newName, String baseUrl, DeviceVersion version) throws CertificateException {
         String url = baseUrl;
         //Log.i(TAG,"REDIRECT- setNewDeviceName / url: " + url);
@@ -962,18 +1372,58 @@ public class NetworkUtil {
             case UNKNOWN:
                 break;
         }
-        Boolean flag;
-        HttpClient client = getNewHttpClient();
+        Boolean flag = false;
+        //HttpClient client = getNewHttpClient();
         try {
-            String stateMachineUrl = url;
+            /*String stateMachineUrl = url;
             HttpPost rescanPost = new HttpPost(stateMachineUrl);
             List<NameValuePair> stateParam = new ArrayList<>(1);
             newName = new String(newName.getBytes("UTF-8"), "ISO-8859-1");
             stateParam.add(new BasicNameValuePair("__SL_P_S.B", newName));
             rescanPost.setEntity(new UrlEncodedFormEntity(stateParam));
             client.execute(rescanPost);
+            flag = true;*/
+            Uri.Builder builder = new Uri.Builder();
+            Map<String, String> nameValuePairs = new HashMap<>(1);
+            nameValuePairs.put("__SL_P_S.B", newName);
+            // Is this the best way to iterate over a map?
+            Iterator entries = nameValuePairs.entrySet().iterator();
+            while(entries.hasNext()) {
+                Map.Entry entry = (Map.Entry) entries.next();
+                builder.appendQueryParameter(entry.getKey().toString(), entry.getValue().toString());
+                entries.remove();
+            }
+            String reqBody = builder.build().getEncodedQuery();
+            //Log.i(TAG, "setDeviceName - getting network instance to connect to: " + url);
+            //Log.i(TAG, "setDeviceName - reqBody: " + reqBody);
+            Network cn = WifiNetworkUtils.getInstance(context).getCurrentNetwork();
+            int timeoutConnection = 5000;
+            int timeoutSocket = 10000;
+            URL urlObj = new URL(url);
+            HttpURLConnection httpURLConnection = (HttpURLConnection)cn.openConnection(urlObj);
+            httpURLConnection.setDoOutput(true);
+            OutputStream outpost = new BufferedOutputStream(httpURLConnection.getOutputStream());
+            //httpURLConnection.connect(); // presumably getting the ouput stream from the connection makes a connection?
+            BufferedWriter writer = new BufferedWriter(new OutputStreamWriter(outpost, "utf-8"));
+            writer.write(reqBody);
+            writer.flush();
+            writer.close();
+            outpost.close();
+            int urlConResponseCode = httpURLConnection.getResponseCode();
+            String ver = "";
+            if (urlConResponseCode == HttpURLConnection.HTTP_OK
+               || urlConResponseCode == HttpURLConnection.HTTP_NO_CONTENT
+               || urlConResponseCode == HttpURLConnection.HTTP_ACCEPTED) {
+                //InputStream in = new BufferedInputStream(httpURLConnection.getInputStream()); 
+                ver = new BufferedReader(new InputStreamReader(httpURLConnection.getInputStream())).lines().collect(Collectors.joining("\n"));
+                //Log.i(TAG,"setDeviceName response: " + ver);
+                flag = true;
+            } else {
+                //Log.i(TAG, "setDeviceName urlResponseCode: " + urlConResponseCode);
+            }
             flag = true;
         } catch (Exception e) {
+            //Log.e(TAG,"setDeviceName exception: " + e.toString());
             e.printStackTrace();
             flag = false;
         }
@@ -1052,10 +1502,10 @@ public class NetworkUtil {
                 break;
         }
 
-        String result;
+        String result = "";
 
         try {
-            HttpParams httpParameters = new BasicHttpParams();
+            /*HttpParams httpParameters = new BasicHttpParams();
             // Set the timeout in milliseconds until a connection is established.
             // The default value is zero, that means the timeout is not used.
             int timeoutConnection = 3000;
@@ -1075,11 +1525,39 @@ public class NetworkUtil {
             } else {
                 //Log.i(TAG, "CFG result returned: " + result);
                 mLogger.info("CFG result returned: " + result);
+            }*/
+            //Log.i(TAG, "getCGFResultFromDevice - Getting network instance");
+            Network cn = WifiNetworkUtils.getInstance(context).getCurrentNetwork();
+            URL urlObj = new URL(url);
+            HttpURLConnection httpURLConnection = (HttpURLConnection)cn.openConnection(urlObj);
+            httpURLConnection.setReadTimeout(10000);
+            httpURLConnection.addRequestProperty("Accept-Language", "en-US,en;q=0.8");
+            //Log.i(TAG, "Connecting to SL via http for config result ..");
+            httpURLConnection.connect();
+            int urlConResponseCode = httpURLConnection.getResponseCode();
+            if (urlConResponseCode == HttpURLConnection.HTTP_OK) {
+                result = new BufferedReader(new InputStreamReader(httpURLConnection.getInputStream())).lines().collect(Collectors.joining("\n"));
+                //Log.i(TAG,"cfgresult: " + result);
+            } else {
+                //Log.i(TAG, "cfgresult urlResponseCode: " + urlConResponseCode);
             }
+            httpURLConnection.getInputStream().close();
+            httpURLConnection.disconnect();
 
+            //Log.i(TAG,"cfgresult / response code: " + urlConResponseCode);
+            if (urlConResponseCode == HttpURLConnection.HTTP_MOVED_TEMP) {
+                //wasRedirected
+                didRedirect = true;
+                //Log.i(TAG,"REDIRECT - cfgResult / did redirect: " + didRedirect);
+                if (baseUrl.startsWith("http")) {
+                    baseUrl = baseUrl.substring(baseUrl.indexOf(":"),baseUrl.length());
+                }
+                url = HTTPS_ + baseUrl + "/param_cfg_result.txt";
+                //Log.i(TAG,"REDIRECT - cfgresult / redirected url: " + url);
+            }
         } catch (Exception e) {
             e.printStackTrace();
-            //Log.e(TAG, "Failed to get CFG result");
+            //Log.e(TAG, "Exception failed to get CFG result" + e.getMessage());
             mLogger.info("Failed to get CFG result");
             result = "Timeout";
         }
@@ -1293,10 +1771,8 @@ public class NetworkUtil {
     }
 
     public static Device_Type_Enum slDeviceOTAAndType(String baseUrl) {
-
         //Log.i(TAG, "slDeviceOTAAndType started");
-
-//		String url = baseUrl + "/device?appid";
+        //String url = baseUrl + "/device?appid";
         String url = baseUrl + "/device?appname";
         //Log.i(TAG, "slDeviceOTAAndType url: " + url);
         //Log.i(TAG, "REDIRECT- slDeviceOTAAndType / url: " + url);
@@ -1348,11 +1824,9 @@ public class NetworkUtil {
         }
         //Log.i(TAG, "slDeviceOTAAndType result: " + deviceTypeEnum);
         return deviceTypeEnum;
-
     }
 
     public static String getDeviceIp(String baseUrl) {
-
         String url = baseUrl;
         url += "/__SL_G_PIP";
         //Log.i(TAG, "REDIRECT- getDeviceIp / url: " + url);

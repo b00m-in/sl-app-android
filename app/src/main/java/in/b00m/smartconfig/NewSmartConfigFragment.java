@@ -85,6 +85,7 @@ import android.content.DialogInterface.OnClickListener;
 import android.content.SharedPreferences;
 import android.graphics.Color;
 import android.net.ConnectivityManager;
+import android.net.Network;
 import android.net.NetworkInfo;
 import android.net.wifi.ScanResult;
 import android.net.wifi.WifiConfiguration;
@@ -266,12 +267,12 @@ public class NewSmartConfigFragment extends Fragment {
                 return;
             }
             if (waitForScanFinishForRestart) {
-                //Log.i(TAG, "mDNS scan completed, restarting scan");
+                ////Log.i(TAG, "mDNS scan completed, restarting scan");
                 mLogger.info("*SC* M scan completed, restarting scan");
                 waitForScanFinishForRestart = false;
                 lookForNewDevice();
             } else if (waitForScanFinish && !foundNewDevice && (ssidToAdd != null && !ssidToAdd.equals(""))) {
-                //Log.i(TAG, "mDNS scan completed, device wasn't found");
+                ////Log.i(TAG, "mDNS scan completed, device wasn't found");
                 mLogger.info("*SC* M scan completed, SL device was not found");
                 if (progressDialog != null && progressDialog.isShowing())
                     progressDialog.dismiss();
@@ -316,7 +317,7 @@ public class NewSmartConfigFragment extends Fragment {
             String currentSSID = NetworkUtil.getConnectedSSID(mainActivity);
             if (currentSSID != null) {
                 if (!currentSSID.equals(ssidToAdd)) {
-                    //Log.i(TAG, "not in config network - can not be the configured SL device");
+                    ////Log.i(TAG, "not in config network - can not be the configured SL device");
                     return;
                 }
             }
@@ -334,7 +335,7 @@ public class NewSmartConfigFragment extends Fragment {
             Boolean nameIsValid = false;
             String name = null;
             String nameToLookFor = uiDeviceName;
-            //Log.i(TAG, "SL device name to look for: " + nameToLookFor);
+            ////Log.i(TAG, "SL device name to look for: " + nameToLookFor);
             if (nameToLookFor != null) {
                 if (nameToLookFor.length() > 0) {
                     try {
@@ -348,7 +349,7 @@ public class NewSmartConfigFragment extends Fragment {
                             try {
                                 mLogger.info("*SC* Requested SL device found - Stop SmartConfig transmission");
                                 smartConfig.stopTransmitting();
-                                //Log.i(TAG, "Broadcasting information to network finished");
+                                ////Log.i(TAG, "Broadcasting information to network finished");
                                 mLogger.info("*SC* Requested SL device found - SmartConfig Broadcasting configuration information to network finished");
                             } catch (Exception e) {
                                 e.printStackTrace();
@@ -370,7 +371,7 @@ public class NewSmartConfigFragment extends Fragment {
                         prefs.isSmartConfigActive().put(false);
                         try {
                             smartConfig.stopTransmitting();
-                            //Log.i(TAG, "Broadcasting information to network finished");
+                            ////Log.i(TAG, "Broadcasting information to network finished");
                             mLogger.info("*SC* Requested SL device found - SmartConfig Broadcasting configuration information to network finished");
                         } catch (Exception e) {
                             e.printStackTrace();
@@ -390,7 +391,7 @@ public class NewSmartConfigFragment extends Fragment {
             if (deviceJSON != null && !foundNewDevice) {
                 ((MainActivity) getActivity()).stopPing();
                 waitForScanFinish = false;
-                //Log.i(TAG, "The device that was found was new");
+                ////Log.i(TAG, "The device that was found was new");
                 mLogger.info("*SC* The SL device that was found was new - and is the requested SL device that was just set");
                 if (progressDialog != null && progressDialog.isShowing()) {
                     progressDialog.dismiss();
@@ -400,7 +401,7 @@ public class NewSmartConfigFragment extends Fragment {
                     String host = deviceJSON.getString("host");
                     String hostUrl = "http://" + host;
                     mDevice = new Device(name, host);
-                    //Log.i(TAG, "Set mDevice name: " + name + " host: " + host);
+                    ////Log.i(TAG, "Set mDevice name: " + name + " host: " + host);
                     mLogger.info("*SC* Set the SL device found as the device to obtain cfg verification from -   mDevice name: " + name + ", host: " + host);
                     mLogger.info("*SC* Cfg verification process via SL device as STA begins");
                     cgfTryNumber = 0;
@@ -451,6 +452,10 @@ public class NewSmartConfigFragment extends Fragment {
                     showLoaderWithText(false, null);
                     mainActivity.showSuccessDialog("Failed to connect to simple link for confirmation", getString(R.string.pop_up_close), null, PopupType.Failure, null, null);
                 }
+                @Override
+                public void successfulConnectionToNetwork(Network activeNetwork) {
+                    //Log.i(TAG, "smartconfig checkparams: successful connection to :" + activeNetwork.toString());
+                }
             }, true);
         } else {
             confirmResult();
@@ -467,7 +472,7 @@ public class NewSmartConfigFragment extends Fragment {
     private void finish(final Boolean moveToDevices) {
         try {
             smartConfig.stopTransmitting();
-            //Log.i(TAG, "Broadcasting information to network finished");
+            ////Log.i(TAG, "Broadcasting information to network finished");
             mLogger.info("*SC* SmartConfig Broadcasting configuration information to network finished");
         } catch (Exception e) {
             e.printStackTrace();
@@ -505,11 +510,15 @@ public class NewSmartConfigFragment extends Fragment {
                     mLogger.error("*SC* Failed to connect to starting network: \"" + startingSSID + "\"");
                     showToastWithMessage("Failed to connect to starting network " + startingSSID);
                 }
+                @Override
+                public void successfulConnectionToNetwork(Network activeNetwork) {
+                    //Log.i(TAG, "smartconfig finish: successful connection to :" + activeNetwork.toString());
+                }
             }, true);
 
         }else {
             mLogger.info("Initial network is null - will not attempt to connect");
-            //Log.i(TAG,"Initial network is null - will not attempt to connect");
+            ////Log.i(TAG,"Initial network is null - will not attempt to connect");
             showToastWithMessage("No initial network to connect to");
         }
 
@@ -708,7 +717,7 @@ public class NewSmartConfigFragment extends Fragment {
         //Check to see if the starting network is null
         startingSSID = ((MainActivity) getActivity()).mStartingWifiNetwork;
         String connectedWifi = NetworkUtil.getConnectedSSID(getActivity());
-        //Log.i(TAG, "StartingSSID: " + startingSSID);
+        ////Log.i(TAG, "StartingSSID: " + startingSSID);
         if (startingSSID == null && connectedWifi == null) {
             mLogger.info("*AP* Showing \"no wifi activity\" dialog, because the starting network is null and we are not connected to any network now");
             AlertDialog wifiDialog = new AlertDialog.Builder(getActivity()). //create a dialog
@@ -1045,6 +1054,10 @@ public class NewSmartConfigFragment extends Fragment {
                     failedToConnectToSLForConfirmation(failure);
                     wrongPassword = true;
                 }
+                @Override
+                public void successfulConnectionToNetwork(Network activeNetwork) {
+                    //Log.i(TAG, "smartconfig tab_device_configuration_sc_start_button: successful connection to :" + activeNetwork.toString());
+                }
             }, false);
         } else {
             v.vibrate(100);
@@ -1123,7 +1136,7 @@ public class NewSmartConfigFragment extends Fragment {
      * @see in.b00m.smartconfig.NewSmartConfigFragment.GetCFGResult
      */
     private void getCFG() {
-        //Log.i(TAG, "getCFG Started");
+        ////Log.i(TAG, "getCFG Started");
         mLogger.info("*SC* getCFG Started");
         mLogger.info("*SC* Number of attempts previously made to retrieve cfg verification from SL device: " + cgfTryNumber);
         if (cgfTryNumber >= Constants.ATTEMPTS_TO_GET_CGF_RESULTS) {
@@ -1140,7 +1153,7 @@ public class NewSmartConfigFragment extends Fragment {
         }
         prefs.isSmartConfigActive().put(false);
         mSmartConfigInProgress = false;
-        //Log.i(TAG, "Confirming your configuration");
+        ////Log.i(TAG, "Confirming your configuration");
         showLoaderWithText(true,"Confirming your configuration");
         mLogger.info("*SC* Retrieving cfg verification from SL device");
         String uuidStr = "";
@@ -1179,7 +1192,7 @@ public class NewSmartConfigFragment extends Fragment {
             if (result != null && NetworkUtil.getResultTypeCFGString(result) == CFG_Result_Enum.Not_Started) {
                 mGetCFGFromSC = false;
             }
-            //Log.i(TAG, "onPostExecute mGetCFGFromSC = " + mGetCFGFromSC);
+            ////Log.i(TAG, "onPostExecute mGetCFGFromSC = " + mGetCFGFromSC);
             mLogger.info("*SC* Cfg result text: " + result);
             mLogger.info("*SC* onPostExecute mGetCFGFromSC = " + mGetCFGFromSC);
             if (mGetCFGFromSC) {
@@ -1226,7 +1239,7 @@ public class NewSmartConfigFragment extends Fragment {
                         SharedPreferences.Editor editor = sharedpreferences.edit();
                         editor.putString(Name, simplelinkDeviceIp);
                         editor.commit();
-                        //Log.i(TAG, "Entered IP into SP: " + mDevice.host);
+                        ////Log.i(TAG, "Entered IP into SP: " + mDevice.host);
                         mLogger.info("*SC* Entered IP into SP: " + mDevice.host);
                     }
                         finish(true);
@@ -1249,13 +1262,13 @@ public class NewSmartConfigFragment extends Fragment {
                             mLogger.info("*SC* *** SL device provisioning in SC mode ended unsuccessfully - no network to send to SL device in profile to connect to was chosen ***");
                         } else if (ssidToAdd != null) {
                             if (secondAPAAttemptCommitted) {
-                                //Log.i(TAG, "second attempt at APA already committed - so finished unsuccessfully");
+                                ////Log.i(TAG, "second attempt at APA already committed - so finished unsuccessfully");
                                 mainActivity.showSuccessDialog("Provisioning Unsuccessful", getString(R.string.pop_up_close), null, PopupType.Failure, null, null);
                                 mLogger.info("*SC* *** SL device provisioning in SC mode ended unsuccessfully - SL device is  not connected to the network ***");
                                 finish(false);
                             } else {
                                 showLoaderWithText(true, "Starting configuration");
-                                //Log.i(TAG, "Provisioning process has not started yet - so running AddProfileAsyncTask");
+                                ////Log.i(TAG, "Provisioning process has not started yet - so running AddProfileAsyncTask");
                                 mLogger.info("*SC* *** SL device provisioning in SC mode ended unsuccessfully - network was chosen for profile, but profile addition was unsuccessful" +
                                         " - another attempt at AddProfileAsyncTask will commence now via SL device as AP ***");
                                 secondAPAAttemptCommitted = true;
@@ -1274,7 +1287,7 @@ public class NewSmartConfigFragment extends Fragment {
                                 }
                             }
                         } else {
-                            //Log.i(TAG, "Provisioning process has not started yet, and no access point was chosen for Wi-Fi profile");
+                            ////Log.i(TAG, "Provisioning process has not started yet, and no access point was chosen for Wi-Fi profile");
                             mLogger.info("*SC* *** SL device provisioning in SC mode ended unsuccessfully - no network to send to SL device in profile to connect to was chosen ***");
                         }
                     } else if (NetworkUtil.getResultTypeCFGString(result) == CFG_Result_Enum.Success) {
@@ -1315,7 +1328,7 @@ public class NewSmartConfigFragment extends Fragment {
         @Override
         protected String doInBackground(String... params) {
             //Log.e(TAG,"INSIDE doInBackground***");
-            //Log.i(TAG, "GetCFGResult doInBackground Started");
+            ////Log.i(TAG, "GetCFGResult doInBackground Started");
             mLogger.info("*SC* GetCFGResult doInBackground Started");
             String result = null;
             String baseUrl = params[0];
@@ -1337,26 +1350,26 @@ public class NewSmartConfigFragment extends Fragment {
                 print("Getting confirmation from SimpleLink device url: " + baseUrl);
                 mLogger.info("*SC* Getting cfg verification from SimpleLink device url: " + baseUrl);
                 DeviceVersion deviceVersion = NetworkUtil.getSLVersion(baseUrl);
-                //Log.i(TAG, "Device version:" + deviceVersion);
+                ////Log.i(TAG, "Device version:" + deviceVersion);
                 mLogger.info("*SC* SL Device version: " + deviceVersion);
                 if (!uuidStr.equals("")) {
-                    //Log.i(TAG, "Set uuid: " + uuidStr);
+                    ////Log.i(TAG, "Set uuid: " + uuidStr);
                     mLogger.info("*SC* Set uuid: " + uuidStr);
                     if (!NetworkUtil.setIotUuid(uuidStr, baseUrl)) {
-                        //Log.i(TAG, "Set uuid failed " + uuidStr);
+                        ////Log.i(TAG, "Set uuid failed " + uuidStr);
                         mLogger.info("*SC* Set uuid failed " + uuidStr);
                     }
                 }
 
                 resultString = NetworkUtil.getCGFResultFromDevice(baseUrl, deviceVersion);
-                //Log.i(TAG, "Device resultString:" + resultString);
+                ////Log.i(TAG, "Device resultString:" + resultString);
                 mLogger.info("*SC* Device resultString: " + resultString);
                 //print("Got response: " + resultString);
                 CFG_Result_Enum result_Enum = NetworkUtil.cfgEnumForResponse(resultString);
-                //Log.i(TAG, "result_Enum: " + result_Enum);
+                ////Log.i(TAG, "result_Enum: " + result_Enum);
                 mLogger.info("result_Enum: " + result_Enum);
                 result = NetworkUtil.getErrorMsgForCFGResult(result_Enum);
-                //Log.i(TAG, "result: " + result);
+                ////Log.i(TAG, "result: " + result);
                 mLogger.info("result: " + result);
             } catch (Exception e) {
                 e.printStackTrace();
@@ -1469,6 +1482,10 @@ public class NewSmartConfigFragment extends Fragment {
                                     break;
                             }
                         }
+                        @Override
+                        public void successfulConnectionToNetwork(Network activeNetwork) {
+                            //Log.i(TAG, "smartconfig appprofilecompleted: successful connection to :" + activeNetwork.toString());
+                        }
                     }, true);
                 } else {
                     WifiNetworkUtils.getInstance(mainActivity).clearCallback();
@@ -1511,6 +1528,10 @@ public class NewSmartConfigFragment extends Fragment {
                                     break;
                             }
                         }
+                        @Override
+                        public void successfulConnectionToNetwork(Network activeNetwork) {
+                            //Log.i(TAG, "smartconfig addprofilecompleted: successful connection to :" + activeNetwork.toString());
+                        }
                     }, true);
                 }
             }
@@ -1530,17 +1551,17 @@ public class NewSmartConfigFragment extends Fragment {
 
         @Override
         protected Device_Type_Enum doInBackground(String... params) {
-            //Log.i(TAG, "OTAAndType doInBackground");
+            ////Log.i(TAG, "OTAAndType doInBackground");
             Device_Type_Enum deviceTypeEnum = null;
             try {
                 String baseUrl = "://" + mDevice.host;
-                //Log.i(TAG, "OTAAndType baseUrl: " + baseUrl);
+                ////Log.i(TAG, "OTAAndType baseUrl: " + baseUrl);
                 try {
                     deviceTypeEnum = NetworkUtil.slDeviceOTAAndType(baseUrl);
                 } catch (Exception e) {
                     e.printStackTrace();
                 }
-                //Log.i(TAG, "OTAAndTypeA: " + deviceTypeEnum);
+                ////Log.i(TAG, "OTAAndTypeA: " + deviceTypeEnum);
             } catch (NullPointerException e) {
                 e.printStackTrace();
             }
@@ -1550,9 +1571,9 @@ public class NewSmartConfigFragment extends Fragment {
         @Override
         protected void onPostExecute(Device_Type_Enum deviceTypeEnum) {
             super.onPostExecute(deviceTypeEnum);
-            //Log.i(TAG, "OTAAndType onPost, result: " + deviceTypeEnum);
+            ////Log.i(TAG, "OTAAndType onPost, result: " + deviceTypeEnum);
             mainActivity.deviceTypeEnum = deviceTypeEnum;
-            //Log.i(TAG, "OTAAndType set result to main: " + mainActivity.deviceTypeEnum);
+            ////Log.i(TAG, "OTAAndType set result to main: " + mainActivity.deviceTypeEnum);
                 mainActivity.clearAllTabs();
             if (startingSSID != null && startingSSID.equalsIgnoreCase(WifiNetworkUtils.getInstance(mainActivity).getConnectedSSID())) {
                 //refresh tabs in order to display extra tabs - and move to Devices tab
@@ -1747,7 +1768,7 @@ public class NewSmartConfigFragment extends Fragment {
         handlerForTransmit.removeCallbacks(smartConfigRunner);
         showProgressDialog(prefs.smartConfigTransmitTime().get() * 1000, "Sending network configuration");
         if (!prefs.isScanning().get()) {
-            //Log.i(TAG, "Start smart config - start scan");
+            ////Log.i(TAG, "Start smart config - start scan");
             mLogger.info("*SC* Start smart config - start mDNS discovery + PingBcast to find new SL devices");
             mainActivity.scanForDevices();
             try {
@@ -1756,7 +1777,7 @@ public class NewSmartConfigFragment extends Fragment {
                 e.printStackTrace();
             }
         } else {
-            //Log.i(TAG, "Start smart config - already scan");
+            ////Log.i(TAG, "Start smart config - already scan");
             mLogger.info("*SC* Start smart config - already scanning for new SL devices");
         }
         prefs.isSmartConfigActive().put(true);
@@ -1765,7 +1786,7 @@ public class NewSmartConfigFragment extends Fragment {
         prefs.scanningDisable().put(true);
         setToReady(false);
         startingSSID = mainActivity.mStartingWifiNetwork;
-        //Log.i(TAG, "Starting network is " + startingSSID + ".. Will return to it when it all ends");
+        ////Log.i(TAG, "Starting network is " + startingSSID + ".. Will return to it when it all ends");
 
         if ((ssidToAdd == null || ssidToAdd.equals(""))) {
             print("Please choose network first");
@@ -1813,7 +1834,7 @@ public class NewSmartConfigFragment extends Fragment {
             }
             int transmitTime = 40;
 
-            //Log.i(TAG, "Broadcasting information to network");
+            ////Log.i(TAG, "Broadcasting information to network");
             mLogger.info("*SC* Broadcasting configuration information to network via SmartConfig");
             smartConfig.transmitSettings();
             print("Broadcasting");
@@ -1822,13 +1843,13 @@ public class NewSmartConfigFragment extends Fragment {
             smartConfigRunner = new Runnable() {
                 @Override
                 public void run() {
-                    //Log.i(TAG, "running smartConfigRunner");
+                    ////Log.i(TAG, "running smartConfigRunner");
                     mLogger.info("*SC* running smartConfigRunner");
                     prefs.isSmartConfigActive().put(false);
 
                     try {
                         smartConfig.stopTransmitting();
-                        //Log.i(TAG, "Broadcasting information to network finished");
+                        ////Log.i(TAG, "Broadcasting information to network finished");
                         mLogger.info("*SC* SmartConfig Broadcasting configuration information to network finished");
                     } catch (Exception e) {
                         e.printStackTrace();
@@ -1864,14 +1885,16 @@ public class NewSmartConfigFragment extends Fragment {
                                 waitForScanFinishForRestart = false;
                                 lookForNewDevice();
                             }
-
                             @Override
                             public void failedToConnectToNetwork(WifiConnectionFailure failure) {
                                 mLogger.info("*SC* Failed to connect to the network sent to SL device as profile to connect to -" +
                                         " can not look for new SL devices in the local network");
                                 showLoaderWithText(false, "");
                                 showToastWithMessage("Failed to connect to the network");
-
+                            }
+                            @Override
+                            public void successfulConnectionToNetwork(Network activeNetwork) {
+                                //Log.i(TAG, "smartconfig smartconfig(): successful connection to :" + activeNetwork.toString());
                             }
                         }, true);
                     }
@@ -1884,7 +1907,7 @@ public class NewSmartConfigFragment extends Fragment {
             mLogger.info("*SC* Failed to start smart config");
         }
         handlerForTransmit.postDelayed(smartConfigRunner, 40 * 1000);
-        //Log.i(TAG, "smartConfigRunner ended");
+        ////Log.i(TAG, "smartConfigRunner ended");
         mLogger.info("*SC* smartConfigRunner ended");
     }
 
@@ -2049,7 +2072,7 @@ public class NewSmartConfigFragment extends Fragment {
      * @see MainActivity#scanForDevices()
      */
     private void startScan() {
-        //Log.i(TAG, "Starting mDNS scan");
+        ////Log.i(TAG, "Starting mDNS scan");
         mLogger.info("*SC* Start M scan");
         mainActivity.scanForDevices();
     }
@@ -2061,7 +2084,7 @@ public class NewSmartConfigFragment extends Fragment {
      * @see MainActivity#stopScanning()
      */
     private void stopScan() {
-        //Log.i(TAG, "Stopping mDNS scan");
+        ////Log.i(TAG, "Stopping mDNS scan");
         mLogger.info("*SC* Stop M scan");
         mainActivity.stopScanning();
     }
@@ -2273,6 +2296,10 @@ public class NewSmartConfigFragment extends Fragment {
                 WifiNetworkUtils.getInstance(mainActivity).clearCallback();
                 failedToConnectToSLForConfirmation(failure);
             }
+            @Override
+            public void successfulConnectionToNetwork(Network activeNetwork) {
+                //Log.i(TAG, "smartconfig devicewaschosen: successful connection to :" + activeNetwork.toString());
+            }
         }, false);
     }
 
@@ -2333,6 +2360,10 @@ public class NewSmartConfigFragment extends Fragment {
                     mIsReady = false;
                     setToReady(mIsReady);
                 }
+                @Override
+                public void successfulConnectionToNetwork(Network activeNetwork) {
+                    //Log.i(TAG, "smartconfig closedialog: successful connection to :" + activeNetwork.toString());
+                }
             }, true);
        }
     }
@@ -2390,7 +2421,7 @@ public class NewSmartConfigFragment extends Fragment {
 
         @Override
         protected void onPostExecute(DeviceVersion result) {
-            //Log.i(TAG, "GetDeviceVersion - onPostExecute, result=" + result);
+            ////Log.i(TAG, "GetDeviceVersion - onPostExecute, result=" + result);
             mLogger.info("*SC* GetDeviceVersion result=" + result);
             if (result != DeviceVersion.UNKNOWN) {
                 mGetCFGFromSC = false;
@@ -2417,7 +2448,7 @@ public class NewSmartConfigFragment extends Fragment {
 
         @Override
         protected DeviceVersion doInBackground(String... params) {
-            //Log.i(TAG, "GetDeviceVersion - doInBackground");
+            ////Log.i(TAG, "GetDeviceVersion - doInBackground");
             mLogger.info("*SC* GetDeviceVersion - doInBackground");
             DeviceVersion deviceVersion = DeviceVersion.UNKNOWN;
             try {
@@ -2433,7 +2464,7 @@ public class NewSmartConfigFragment extends Fragment {
         @Override
         protected void onPostExecute(String ip) {
             super.onPostExecute(ip);
-            //Log.i(TAG, "GetDeviceIP - OnPostExecute, ip: " + ip);
+            ////Log.i(TAG, "GetDeviceIP - OnPostExecute, ip: " + ip);
             mLogger.info("*SC* GetDeviceIP - onPostExecute, ip: " + ip);
             if (!ip.equals("")) {
                 if (chosenDevice != null) {
@@ -2446,7 +2477,7 @@ public class NewSmartConfigFragment extends Fragment {
 
         @Override
         protected String doInBackground(String... params) {
-            //Log.i(TAG, "GetDeviceIP - DoInBackground");
+            ////Log.i(TAG, "GetDeviceIP - DoInBackground");
             mLogger.info("*SC* GetDeviceIP - doInBackground");
             String deviceIp = "";
             deviceIp = NetworkUtil.getDeviceIp(Constants.BASE_URL_NO_HTTP);

@@ -61,14 +61,14 @@ import org.androidannotations.annotations.EBean;
 @EBean
 public class MDnsHelper implements ServiceListener, ServiceTypeListener {
 
-	public static final String SERVICE_TYPE = "_http._tcp.local.";
-	public static final String SMARTCONFIG_IDENTIFIER = "srcvers=1D90645";
-	private static final String TAG = "MDnsHelper";
+    public static final String SERVICE_TYPE = "_http._tcp.local.";
+    public static final String SMARTCONFIG_IDENTIFIER = "srcvers=1D90645";
+    private static final String TAG = "MDnsHelper";
 
-	Activity activity;
-	MDnsCallbackInterface callback;
-//	private JmDNS jmdns;
-	private JmDNSImpl jmdns;
+    Activity activity;
+    MDnsCallbackInterface callback;
+    //	private JmDNS jmdns;
+    private JmDNSImpl jmdns;
     private MulticastLock multicastLock;
     WifiManager wm;
     InetAddress bindingAddress;
@@ -86,31 +86,31 @@ public class MDnsHelper implements ServiceListener, ServiceTypeListener {
 
 	@Background
 	public void startDiscovery() {
-		synchronized(this) {
-			if (isDiscovering)
-				return;
-			final InetAddress deviceIpAddress = getDeviceIpAddress(wm);
-			if (!multicastLock.isHeld()) {
-				multicastLock.acquire();
-			} else {
-				//Log.i(TAG, "Muticast lock already held...");
-			}
-			try {
-				if (jmdns == null) {
-					jmdns = new JmDNSImpl(deviceIpAddress, "SmartConfig");
-					jmdns.addServiceTypeListener(this);
-				}
+            synchronized(this) {
+                    if (isDiscovering)
+                            return;
+                    final InetAddress deviceIpAddress = getDeviceIpAddress(wm);
+                    if (!multicastLock.isHeld()) {
+                            multicastLock.acquire();
+                    } else {
+                            //Log.i(TAG, "Muticast lock already held...");
+                    }
+                    try {
+                            if (jmdns == null) {
+                                    jmdns = new JmDNSImpl(deviceIpAddress, "SmartConfig");
+                                    jmdns.addServiceTypeListener(this);
+                            }
 
-				//Log.w(TAG, "Starting MDNS discovery");
-			} catch (IOException e) {
-				//Log.e(TAG, e.getMessage());
-			} finally {
-				if (jmdns != null) {
-					isDiscovering = true;
-					//Log.i(TAG, "discovering services");
-				}
-			}
-		}
+                            //Log.w(TAG, "Starting MDNS discovery");
+                    } catch (IOException e) {
+                            //Log.e(TAG, e.getMessage());
+                    } finally {
+                            if (jmdns != null) {
+                                    isDiscovering = true;
+                                    //Log.i(TAG, "discovering services");
+                            }
+                    }
+            }
 	}
 
 	@Background
@@ -208,20 +208,20 @@ public class MDnsHelper implements ServiceListener, ServiceTypeListener {
 	}
 
 	private InetAddress getDeviceIpAddress(WifiManager wifi) {
-		InetAddress result = null;
-		try {
-			// default to Android localhost
-			result = InetAddress.getByName("10.0.0.2");
-			// figure out our wifi address, otherwise bail
-			WifiInfo wifiinfo = wifi.getConnectionInfo();
-			int intaddr = wifiinfo.getIpAddress();
-			byte[] byteaddr = new byte[] { (byte) (intaddr & 0xff), (byte) (intaddr >> 8 & 0xff), (byte) (intaddr >> 16 & 0xff), (byte) (intaddr >> 24 & 0xff) };
-			result = InetAddress.getByAddress(byteaddr);
-		} catch (UnknownHostException e) {
-			e.printStackTrace();
-			//Log.e(TAG, "getDeviceIpAddress Error: " + e.getMessage());
-		}
-		return result;
+            InetAddress result = null;
+            try {
+                    // default to Android localhost
+                    result = InetAddress.getByName("10.0.0.2");
+                    // figure out our wifi address, otherwise bail
+                    WifiInfo wifiinfo = wifi.getConnectionInfo();
+                    int intaddr = wifiinfo.getIpAddress();
+                    byte[] byteaddr = new byte[] { (byte) (intaddr & 0xff), (byte) (intaddr >> 8 & 0xff), (byte) (intaddr >> 16 & 0xff), (byte) (intaddr >> 24 & 0xff) };
+                    result = InetAddress.getByAddress(byteaddr);
+            } catch (UnknownHostException e) {
+                    e.printStackTrace();
+                    //Log.e(TAG, "getDeviceIpAddress Error: " + e.getMessage());
+            }
+            return result;
 	}
 
 	@Override

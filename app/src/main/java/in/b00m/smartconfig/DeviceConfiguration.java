@@ -84,10 +84,16 @@ import android.content.DialogInterface.OnClickListener;
 import android.content.SharedPreferences;
 import android.graphics.Color;
 import android.net.ConnectivityManager;
+import android.net.LinkProperties;
+import android.net.NetworkCapabilities;
+import android.net.Network;
 import android.net.NetworkInfo;
+import android.net.NetworkRequest;
 import android.net.wifi.ScanResult;
 import android.net.wifi.WifiConfiguration;
+import android.net.wifi.WifiInfo;
 import android.net.wifi.WifiManager;
+import android.net.wifi.WifiNetworkSuggestion;
 import android.os.AsyncTask;
 import android.os.Build;
 import android.os.Handler;
@@ -200,18 +206,18 @@ public class DeviceConfiguration extends Fragment {
 	private int cgfTryNumber = 0;
 
 	private Runnable mScanningWifiTimeoutRunnable = new Runnable() {
-		/**
-		 * Removes visible loader, displays toast informing the user that the WiFi scan had timed out.
-		 */
-		@Override
-		public void run() {
-			if (scanningnWifi) {
-				mLogger.error("*AP* *** Wifi scan timed out! ***");
-				scanningnWifi = false;
-				showLoaderWithText(false, null);
-				showToastWithMessage("Wifi scan was timed out");
-			}
-		}
+            /**
+             * Removes visible loader, displays toast informing the user that the WiFi scan had timed out.
+             */
+            @Override
+            public void run() {
+                    if (scanningnWifi) {
+                            mLogger.error("*AP* *** Wifi scan timed out! ***");
+                            scanningnWifi = false;
+                            showLoaderWithText(false, null);
+                            showToastWithMessage("Wifi scan was timed out");
+                    }
+            }
 	};
 
 	/**
@@ -223,25 +229,39 @@ public class DeviceConfiguration extends Fragment {
 	 * @see DeviceConfiguration#DisplayWifiState() DisplayWifiState()
 	 */
 	BroadcastReceiver myWifiReceiver = new BroadcastReceiver() {
-
-		@Override
-		public void onReceive(Context arg0, Intent arg1) {
-			ConnectivityManager cm = (ConnectivityManager) arg0.getSystemService(Context.CONNECTIVITY_SERVICE);
-			NetworkInfo networkInfo = cm.getActiveNetworkInfo();
-			if (!(networkInfo == null)) {
-				if (networkInfo.getType() == ConnectivityManager.TYPE_WIFI) {
-					DisplayWifiState();
-				}
-			}
-			else{
-				// We are not connected to any AP ... switching buttons to disable.. to prevent from user to continue
-				tab_device_configuration_device_connection.setText("No Wifi Connection");
-				tab_device_configuration_device_connection.setTextColor(Color.WHITE);
-				textViewConnectionTextView.setBackgroundColor(getResources().getColor(R.color.color_red));
-				tab_device_configuration_start_button.setImageResource(R.drawable.start_configuration_button_off);
-				tab_device_configuration_start_button.setEnabled(false);
-			}
-		}
+            @Override
+            public void onReceive(Context arg0, Intent arg1) {
+                ConnectivityManager cm = (ConnectivityManager) arg0.getSystemService(Context.CONNECTIVITY_SERVICE);
+                Network activeNetwork = cm.getActiveNetwork();
+                //NetworkInfo networkInfo = cm.getActiveNetworkInfo();
+                //if (!(networkInfo == null)) {
+                if (!(activeNetwork == null)) {
+                    //Log.i(TAG, "mywifireceiver: received non null activeNetwork");
+                    NetworkCapabilities nc = cm.getNetworkCapabilities(activeNetwork);
+                    if (nc.hasTransport(NetworkCapabilities.TRANSPORT_WIFI)) {
+                    //if (networkInfo.getType() == ConnectivityManager.TYPE_WIFI) {
+                        DisplayWifiState(cm);
+                    } else {
+                        //Log.i(TAG, "mywifireceiver: received non null activeNetwork with no wifi transport");
+                    }
+                }
+                else {
+                    // We are not connected to any AP ... switching buttons to disable.. to prevent from user to continue
+                    // Or we could be connected to device. So check the wnu currentNetwork which got set when a network request was last successfully made:
+                    String s = WifiNetworkUtils.getInstance(getActivity()).getConnectedSSID();
+                    if (s == null || s == "") {
+                        tab_device_configuration_device_connection.setText("No Wifi Connection");
+                        tab_device_configuration_device_connection.setTextColor(Color.WHITE);
+                        textViewConnectionTextView.setBackgroundColor(getResources().getColor(R.color.color_red));
+                    } else {
+                        tab_device_configuration_device_connection.setText(String.format(getString(R.string.tab_device_configuration_connected_to_ssid), s, prefs.sub().get()));
+                        tab_device_configuration_device_connection.setTextColor(Color.WHITE);
+			textViewConnectionTextView.setBackgroundColor(getResources().getColor(R.color.color_connection_text_sc_holo_grey));
+                    } 
+                    tab_device_configuration_start_button.setImageResource(R.drawable.start_configuration_button_off);
+                    tab_device_configuration_start_button.setEnabled(false);
+                }
+            }
 	};
 
 	/**
@@ -254,76 +274,187 @@ public class DeviceConfiguration extends Fragment {
 	 * @see in.b00m.smartconfig.utils.NetworkUtil#getWifiScanResults(Boolean, Context)
 	 */
 	BroadcastReceiver receiverWifi = new BroadcastReceiver() {
-		@Override
-		public void onReceive(Context context, Intent intent) {
-			inInitiateScan = false;
-			try {
-				getActivity().unregisterReceiver(receiverWifi);
-			} catch (Exception e) {
-				e.printStackTrace();
-			}
-			if (scanningnWifi) {
-				mHandler.removeCallbacks(mScanningWifiTimeoutRunnable);
-				scanningnWifi = false;
-				int devicesNumber = 0;
-				ScanResult result = null;
-				wifiList = NetworkUtil.getWifiScanResults(true, getActivity());
-				mLogger.info("*AP* getWifiScanResults from wifiManager to find SL device as AP - Provisioning tab opened in AP mode");
-				for (ScanResult scanResult : wifiList) {
-					if (scanResult.SSID.contains(Constants.DEVICE_PREFIX)) {
-						devicesNumber++;
-						result = scanResult;
-					}
-				}
+            @Override
+            public void onReceive(Context context, Intent intent) {
+                inInitiateScan = false;
+                try {
+                        getActivity().unregisterReceiver(receiverWifi);
+                } catch (Exception e) {
+                        e.printStackTrace();
+                }
+                if (scanningnWifi) {
+                    mHandler.removeCallbacks(mScanningWifiTimeoutRunnable);
+                    scanningnWifi = false;
+                    int devicesNumber = 0;
+                    ScanResult result = null;
+                    wifiList = NetworkUtil.getWifiScanResults(true, getActivity());
+                    mLogger.info("*AP* getWifiScanResults from wifiManager to find SL device as AP - Provisioning tab opened in AP mode");
+                    for (ScanResult scanResult : wifiList) {
+                            if (scanResult.SSID.contains(Constants.DEVICE_PREFIX)) {
+                                    devicesNumber++;
+                                    result = scanResult;
+                            }
+                    }
 
-				//If there is only one device, and auto connect to SL is on, then we will auto connect to SL, only if it is not password protected.
-					if (devicesNumber == 1 && prefs.autoConnectToSL().get()) {
-						SecurityType securityType = NetworkUtil.getScanResultSecurity(result);
-						if (securityType == SecurityType.OPEN) {
-							deviceWasChosen(result, SecurityType.OPEN, null);
-                                                        //tab_device_configuration_datetime_button.setImageResource(R.drawable.time_button);
-                                                        //tab_device_configuration_datetime_button.setEnabled(true);
-						}
-						else {
-							showToastWithMessage("The device is password protected, auto connect is not possible");
-							showLoaderWithText(false, "");
-						}
-					}
-					else {
-					    	showLoaderWithText(false, "");
-							if( devicesNumber > 1 ) {
-								showToastWithMessage("Too many simplelink devices around you , cannot auto connect to the simplelink device");
-							}
-							if( devicesNumber < 1 ){
-								showToastWithMessage("There are no simplelink devices around you..");
-                                                                tab_device_configuration_refresh_button.setImageResource(R.drawable.new_graphics_rescan);
-                                                                tab_device_configuration_refresh_button.setEnabled(true);
-                                                                //tab_device_configuration_datetime_button.setImageResource(R.drawable.clock_grey);
-                                                                //tab_device_configuration_datetime_button.setEnabled(false);
-							}
-						//add connect to starting ssid / if we have one
-						if(startingSSID != null){
-								WifiConfiguration configuration = NetworkUtil.getWifiConfigurationWithInfo(getActivity(), startingSSID, SecurityType.OPEN, null);
-								WifiNetworkUtils.getInstance(getActivity()).connectToWifi(configuration, getActivity(), new BitbiteNetworkUtilsCallback() {
+                    //If there is only one device, and auto connect to SL is on, then we will auto connect to SL, only if it is not password protected.
+                    if (devicesNumber == 1 && prefs.autoConnectToSL().get()) {
+                        SecurityType securityType = NetworkUtil.getScanResultSecurity(result);
+                        if (securityType == SecurityType.OPEN) {
+                                deviceWasChosen(result, SecurityType.OPEN, null);
+                                //tab_device_configuration_datetime_button.setImageResource(R.drawable.time_button);
+                                //tab_device_configuration_datetime_button.setEnabled(true);
+                        }
+                        else {
+                                showToastWithMessage("The device is password protected, auto connect is not possible");
+                                showLoaderWithText(false, "");
+                        }
+                    }
+                    else {
+                        showLoaderWithText(false, "");
+                            if( devicesNumber > 1 ) {
+                                    showToastWithMessage("Too many simplelink devices around you , cannot auto connect to the simplelink device");
+                            }
+                            if( devicesNumber < 1 ){
+                                    showToastWithMessage("There are no simplelink devices around you..");
+                                    Log.i( TAG, "There are no simplelink devices around you.. startingSSID " + startingSSID);
+                                    tab_device_configuration_refresh_button.setImageResource(R.drawable.new_graphics_rescan);
+                                    tab_device_configuration_refresh_button.setEnabled(true);
+                                    //tab_device_configuration_datetime_button.setImageResource(R.drawable.clock_grey);
+                                    //tab_device_configuration_datetime_button.setEnabled(false);
+                            }
+                        //add connect to starting ssid / if we have one
+                        if(startingSSID != null){
+                            /*WifiConfiguration configuration = NetworkUtil.getWifiConfigurationWithInfo(getActivity(), startingSSID, SecurityType.OPEN, null);
+                            WifiNetworkUtils.getInstance(getActivity()).connectToWifi(configuration, getActivity(), new BitbiteNetworkUtilsCallback() {
 
-									@Override
-									public void successfullyConnectedToNetwork(String ssid) {
-										//no need to add toast
-									}
-									@Override
-									public void failedToConnectToNetwork(WifiConnectionFailure failure) {
-										showToastWithMessage("Failed to connect to initial network " + startingSSID);
-									}
-								}, true);
-							} else {
-								mLogger.info("Initial network is null - will not attempt to connect");
-								//Log.i(TAG,"Initial network is null - will not attempt to connect");
-								showToastWithMessage("No initial network to connect to");
-							}
-					}
-				}
-			}
-//		}
+                                    @Override
+                                    public void successfullyConnectedToNetwork(String ssid) {
+                                            //no need to add toast
+                                    }
+                                    @Override
+                                    public void failedToConnectToNetwork(WifiConnectionFailure failure) {
+                                            showToastWithMessage("Failed to connect to initial network " + startingSSID);
+                                    }
+                            }, true);*/
+                            //Log.i(TAG, "Creating network request to startingssid without password: " + startingSSID);
+                            NetworkRequest nreq = NetworkUtil.getNetworkRequest(getActivity(), startingSSID, SecurityType.WPA2, null, true);
+                            WifiManager wifiMgr = (WifiManager) getActivity().getApplicationContext().getSystemService(Context.WIFI_SERVICE);
+                            WifiNetworkUtils.getInstance(getActivity()).unregisterMnetworkCallback();
+                            String ssid = WifiNetworkUtils.getInstance(getActivity()).getConnectedSSID();
+                            if (null == ssid || ssid == "") {
+                                WifiInfo winfo = wifiMgr.getConnectionInfo();
+                                ssid = winfo.getSSID();
+                            }
+                            if (!ssid.equals(startingSSID)) {
+                                WifiNetworkSuggestion suggestion = new WifiNetworkSuggestion.Builder().setSsid(startingSSID).build();  //.setWpa2Passphrase(sec)
+                                List<WifiNetworkSuggestion> suggestionsList = new ArrayList<WifiNetworkSuggestion>(); 
+                                suggestionsList.add(suggestion);
+                                int status = wifiMgr.addNetworkSuggestions(suggestionsList);
+                                if (status != WifiManager.STATUS_NETWORK_SUGGESTIONS_SUCCESS) {
+                                    Log.e(TAG, "receiverwifi WifiManager.STATUS_NETWORK_SUGGESTIONS_SUCCESS" + status); 
+                                }
+                            }
+                            BitbiteNetworkUtilsCallback bcallback = new BitbiteNetworkUtilsCallback() {
+                                @Override
+                                public void successfullyConnectedToNetwork(String ssid) {
+                                        //no need to add toast
+                                        Log.i(TAG, "receiverwifi bcallback succesfully connected to network" + startingSSID +  " in Broadcastreceiver");
+                                }
+                                @Override
+                                public void failedToConnectToNetwork(WifiConnectionFailure failure) {
+                                        showToastWithMessage("Failed to connect to initial network startingSSID: " + startingSSID);
+                                        Log.i(TAG, "receiverwifi bcallback failed to connect to network" + startingSSID );
+                                }
+                                @Override
+                                public void successfulConnectionToNetwork(Network activeNetwork) {
+                                    //Log.i(TAG, "onReceive: successful connection to :" + activeNetwork.toString());
+                                }
+                            };
+                            ConnectivityManager.NetworkCallback ncallback = new ConnectivityManager.NetworkCallback(){
+                                @Override
+                                public void onAvailable(Network network) {
+                                    if (Build.VERSION.SDK_INT >= Build.VERSION_CODES.LOLLIPOP) {
+                                        Log.i(TAG, "recevierwifi ncallback onAvailable " + network.toString() + " " + network.getClass().getName());
+                                        WifiNetworkUtils.getInstance(getActivity()).setCurrentNetwork(network);
+                                    }
+                                    ConnectivityManager myConnManager = (ConnectivityManager) getActivity().getSystemService(Context.CONNECTIVITY_SERVICE);
+                                    NetworkCapabilities nc = myConnManager.getNetworkCapabilities(network);
+                                    if (!nc.hasCapability(NetworkCapabilities.NET_CAPABILITY_INTERNET)) {
+                                        Log.i(TAG, "receiverwifi ncallback no internet");
+                                        bcallback.successfullyConnectedToNetwork("mysimplelink");
+                                    } else {
+                                        Log.i(TAG, "receiverwifi ncallback internet available");
+                                        bcallback.successfullyConnectedToNetwork("BOOMIN");
+                                    }
+                                    //bcallback.successfulConnectionToNetwork(network);
+                                }
+
+                                @Override
+                                public void onUnavailable() {
+                                    if (Build.VERSION.SDK_INT >= Build.VERSION_CODES.LOLLIPOP) {
+                                        Log.i(TAG, "receiverwifi ncallback onUnavailable " + startingSSID);
+                                    }
+                                    bcallback.failedToConnectToNetwork(WifiConnectionFailure.Unknown);
+                                }
+
+                                @Override
+                                public void onCapabilitiesChanged(Network network, NetworkCapabilities networkCapabilities) {
+                                    try {
+                                        if (Build.VERSION.SDK_INT >= Build.VERSION_CODES.LOLLIPOP) {
+                                            //Log.i(TAG, "onCapabilitiesChanged " + networkCapabilities.getLinkDownstreamBandwidthKbps());
+                                            Log.i(TAG, "receiverwifi ncallback onCapabilitiesChanged has wifi? " + networkCapabilities.hasTransport(NetworkCapabilities.TRANSPORT_WIFI));
+                                            Log.i(TAG, "receiverwifi ncallback onCapabilitiesChanged has internet? " + networkCapabilities.hasCapability(NetworkCapabilities.NET_CAPABILITY_INTERNET));
+                                        }
+                                    } catch (Exception e) {
+                                        e.printStackTrace();
+                                    }
+                                }
+                                @Override
+                                public void onLinkPropertiesChanged(Network network, LinkProperties linkProperties) {
+                                    try {
+                                        if (Build.VERSION.SDK_INT >= Build.VERSION_CODES.LOLLIPOP) {
+                                            Log.i(TAG, "recevierwifi ncallback onLinkPropertiesChanged " + linkProperties.getInterfaceName());
+                                            //Log.i(TAG, "onLinkPropertiesChanged " + linkProperties.getRoutes());
+                                            //Log.i(TAG, "onLinkPropertiesChanged " + linkProperties.getDhcpServerAddress());
+                                            //Log.i(TAG, "onLinkPropertiesChanged " + linkProperties.getDomains());
+                                            //Log.i(TAG, "onLinkPropertiesChanged " + linkProperties.getDnsServers());
+                                            //Log.i(TAG, "onLinkPropertiesChanged " + linkProperties.getLinkAddresses());
+                                        }
+                                    } catch (Exception e) {
+                                        e.printStackTrace();
+                                    }
+                                }
+                            };
+                            Log.i(TAG, "receiverwifi connecting to wifi29andup");
+                            WifiNetworkUtils.getInstance(getActivity()).connectToWifi29AndUp(nreq, getActivity(), bcallback, true, ncallback);
+                            ConnectivityManager cm = (ConnectivityManager) context.getSystemService(Context.CONNECTIVITY_SERVICE);
+                            Network activeNetwork = cm.getActiveNetwork();
+                            //NetworkInfo networkInfo = cm.getActiveNetworkInfo();
+                            //if (!(networkInfo == null)) {
+                            if (!(activeNetwork == null)) {
+                                    //Log.i(TAG, "wifireceiver received non null activeNetwork woohoo");
+                                    NetworkCapabilities nc = cm.getNetworkCapabilities(activeNetwork);
+                                    if (nc.hasTransport(NetworkCapabilities.TRANSPORT_WIFI)) {
+                                    //if (networkInfo.getType() == ConnectivityManager.TYPE_WIFI) {
+                                        DisplayWifiState(cm);
+                                    }
+                            }
+                            else {
+                                    // We are not connected to any AP ... switching buttons to disable.. to prevent from user to continue
+                                    tab_device_configuration_device_connection.setText("No Wifi Connection");
+                                    tab_device_configuration_device_connection.setTextColor(Color.WHITE);
+                                    textViewConnectionTextView.setBackgroundColor(getResources().getColor(R.color.color_red));
+                                    tab_device_configuration_start_button.setImageResource(R.drawable.start_configuration_button_off);
+                                    tab_device_configuration_start_button.setEnabled(false);
+                            }
+                            } else {
+                                mLogger.info("Initial network is null - will not attempt to connect");
+                                //Log.i(TAG,"Initial network is null - will not attempt to connect");
+                                showToastWithMessage("No initial network to connect to");
+                            }
+                    }
+                }
+            }
 	};
 
 	/**
@@ -335,39 +466,38 @@ public class DeviceConfiguration extends Fragment {
 	 * @see DeviceConfiguration#confirmResult(Boolean) confirmResult(Boolean)
 	 */
 	public BroadcastReceiver scanFinishedReceiver = new BroadcastReceiver() {
-		@Override
-		public void onReceive(Context context, Intent intent) {
-			//Log.i(TAG, "DeviceConfiguration scanFinishedReceiver, scanningnMDNS:" + scanningnMDNS);
-
-			if (!deviceFound) {
-				//check the list
-				if (!scanFinishTimer) {
-					scanFinishTimer = true;
-					//print("No devices were found in the network: " + ssidToAdd + " Waiting 10 before moving forward to manual");
-					mHandler.postDelayed(new Runnable() {
-						@Override
-						public void run() {
-							if (!deviceFound) {
-								scanningnMDNS = false;
-								//Log.i(TAG, "DeviceConfiguration - scanFinishedReceiver, scanningnMDNS:" + scanningnMDNS);
-								mLogger.info("*AP* DeviceConfiguration - scanFinishedReceiver");
-								mLogger.info("*AP* mDNS finished - requested SL device not found in local network as STA. Cfg verification retrieval will be executed by connecting to SL device as AP");
-								checkParams();
-							} else {
-//								isSearching = false;
-								if (progressDialog != null && progressDialog.isShowing()) {
-									progressDialog.dismiss();
-									//Log.i(TAG, "scanFinishedReceiver, deviceFound:true");
-									mLogger.info("*AP* scanFinishedReceiver,SL deviceFound:true");
-									print("Found the requested device");
-									confirmResult(true);
-								}
-							}
-						}
-					}, 25000);
-				}
-			}
-		}
+            @Override
+            public void onReceive(Context context, Intent intent) {
+                Log.i(TAG, "scanFinishedReceiver, scanningnMDNS:" + scanningnMDNS);
+                if (!deviceFound) {
+                    //check the list
+                    if (!scanFinishTimer) {
+                        scanFinishTimer = true;
+                        //print("No devices were found in the network: " + ssidToAdd + " Waiting 10 before moving forward to manual");
+                        mHandler.postDelayed(new Runnable() {
+                            @Override
+                            public void run() {
+                                if (!deviceFound) {
+                                    scanningnMDNS = false;
+                                    //Log.i(TAG, "DeviceConfiguration - scanFinishedReceiver, scanningnMDNS:" + scanningnMDNS);
+                                    mLogger.info("*AP* DeviceConfiguration - scanFinishedReceiver");
+                                    mLogger.info("*AP* mDNS finished - requested SL device not found in local network as STA. Cfg verification retrieval will be executed by connecting to SL device as AP");
+                                    checkParams();
+                                } else {
+                                    //isSearching = false;
+                                    if (progressDialog != null && progressDialog.isShowing()) {
+                                        progressDialog.dismiss();
+                                        //Log.i(TAG, "scanFinishedReceiver, deviceFound:true");
+                                        mLogger.info("*AP* scanFinishedReceiver,SL deviceFound:true");
+                                        print("Found the requested device");
+                                        confirmResult(true);
+                                    }
+                                }
+                            }
+                        }, 25000);
+                    }
+                }
+            }
 	};
 
 	/**
@@ -380,7 +510,7 @@ public class DeviceConfiguration extends Fragment {
 	public BroadcastReceiver deviceFoundReceiver = new BroadcastReceiver() {
 		@Override
 		public void onReceive(Context context, Intent intent) {
-			//Log.i(TAG, "DeviceConfiguration receive device found, scanningnMDNS:" + scanningnMDNS);
+			Log.i(TAG, "deviceFoundReceiver, scanningnMDNS:" + scanningnMDNS);
 			if (!scanningnMDNS)
 				return;
                         //isSearching = false;
@@ -415,25 +545,24 @@ public class DeviceConfiguration extends Fragment {
 				e.printStackTrace();
 			}
 			if (nameIsValid) {
-				//Log.w(TAG, "set SL device as mDevice");
-				mDevice =  new Device(name, host);
-				if ((progressDialog != null && progressDialog.isShowing()) || isSearching) {
-					isSearching = false;
-					if (progressDialog != null && progressDialog.isShowing())
-					progressDialog.dismiss();
-					//Log.i(TAG, "deviceFoundReceiver device found");
-					print("Found the requested device");
-					((MainActivity) getActivity()).stopPing();
-					deviceFound = true;
-					scanningnMDNS = false;
-					confirmResult(true);
-					//Log.i(TAG, "Found the device, stopping the MDNS discovery");
-					//Log.w(TAG, "deviceFoundReceiver stop scanning mdns");
-					mLogger.info("Found the device, stopping M discovery");
-					mLogger.info("*AP* Name is valid - found the correct SL device, stopping M discovery + Ping");
-				}
+                            //Log.w(TAG, "set SL device as mDevice");
+                            mDevice =  new Device(name, host);
+                            if ((progressDialog != null && progressDialog.isShowing()) || isSearching) {
+                                isSearching = false;
+                                if (progressDialog != null && progressDialog.isShowing())
+                                progressDialog.dismiss();
+                                //Log.i(TAG, "deviceFoundReceiver device found");
+                                print("Found the requested device");
+                                ((MainActivity) getActivity()).stopPing();
+                                deviceFound = true;
+                                scanningnMDNS = false;
+                                confirmResult(true);
+                                Log.i(TAG, "deviceFoundReceiver found the device, stopping the MDNS discovery");
+                                mLogger.info("Found the device, stopping M discovery");
+                                mLogger.info("*AP* Name is valid - found the correct SL device, stopping M discovery + Ping");
+                            }
 			} else {
-				mLogger.info("*AP* Name is not valid - the SL device found is not the correct SL device");
+                            mLogger.info("*AP* Name is not valid - the SL device found is not the correct SL device");
 			}
 		}
 	};
@@ -453,30 +582,34 @@ public class DeviceConfiguration extends Fragment {
 	private void getCFG(final Boolean viaWifi) {
 		if (viaWifi) {
 		    mLogger.info("*AP* Number of attempts previously made to retrieve cfg verification from SL device as STA: " + cgfTryNumber);
+		    //Log.i(TAG, "*AP* Number of attempts previously made to retrieve cfg verification from SL device as STA: " + cgfTryNumber);
 		} else{
-			mLogger.info("*AP* Number of attempts previously made to retrieve cfg verification from SL device as AP: " + cgfTryNumber);
+                    mLogger.info("*AP* Number of attempts previously made to retrieve cfg verification from SL device as AP: " + cgfTryNumber);
+                    //Log.i(TAG, "*AP* Number of attempts previously made to retrieve cfg verification from SL device as AP: " + cgfTryNumber);
 		}
 		if (cgfTryNumber == Constants.ATTEMPTS_TO_GET_CGF_RESULTS) {
-			deviceFound = false;
-			if (viaWifi) {
-				//Log.i(TAG, "getCFG - viaWifi = true - going to checkParams");
-				mLogger.info("*AP* Max attempts at cfg verification via SL device as STA reached, and passed parameter is true - starting attempts at verification via SL device as AP");
-				checkParams();
-			} else {
-				mLogger.info("reached max attempts as AP, Fail");
-				showLoaderWithText(false, "");
-				((MainActivity) getActivity()).showSuccessDialog(Constants.DEVICE_LIST_CFG_CONFIRMATION_FAILED, getString(R.string.pop_up_close), null, PopupType.Failure, null, null);
-				finish(false);
-			}
-			return;
+                    deviceFound = false;
+                    if (viaWifi) {
+                        //Log.i(TAG, "getCFG - viaWifi = true - going to checkParams");
+                        mLogger.info("*AP* Max attempts at cfg verification via SL device as STA reached, and passed parameter is true - starting attempts at verification via SL device as AP");
+                        checkParams();
+                    } else {
+                        //Log.i(TAG, "reached max attempts as AP, Fail");
+                        mLogger.info("reached max attempts as AP, Fail");
+                        showLoaderWithText(false, "");
+                        ((MainActivity) getActivity()).showSuccessDialog(Constants.DEVICE_LIST_CFG_CONFIRMATION_FAILED, getString(R.string.pop_up_close), null, PopupType.Failure, null, null);
+                        finish(false);
+                    }
+                    return;
 		}
 		int utilInt = cgfTryNumber;
 		mLogger.info("*AP* Executing cfg verification attempt no.: " + ++utilInt);
-					if (Build.VERSION.SDK_INT >= Build.VERSION_CODES.HONEYCOMB) {
-						new GetCFGResult().executeOnExecutor(AsyncTask.THREAD_POOL_EXECUTOR, viaWifi);
-					} else {
-						new GetCFGResult().execute(viaWifi);
-					}
+		//Log.i(TAG, "*AP* Executing cfg verification attempt no.: " + ++utilInt);
+                if (Build.VERSION.SDK_INT >= Build.VERSION_CODES.HONEYCOMB) {
+                    new GetCFGResult().executeOnExecutor(AsyncTask.THREAD_POOL_EXECUTOR, viaWifi);
+                } else {
+                    new GetCFGResult().execute(viaWifi);
+                }
 	}
 
 	/**
@@ -488,27 +621,31 @@ public class DeviceConfiguration extends Fragment {
 	 */
 	private void confirmResult(final Boolean viaWifi) {
             if (progressDialog != null && progressDialog.isShowing()) {
-			progressDialog.dismiss();
-			}
-		if (!viaWifi) {
-			if (cgfTryNumber == Constants.ATTEMPTS_TO_GET_CGF_RESULTS) {
-				mLogger.info("*AP* Cfg verification via SL device as STA reached max attempts, starting attempts at verification via SL device as AP");
-			} else {
-			mLogger.info("*AP* SL device not found in local network/OR SSID added to SL device in profile to connect to not found in mobile device (wifiManager) scan - starting attempts at verification via SL device as AP");
-			}
-		} else {
-		mLogger.info("*AP* Cfg verification via SL device as STA process begins");
-		}
-		isSearching = false;
-		mLogger.info("confirmResult called");
-		final Handler handler = new Handler();
-		cgfTryNumber = 0;
-		handler.postDelayed(new Runnable() {
-			@Override
-			public void run() {
-				getCFG(viaWifi);
-			}
-		}, Constants.DELAY_BEFORE_ASKING_CFG_RESULTS);
+                    progressDialog.dismiss();
+            }
+            if (!viaWifi) {
+                    if (cgfTryNumber == Constants.ATTEMPTS_TO_GET_CGF_RESULTS) {
+                        //Log.i(TAG, "*AP* Cfg verification via SL device as STA reached max attempts, starting attempts at verification via SL device as AP");
+                        mLogger.info("*AP* Cfg verification via SL device as STA reached max attempts, starting attempts at verification via SL device as AP");
+                    } else {
+                        //Log.i(TAG, "*AP* SL device not found in local network/OR SSID added to SL device in profile to connect to not found in mobile device (wifiManager) scan - starting attempts at verification via SL device as AP");
+                        mLogger.info("*AP* SL device not found in local network/OR SSID added to SL device in profile to connect to not found in mobile device (wifiManager) scan - starting attempts at verification via SL device as AP");
+                    }
+            } else {
+                //Log.i(TAG, "*AP* Cfg verification via SL device as STA process begins");
+                mLogger.info("*AP* Cfg verification via SL device as STA process begins");
+            }
+            isSearching = false;
+            mLogger.info("confirmResult called");
+            //Log.i(TAG, "confirmResult called");
+            final Handler handler = new Handler();
+            cgfTryNumber = 0;
+            handler.postDelayed(new Runnable() {
+                    @Override
+                    public void run() {
+                            getCFG(viaWifi);
+                    }
+            }, Constants.DELAY_BEFORE_ASKING_CFG_RESULTS);
 	}
 
 	/**
@@ -693,10 +830,16 @@ public class DeviceConfiguration extends Fragment {
                     setPositiveButton("Connect to WiFi", new OnClickListener() {
                             @Override
                             public void onClick(DialogInterface dialog, int which) { //the user clicked yes
-                                    WifiManager wifiManager = (WifiManager) getActivity().getApplicationContext().getSystemService(Context.WIFI_SERVICE);
-                                    if (!wifiManager.isWifiEnabled())
-                                            wifiManager.setWifiEnabled(true);
+                                WifiManager wifiManager = (WifiManager) getActivity().getApplicationContext().getSystemService(Context.WIFI_SERVICE);
+                                if (!wifiManager.isWifiEnabled())
+                                    wifiManager.setWifiEnabled(true);
                                     startActivityForResult(new Intent(Settings.ACTION_WIFI_SETTINGS), Constants.WIFI_SETTINGS_INTENT_RESULTS);
+                                //Ideally, the following should be in the onSettingsResult callback but we don't have a handle on a WifiManager there so taking a chance to getConnectionInfo and startingSSID here
+                                if (wifiManager != null){
+                                    WifiInfo winfo = wifiManager.getConnectionInfo();
+                                    startingSSID = winfo.getSSID();
+                                    //Log.i(TAG, "StartingSSID: " + startingSSID);
+                                }
                             }
                     }).setNeutralButton("No router", new OnClickListener() {
                             @Override
@@ -852,11 +995,24 @@ public class DeviceConfiguration extends Fragment {
 	 */
 	@OnActivityResult(Constants.WIFI_SETTINGS_INTENT_RESULTS)
 	void onSettingsResult(int resultCode, Intent returnIntent) {
-		String ssid = NetworkUtil.getConnectedSSID(getActivity());
+                //Log.i(TAG, "wifi settings resultCode: " + resultCode);
+                //The following gives null
+		String ssid = NetworkUtil.getConnectedSSID(getActivity().getApplicationContext());
+                WifiManager wifiManager = (WifiManager) getActivity().getApplicationContext().getSystemService(Context.WIFI_SERVICE);
+                if (wifiManager != null){
+                    WifiInfo winfo = wifiManager.getConnectionInfo();
+                    ssid = winfo.getSSID();
+                    startingSSID = ssid;
+                    //Log.i(TAG, "onSettingsResult startingSSID: " + startingSSID);
+                }
 		mLogger.info("*AP* Connected now to: " + "\"" + ssid + "\"" + ", and setting it as new starting SSID network");
+		//Log.i(TAG, "*AP* Connected now to: " + "\"" + ssid + "\"" + ", and setting it as new starting SSID network");
+                if (ssid == null) {
+
+                }
 		((MainActivity)getActivity()).mStartingWifiNetwork = ssid;
+                //Log.i(TAG, "onSettingsResult initiating scan ");
 		initiateScan();
-		//Log.e(TAG,"scanning running inside result #1");
 	}
 
 	/**
@@ -908,51 +1064,123 @@ public class DeviceConfiguration extends Fragment {
 	void connectToSSIDAndGetScanResults(String ssid, SecurityType securityType, String password) {
 		showLoaderWithText(true, "Connecting to " + ssid);
 		WifiNetworkUtils.getInstance(getActivity()).clearCallback();
-		final WifiConfiguration configuration = NetworkUtil.getWifiConfigurationWithInfo(getActivity(), ssid, securityType, password);
-		WifiNetworkUtils.getInstance(getActivity()).connectToWifi(configuration, getActivity(), new BitbiteNetworkUtilsCallback() {
-            @Override
-            public void successfullyConnectedToNetwork(String ssid) {
-                print("Checking if the network is simplelink device");
-			// add new condition to check if we actually have normal RSSI
+		WifiNetworkUtils.getInstance(getActivity()).unregisterMnetworkCallback();
+		/*final WifiConfiguration configuration = NetworkUtil.getWifiConfigurationWithInfo(getActivity(), ssid, securityType, password);
+		WifiNetworkUtils.getInstance(getActivity()).connectToWifi(configuration, getActivity(), new BitbiteNetworkUtilsCallback() { */
+                //Log.i(TAG, "Creating network request to " + ssid);
+                NetworkRequest nreq = NetworkUtil.getNetworkRequest(getActivity(), ssid, securityType, password, false);
+                BitbiteNetworkUtilsCallback bcallback = new BitbiteNetworkUtilsCallback(){
+                    @Override
+                    public void successfullyConnectedToNetwork(String ssid) {
+                        print("Checking if the network is simplelink device");
+                        Log.i(TAG, "connectToSSIDAndGetScanResults bcallback succesffullyConnectedToNetwork" + ssid);
+                        // add new condition to check if we actually have normal RSSI
+                        WifiManager wifi = (WifiManager) getActivity().getApplicationContext().getSystemService(Context.WIFI_SERVICE);
+                        int info = wifi.getConnectionInfo().getRssi();
+                        //Log.i(TAG, "RSSI for " + ssid + " is: " + info);
+                        //Log.i(TAG, "True RSSI is: " + wifi.calculateSignalLevel(info,5));
+                        mLogger.info("RSSI is : "+info);
+                        mLogger.info("True RSSI is : "+wifi.calculateSignalLevel(info,5));
+                        if (Build.VERSION.SDK_INT >= Build.VERSION_CODES.HONEYCOMB) {
+                            //Log.i(TAG, "Getting sl device version: " + Build.VERSION.SDK_INT);
+                            new GetDeviceVersion().executeOnExecutor(AsyncTask.THREAD_POOL_EXECUTOR, "Sion");
+                        } else {
+                            //Log.i(TAG, "GetDeviceVersion.execute: " + Build.VERSION.SDK_INT);
+                            new GetDeviceVersion().execute("Sion");
+                        }
+                        if (ssid.contains(Constants.DEVICE_PREFIX)) {
+                            Log.i(TAG, "simplelink device" + ssid);
+                            prefs.scanningDisable().put(true);
+                            ((MainActivity) getActivity()).stopPing();
+                        } else {
+                            prefs.scanningDisable().put(false);
+                            prefs.isScanning().put(false);
+                            ((MainActivity) getActivity()).scanForDevices();
+                        }
+                    }
+                    @Override
+                    public void failedToConnectToNetwork(WifiConnectionFailure failure) {
+                        Log.i(TAG, "connectToSSIDAndGetScanResults bcallback failedToConnectedToNetwork" + failure.toString());
+                        showLoaderWithText(false, "");
+                        tab_device_configuration_router_layout.setVisibility(View.GONE);
+                        resetDeviceToConfigureView();
+                        switch (failure) {
+                            case Connected_To_3G:
+                                show3GDialog();
+                                break;
+                            case Timeout:
+                            case Unknown:
+                                showToastWithMessage("You must connect to a router first");
+                                break;
+                            case Wrong_Password:
+                                showToastWithMessage("The password you entered for the simplelink is wrong, please try again");
+                                break;
+                        }
+                    }
+                    @Override
+                    public void successfulConnectionToNetwork(Network activeNetwork) {
+                        //Log.i(TAG, "connecttossidandgetscanresults: successful connection to :" + activeNetwork.toString());
+                    }
+                };
+                ConnectivityManager.NetworkCallback ncallback = new ConnectivityManager.NetworkCallback(){
+                    @Override
+                    public void onAvailable(Network network) {
+                        Log.i(TAG, "connectToSSIDAndGetScanResults ncallback onAvailable" + network.toString());
+                        if (Build.VERSION.SDK_INT >= Build.VERSION_CODES.LOLLIPOP) {
+                            Log.i(TAG, "connectToSSIDAndGetScanResults onAvailable " + network.toString() + " " + network.getClass().getName());
+                            WifiNetworkUtils.getInstance(getActivity()).setCurrentNetwork(network);
+                        }
+                        ConnectivityManager myConnManager = (ConnectivityManager) getActivity().getSystemService(Context.CONNECTIVITY_SERVICE);
+                        NetworkCapabilities nc = myConnManager.getNetworkCapabilities(network);
 
-			WifiManager	wifi = (WifiManager) getActivity().getApplicationContext().getSystemService(Context.WIFI_SERVICE);
-				int info = wifi.getConnectionInfo().getRssi();
-				 mLogger.info("RSSI is : "+info);
-				mLogger.info("True RSSI is : "+wifi.calculateSignalLevel(info,5));
-                if (Build.VERSION.SDK_INT >= Build.VERSION_CODES.HONEYCOMB) {
-                    new GetDeviceVersion().executeOnExecutor(AsyncTask.THREAD_POOL_EXECUTOR, "Sion");
-                } else {
-                    new GetDeviceVersion().execute("Sion");
-                }
-                if (ssid.contains(Constants.DEVICE_PREFIX)) {
-                    prefs.scanningDisable().put(true);
-                    ((MainActivity) getActivity()).stopPing();
-                } else {
-                    prefs.scanningDisable().put(false);
-                    prefs.isScanning().put(false);
-                    ((MainActivity) getActivity()).scanForDevices();
-                }
-            }
+                        if (!nc.hasCapability(NetworkCapabilities.NET_CAPABILITY_INTERNET)) {
+                            Log.i(TAG, "connectToSSIDAndGetScanResults ncallback onavailable mysimplelink available");
+                            bcallback.successfullyConnectedToNetwork("mysimplelink");
+                        } else {
+                            Log.i(TAG, "Boomin available");
+                            bcallback.successfullyConnectedToNetwork("BOOMIN");
+                        }
+                        //bcallback.successfulConnectionToNetwork(network);
+                    }
 
-            @Override
-            public void failedToConnectToNetwork(WifiConnectionFailure failure) {
-                showLoaderWithText(false, "");
-                tab_device_configuration_router_layout.setVisibility(View.GONE);
-                resetDeviceToConfigureView();
-                switch (failure) {
-                    case Connected_To_3G:
-                        show3GDialog();
-                        break;
-                    case Timeout:
-                    case Unknown:
-                        showToastWithMessage("You must connect to a router first");
-                        break;
-                    case Wrong_Password:
-                        showToastWithMessage("The password you entered for the simplelink is wrong, please try again");
-                        break;
-                }
-            }
-        }, true);
+                    @Override
+                    public void onUnavailable() {
+                        if (Build.VERSION.SDK_INT >= Build.VERSION_CODES.LOLLIPOP) {
+                            Log.i(TAG, "onUnavailable ");
+                        }
+                        bcallback.failedToConnectToNetwork(WifiConnectionFailure.Unknown);
+                    }
+
+                    @Override
+                    public void onCapabilitiesChanged(Network network, NetworkCapabilities networkCapabilities) {
+                        try {
+                            if (Build.VERSION.SDK_INT >= Build.VERSION_CODES.LOLLIPOP) {
+                                Log.i(TAG, "connectToSSIDAndGetScanResults onCapabilitiesChanged " + networkCapabilities.getLinkDownstreamBandwidthKbps());
+                                Log.i(TAG, "connectToSSIDAndGetScanResults onCapabilitiesChanged has wifi? " + networkCapabilities.hasTransport(NetworkCapabilities.TRANSPORT_WIFI));
+                                Log.i(TAG, "connectToSSIDAndGetScanResults onCapabilitiesChanged has internet? " + networkCapabilities.hasCapability(NetworkCapabilities.NET_CAPABILITY_INTERNET));
+                            }
+                        } catch (Exception e) {
+                            e.printStackTrace();
+                        }
+                    }
+                    @Override
+                    public void onLinkPropertiesChanged(Network network, LinkProperties linkProperties) {
+                        try {
+                            if (Build.VERSION.SDK_INT >= Build.VERSION_CODES.LOLLIPOP) {
+                                Log.i(TAG, "connectToSSIDAndGetScanResults onLinkPropertiesChanged " + linkProperties.getInterfaceName());
+                                Log.i(TAG, "connectToSSIDAndGetScanResults onLinkPropertiesChanged " + linkProperties.getRoutes());
+                                //Log.i(TAG, "onLinkPropertiesChanged " + linkProperties.getDhcpServerAddress());
+                                Log.i(TAG, "connectToSSIDAndGetScanResults onLinkPropertiesChanged " + linkProperties.getDomains());
+                                Log.i(TAG, "connectToSSIDAndGetScanResults onLinkPropertiesChanged " + linkProperties.getDnsServers());
+                                Log.i(TAG, "connectToSSIDAndGetScanResults onLinkPropertiesChanged " + linkProperties.getLinkAddresses());
+                            }
+                        } catch (Exception e) {
+                            e.printStackTrace();
+                        }
+                    }
+                };
+                Log.i(TAG, "connectToSSIDAndGetScanResults connecting to wifi29andup");
+                WifiNetworkUtils.getInstance(getActivity()).connectToWifi29AndUp(nreq, getActivity(), bcallback, true, ncallback);
 	}
 
 	/**
@@ -995,6 +1223,10 @@ public class DeviceConfiguration extends Fragment {
                     ((MainActivity) getActivity()).showSuccessDialog("Failed to connect to simple link for cfg verification", getString(R.string.pop_up_close), null, PopupType.Failure, null, null);
                     WifiNetworkUtils.getInstance(getActivity()).clearCallback();
                 }
+                @Override
+                public void successfulConnectionToNetwork(Network activeNetwork) {
+                    //Log.i(TAG, "checkParams: successful connection to :" + activeNetwork.toString());
+                }
             }, false);
 		}
 		else
@@ -1016,59 +1248,150 @@ public class DeviceConfiguration extends Fragment {
 	 */
 	@UiThread
 	void finish(final Boolean moveToDevice) {
-		mLogger.info("*AP* *** SL device AP mode provisioning process complete. Success: " + moveToDevice + " - SL device is connected to the network: " + moveToDevice + " ***");
-		if (wifiList != null) {
-			wifiList.clear();
-			wifiList = null;
-		}
-		mDeviceName = "";
-		scanningnMDNS = false;
-		print("Connecting to the initial network: " + startingSSID);
-		mLogger.info("*AP* Connecting to initial network: \"" + startingSSID + "\"");
-		setToReady(false);
-		tab_device_configuration_router_layout.setVisibility(View.GONE);
-		resetDeviceToConfigureView();
-		tab_device_configuration_router_device_pick_image.setImageResource(R.drawable.new_graphics_white_box_pick_red);
-		WifiNetworkUtils.getInstance(getActivity()).clearCallback();
-		if (startingSSID != null && startingSSID.equalsIgnoreCase(WifiNetworkUtils.getInstance(getActivity()).getConnectedSSID()))
-		{
-			if (moveToDevice) {
-				mLogger.info("*AP* Already connected to initial network, moving to device tab with mDNS SL device: " + mDevice + " to display provisioned SL device");
-				MainActivity activity = (MainActivity) getActivity();
-				activity.changeToDevices(mDevice);
-			}
-		}
-		else if (startingSSID != null)
-		{
-			WifiConfiguration configuration = NetworkUtil.getWifiConfigurationWithInfo(getActivity(), startingSSID, SecurityType.OPEN, null);
-			WifiNetworkUtils.getInstance(getActivity()).connectToWifi(configuration, getActivity(), new BitbiteNetworkUtilsCallback() {
-				@Override
-				public void successfullyConnectedToNetwork(String ssid) {
-					if (moveToDevice) {
-						mLogger.info("*AP* connected to initial network, moving to device tab with mDNS SL device: " + mDevice);
-						MainActivity activity = (MainActivity) getActivity();
-						activity.changeToDevices(mDevice);
-					}
-				}
-
-				@Override
-				public void failedToConnectToNetwork(WifiConnectionFailure failure) {
-					showToastWithMessage("Failed to connect to initial network " + startingSSID);
-				}
-			}, true);
-
-		} else {
-			mLogger.info("Initial network is null - will not attempt to connect");
-			//Log.i(TAG,"Initial network is null - will not attempt to connect");
-			showToastWithMessage("No initial network to connect to");
-		}
+            mLogger.info("*AP* *** SL device AP mode provisioning process complete. Success: " + moveToDevice + " - SL device is connected to the network: " + moveToDevice + " ***");
+            if (wifiList != null) {
+                    wifiList.clear();
+                    wifiList = null;
+            }
+            mDeviceName = "";
+            scanningnMDNS = false;
+            print("Connecting to the initial network: " + startingSSID);
+            mLogger.info("*AP* Connecting to initial network: \"" + startingSSID + "\"");
+            //Log.i(TAG, "*AP* Connecting to initial network: \"" + startingSSID + "\"");
+            setToReady(false);
+            tab_device_configuration_router_layout.setVisibility(View.GONE);
+            resetDeviceToConfigureView();
+            tab_device_configuration_router_device_pick_image.setImageResource(R.drawable.new_graphics_white_box_pick_red);
+            WifiNetworkUtils.getInstance(getActivity()).clearCallback();
+            if (startingSSID != null && startingSSID.equalsIgnoreCase(WifiNetworkUtils.getInstance(getActivity()).getConnectedSSID()))
+            {
                 if (moveToDevice) {
-                    if (Build.VERSION.SDK_INT >= Build.VERSION_CODES.HONEYCOMB) {
-                        new OTAAndType().executeOnExecutor(AsyncTask.THREAD_POOL_EXECUTOR, "");
-                    } else {
-                        new OTAAndType().execute("");
+                    mLogger.info("*AP* Already connected to initial network, moving to device tab with mDNS SL device: " + mDevice + " to display provisioned SL device");
+                    MainActivity activity = (MainActivity) getActivity();
+                    activity.changeToDevices(mDevice);
+                }
+            }
+            else if (startingSSID != null)
+            {
+                /*WifiConfiguration configuration = NetworkUtil.getWifiConfigurationWithInfo(getActivity(), startingSSID, SecurityType.OPEN, null);
+                WifiNetworkUtils.getInstance(getActivity()).connectToWifi(configuration, getActivity(), new BitbiteNetworkUtilsCallback() {
+                    @Override
+                    public void successfullyConnectedToNetwork(String ssid) {
+                            if (moveToDevice) {
+                                    mLogger.info("*AP* connected to initial network, moving to device tab with mDNS SL device: " + mDevice);
+                                    MainActivity activity = (MainActivity) getActivity();
+                                    activity.changeToDevices(mDevice);
+                            }
+                    }
+
+                    @Override
+                    public void failedToConnectToNetwork(WifiConnectionFailure failure) {
+                            showToastWithMessage("Failed to connect to initial network " + startingSSID);
+                    }
+                    @Override
+                    public void successfulConnectionToNetwork(Network activeNetwork) {
+                        //Log.i(TAG, "finish: successful connection to :" + activeNetwork.toString());
+                    }
+                }, true);*/
+                WifiNetworkUtils.getInstance(getActivity()).unregisterMnetworkCallback();
+                NetworkRequest nreq = NetworkUtil.getNetworkRequest(getActivity(), startingSSID, SecurityType.WPA2, null, true);
+                WifiManager wifiMgr = (WifiManager) getActivity().getApplicationContext().getSystemService(Context.WIFI_SERVICE);
+                WifiInfo winfo = wifiMgr.getConnectionInfo();
+                String ssid = winfo.getSSID();
+                //Log.i(TAG, "ssid: " + ssid);
+                if (!ssid.equals(startingSSID)) {
+                    WifiNetworkSuggestion suggestion = new WifiNetworkSuggestion.Builder().setSsid(startingSSID).build();  //.setWpa2Passphrase(sec)
+                    List<WifiNetworkSuggestion> suggestionsList = new ArrayList<WifiNetworkSuggestion>(); 
+                    suggestionsList.add(suggestion);
+                    int status = wifiMgr.addNetworkSuggestions(suggestionsList);
+                    if (status != WifiManager.STATUS_NETWORK_SUGGESTIONS_SUCCESS) {
+                        //Log.e(TAG, "WifiManager.STATUS_NETWORK_SUGGESTIONS_SUCCESS" + status); 
                     }
                 }
+                BitbiteNetworkUtilsCallback bcallback = new BitbiteNetworkUtilsCallback() {
+                    @Override
+                    public void successfullyConnectedToNetwork(String ssid) {
+                        //no need to add toast
+                        Log.i(TAG, "finish bcallback succesfully connected to network " + startingSSID );
+                    }
+                    @Override
+                    public void failedToConnectToNetwork(WifiConnectionFailure failure) {
+                        showToastWithMessage("Failed to connect to initial network startingSSID: " + startingSSID);
+                    }
+                    @Override
+                    public void successfulConnectionToNetwork(Network activeNetwork) {
+                        Log.i(TAG, "finish bcallback successful connection to :" + activeNetwork.toString());
+                    }
+                };
+                ConnectivityManager.NetworkCallback ncallback = new ConnectivityManager.NetworkCallback(){
+                    @Override
+                    public void onAvailable(Network network) {
+                        if (Build.VERSION.SDK_INT >= Build.VERSION_CODES.LOLLIPOP) {
+                            Log.i(TAG, "finish ncallback onAvailable " + network.toString() + " " + network.getClass().getName());
+                            WifiNetworkUtils.getInstance(getActivity()).setCurrentNetwork(network);
+                        }
+                        ConnectivityManager myConnManager = (ConnectivityManager) getActivity().getSystemService(Context.CONNECTIVITY_SERVICE);
+                        NetworkCapabilities nc = myConnManager.getNetworkCapabilities(network);
+                        if (!nc.hasCapability(NetworkCapabilities.NET_CAPABILITY_INTERNET)) {
+                            //Log.i(TAG, "mysimplelink available");
+                            bcallback.successfullyConnectedToNetwork("mysimplelink");
+                        } else {
+                            //Log.i(TAG, "Boomin available");
+                            bcallback.successfullyConnectedToNetwork("BOOMIN");
+                        }
+                        //bcallback.successfulConnectionToNetwork(network);
+                    }
+
+                    @Override
+                    public void onUnavailable() {
+                        if (Build.VERSION.SDK_INT >= Build.VERSION_CODES.LOLLIPOP) {
+                            //Log.i(TAG, "onUnavailable ");
+                        }
+                        bcallback.failedToConnectToNetwork(WifiConnectionFailure.Unknown);
+                    }
+
+                    @Override
+                    public void onCapabilitiesChanged(Network network, NetworkCapabilities networkCapabilities) {
+                        try {
+                            if (Build.VERSION.SDK_INT >= Build.VERSION_CODES.LOLLIPOP) {
+                                //Log.i(TAG, "onCapabilitiesChanged " + networkCapabilities.getLinkDownstreamBandwidthKbps());
+                                Log.i(TAG, "finish ncallback onCapabilitiesChanged has wifi? " + networkCapabilities.hasTransport(NetworkCapabilities.TRANSPORT_WIFI));
+                                Log.i(TAG, "finish ncallback onCapabilitiesChanged has internet? " + networkCapabilities.hasCapability(NetworkCapabilities.NET_CAPABILITY_INTERNET));
+                            }
+                        } catch (Exception e) {
+                            e.printStackTrace();
+                        }
+                    }
+                    @Override
+                    public void onLinkPropertiesChanged(Network network, LinkProperties linkProperties) {
+                        try {
+                            if (Build.VERSION.SDK_INT >= Build.VERSION_CODES.LOLLIPOP) {
+                                Log.i(TAG, "finish ncallback onLinkPropertiesChanged " + linkProperties.getInterfaceName());
+                                //Log.i(TAG, "onLinkPropertiesChanged " + linkProperties.getRoutes());
+                                //Log.i(TAG, "onLinkPropertiesChanged " + linkProperties.getDhcpServerAddress());
+                                //Log.i(TAG, "onLinkPropertiesChanged " + linkProperties.getDomains());
+                                //Log.i(TAG, "onLinkPropertiesChanged " + linkProperties.getDnsServers());
+                                //Log.i(TAG, "onLinkPropertiesChanged " + linkProperties.getLinkAddresses());
+                            }
+                        } catch (Exception e) {
+                            e.printStackTrace();
+                        }
+                    }
+                };
+                Log.i(TAG, "finish connecting to wifi29andup");
+                WifiNetworkUtils.getInstance(getActivity()).connectToWifi29AndUp(nreq, getActivity(), bcallback, true, ncallback);
+            } else {
+                mLogger.info("Initial network is null - will not attempt to connect");
+                //Log.i(TAG,"Initial network is null - will not attempt to connect");
+                showToastWithMessage("No initial network to connect to");
+            }
+            if (moveToDevice) {
+                if (Build.VERSION.SDK_INT >= Build.VERSION_CODES.HONEYCOMB) {
+                    new OTAAndType().executeOnExecutor(AsyncTask.THREAD_POOL_EXECUTOR, "");
+                } else {
+                    new OTAAndType().execute("");
+                }
+            }
 	}
 
 	/**
@@ -1219,7 +1542,6 @@ public class DeviceConfiguration extends Fragment {
 	 */
 	@UiThread
 	void showDeviceConfigurationDialog() {
-
 		AlertDialog.Builder builder = new AlertDialog.Builder(getActivity());
 		scanResultsPopUpView = ScanResultsPopUpView_.build(getActivity());
 		scanResultsPopUpView.deviceConfiguration = this;
@@ -1236,20 +1558,20 @@ public class DeviceConfiguration extends Fragment {
 	 */
 	@UiThread
 	void scanForDevices() {
-		deviceFound = false;
-		scanningnMDNS = true;
-		//Log.i(TAG, "DeviceConfiguration - scanForDevices, scanningnMDNS:" + scanningnMDNS);
-		final Handler handler = new Handler();
-		handler.postDelayed(new Runnable() {
-			@Override
-			public void run() {
-				mLogger.info("*AP* Going to show progress dialog for mDNS scan");
-				showProgressDialog(SmartConfigConstants.MDNS_SCAN_TIME, Constants.MDNS_SCAN_MESSAGE);
-				prefs.scanningDisable().put(false);
-				prefs.isScanning().put(false);
-				((MainActivity) getActivity()).scanForDevices();
-			}
-		}, Constants.DEVICE_WAITING_TIME_BEFORE_STARTING_MDNS_SCAN);
+            deviceFound = false;
+            scanningnMDNS = true;
+            //Log.i(TAG, "DeviceConfiguration - scanForDevices, scanningnMDNS:" + scanningnMDNS);
+            final Handler handler = new Handler();
+            handler.postDelayed(new Runnable() {
+                @Override
+                public void run() {
+                    mLogger.info("*AP* Going to show progress dialog for mDNS scan");
+                    showProgressDialog(SmartConfigConstants.MDNS_SCAN_TIME, Constants.MDNS_SCAN_MESSAGE);
+                    prefs.scanningDisable().put(false);
+                    prefs.isScanning().put(false);
+                    ((MainActivity) getActivity()).scanForDevices();
+                }
+            }, Constants.DEVICE_WAITING_TIME_BEFORE_STARTING_MDNS_SCAN);
 	}
 
 	/**
@@ -1332,10 +1654,13 @@ public class DeviceConfiguration extends Fragment {
 	 * to reflect the current Wi-Fi connection status of the mobile phone.
 	 */
 	private void DisplayWifiState(){
+                //Log.i(TAG, "DisplayWifiState()");
 		ConnectivityManager myConnManager = (ConnectivityManager) getActivity().getSystemService(Context.CONNECTIVITY_SERVICE);
-		NetworkInfo myNetworkInfo = myConnManager.getNetworkInfo(ConnectivityManager.TYPE_WIFI);
+		//NetworkInfo myNetworkInfo = myConnManager.getNetworkInfo(ConnectivityManager.TYPE_WIFI);
+		Network activeNetwork = myConnManager.getActiveNetwork();
 		String ssid = NetworkUtil.getConnectedSSID(getActivity());
-		if (myNetworkInfo.isConnected()) {
+		//if (myNetworkInfo.isConnected()) {
+		if (null != activeNetwork) {
 			//tab_device_configuration_device_connection.setText("Connected to : " +ssid);
                         tab_device_configuration_device_connection.setText(String.format(getString(R.string.tab_device_configuration_connected_to_ssid), ssid, prefs.sub().get()));
 			tab_device_configuration_device_connection.setTextColor(Color.WHITE);
@@ -1348,6 +1673,28 @@ public class DeviceConfiguration extends Fragment {
 		}
 	}
 
+	private void DisplayWifiState(ConnectivityManager cm){
+                //Log.i(TAG, "Displaying Wifi state with received cm");
+		Network activeNetwork = cm.getActiveNetwork();
+                WifiManager wifiManager = (WifiManager) getActivity().getApplicationContext().getSystemService(Context.WIFI_SERVICE);
+                String ssid = null;
+                if (wifiManager != null){
+                    WifiInfo winfo = wifiManager.getConnectionInfo();
+                    ssid = winfo.getSSID();
+                }
+		//if (null != activeNetwork && ssid != null) {
+		if (null != ssid) {
+			//tab_device_configuration_device_connection.setText("Connected to : " +ssid);
+                        tab_device_configuration_device_connection.setText(String.format(getString(R.string.tab_device_configuration_connected_to_ssid), ssid, prefs.sub().get()));
+			tab_device_configuration_device_connection.setTextColor(Color.WHITE);
+			textViewConnectionTextView.setBackgroundColor(getResources().getColor(R.color.color_connection_text_sc_holo_grey));
+		} else {
+			//tab_device_configuration_device_connection.setText("No Wifi Connection");
+                        tab_device_configuration_device_connection.setText(String.format(getString(R.string.tab_device_configuration_connected_to_ssid), ssid, prefs.sub().get()));
+			tab_device_configuration_device_connection.setTextColor(Color.WHITE);
+			textViewConnectionTextView.setBackgroundColor(getResources().getColor(R.color.color_red));
+		}
+	}
 	/**
 	 * An asynchronous task which attempts to retrieve the SL device's version,
 	 * if successful sets up the UI router device pick layout for further action,
@@ -1360,7 +1707,6 @@ public class DeviceConfiguration extends Fragment {
 
 		@Override
 		protected void onPostExecute(DeviceVersion result) {
-
 			showLoaderWithText(false, "");
 			if (result != DeviceVersion.UNKNOWN) {
 				try {
@@ -1407,9 +1753,11 @@ public class DeviceConfiguration extends Fragment {
 		protected DeviceVersion doInBackground(String... params) {
 			deviceVersion = DeviceVersion.UNKNOWN;
 			try {
+                                //Log.i(TAG, "Getting SL device version");
 				deviceVersion = NetworkUtil.getSLVersion(Constants.BASE_URL);
 			} catch (Exception e) {
 				e.printStackTrace();
+                                //Log.e(TAG, "Exception getSLVersion");
 				//removing loader if we have an exception...
 				showLoaderWithText(false,"");
 			}
@@ -1430,6 +1778,7 @@ public class DeviceConfiguration extends Fragment {
 		public void addProfileMsg(String errorMessage) {
 			print(errorMessage);
 			mLogger.info("*AP* Wifi profile addition to SL device in progress, msg: " + errorMessage);
+                        //Log.i(TAG, "addProfileMsg: "+ errorMessage);
 		}
 
 		/**
@@ -1441,6 +1790,7 @@ public class DeviceConfiguration extends Fragment {
 		public void addProfileFailed(String errorMessage) {
 			showLoaderWithText(false, "");
 			mLogger.info("*AP* Wifi profile addition to SL device completed unsuccessfully, msg: " + errorMessage);
+                        //Log.i(TAG, "addProfileFailed: "+ errorMessage);
 		}
 
 		/**
@@ -1475,41 +1825,116 @@ public class DeviceConfiguration extends Fragment {
 			else {
 				print("Connecting to " + ssidToAdd + " in order to confirm device configuration has succeeded.\n DO NOT ABORT!");
 				mLogger.info("*AP* Connecting to \"" + ssidToAdd + "\" in order to obtain cfg verification");
-				WifiNetworkUtils.getInstance(getActivity()).clearCallback();
+				/*WifiNetworkUtils.getInstance(getActivity()).clearCallback();
 				WifiConfiguration configuration = NetworkUtil.getWifiConfigurationWithInfo(getActivity(), ssidToAdd, ssidToAddSecurityType, ssidToAddSecurityKey);
-				WifiNetworkUtils.getInstance(getActivity()).connectToWifi(configuration, getActivity(), new BitbiteNetworkUtilsCallback() {
-					@Override
-					public void successfullyConnectedToNetwork(String ssid) {
-						isSearching = true;
-						print("Connected to " + ssidToAdd + ". Searching for new devices\n DO NOT ABORT!");
-						mLogger.info("*AP* Connected to SSID in profile added to SL device: \"" + ssidToAdd + "\"." +
-								" Searching for new SL devices in the local network for cfg verification: Activating Ping Bcast + UDPBcastServer + mDNS discovery");
-						((MainActivity) getActivity()).startPing();
-						((MainActivity) getActivity()).restartUdp();
-						if (!deviceFound) {
-							scanForDevices();
-						}
-					}
+				WifiNetworkUtils.getInstance(getActivity()).connectToWifi(configuration, getActivity(), new BitbiteNetworkUtilsCallback() {*/
+                                WifiNetworkUtils.getInstance(getActivity()).unregisterMnetworkCallback();
+                                NetworkRequest nreq = NetworkUtil.getNetworkRequest(getActivity(), ssidToAdd, ssidToAddSecurityType, ssidToAddSecurityKey, true);
+                                final WifiManager wifiMgr = (WifiManager) getActivity().getApplicationContext().getSystemService(Context.WIFI_SERVICE);
+                                final WifiNetworkSuggestion suggestion = new WifiNetworkSuggestion.Builder()
+                                    .setSsid(ssidToAdd)
+                                    .setWpa2Passphrase(ssidToAddSecurityKey)
+                                    .build();
+                                final List<WifiNetworkSuggestion> suggestionsList =
+                                    new ArrayList<WifiNetworkSuggestion>(); 
+                                suggestionsList.add(suggestion);
+                                wifiMgr.addNetworkSuggestions(suggestionsList);
+                                BitbiteNetworkUtilsCallback bcallback = new BitbiteNetworkUtilsCallback() {
+                                    @Override
+                                    public void successfullyConnectedToNetwork(String ssid) {
+                                        isSearching = true;
+                                        print("Connected to " + ssidToAdd + ". Searching for new devices\n DO NOT ABORT!");
+                                        mLogger.info("*AP* Connected to SSID in profile added to SL device: \"" + ssidToAdd + "\"." +
+                                                        " Searching for new SL devices in the local network for cfg verification: Activating Ping Bcast + UDPBcastServer + mDNS discovery");
+                                        ((MainActivity) getActivity()).startPing();
+                                        ((MainActivity) getActivity()).restartUdp();
+                                        if (!deviceFound) {
+                                                scanForDevices();
+                                        }
+                                    }
 
-					@Override
-					public void failedToConnectToNetwork(WifiConnectionFailure failure) {
-						showLoaderWithText(false, null);
-						resetDeviceToConfigureView();
-						setToReady(false);
-						switch (failure) {
-						case Connected_To_3G:
-							show3GDialog();
-							break;
-						case Timeout:
-						case Unknown:
-							showToastWithMessage("There was an unknown error connecting to the network");
-							break;
-						case Wrong_Password:
-							showToastWithMessage("The password you entered for the network is wrong please try again");
-							break;
-						}
-					}
-				}, true);
+                                    @Override
+                                    public void failedToConnectToNetwork(WifiConnectionFailure failure) {
+                                        showLoaderWithText(false, null);
+                                        resetDeviceToConfigureView();
+                                        setToReady(false);
+                                        switch (failure) {
+                                        case Connected_To_3G:
+                                                show3GDialog();
+                                                break;
+                                        case Timeout:
+                                        case Unknown:
+                                                showToastWithMessage("There was an unknown error connecting to the network");
+                                                break;
+                                        case Wrong_Password:
+                                                showToastWithMessage("The password you entered for the network is wrong please try again");
+                                                break;
+                                        }
+                                    }
+                                    @Override
+                                    public void successfulConnectionToNetwork(Network activeNetwork) {
+                                        //Log.i(TAG, "addProfileCompleted : successful connection to :" + activeNetwork.toString());
+                                    }
+				};
+                                ConnectivityManager.NetworkCallback ncallback = new ConnectivityManager.NetworkCallback(){
+                                    @Override
+                                    public void onAvailable(Network network) {
+                                        Log.i(TAG, "addProfileCompleted ncallback onAvailable" + network.toString());
+                                        if (Build.VERSION.SDK_INT >= Build.VERSION_CODES.LOLLIPOP) {
+                                            //Log.i(TAG, "onAvailable " + network.toString() + " " + network.getClass().getName());
+                                            WifiNetworkUtils.getInstance(getActivity()).setCurrentNetwork(network);
+                                        }
+                                        ConnectivityManager myConnManager = (ConnectivityManager) getActivity().getSystemService(Context.CONNECTIVITY_SERVICE);
+                                        NetworkCapabilities nc = myConnManager.getNetworkCapabilities(network);
+
+                                        if (!nc.hasCapability(NetworkCapabilities.NET_CAPABILITY_INTERNET)) {
+                                            //Log.i(TAG, "mysimplelink available");
+                                            bcallback.successfullyConnectedToNetwork("mysimplelink");
+                                        } else {
+                                            //Log.i(TAG, "Boomin available");
+                                            bcallback.successfullyConnectedToNetwork("BOOMIN");
+                                        }
+                                        //bcallback.successfulConnectionToNetwork(network);
+                                    }
+
+                                    @Override
+                                    public void onUnavailable() {
+                                        if (Build.VERSION.SDK_INT >= Build.VERSION_CODES.LOLLIPOP) {
+                                            //Log.i(TAG, "onUnavailable ");
+                                        }
+                                        bcallback.failedToConnectToNetwork(WifiConnectionFailure.Unknown);
+                                    }
+
+                                    @Override
+                                    public void onCapabilitiesChanged(Network network, NetworkCapabilities networkCapabilities) {
+                                        try {
+                                            if (Build.VERSION.SDK_INT >= Build.VERSION_CODES.LOLLIPOP) {
+                                                //Log.i(TAG, "onCapabilitiesChanged " + networkCapabilities.getLinkDownstreamBandwidthKbps());
+                                                Log.i(TAG, "addprofilecompleted ncallback onCapabilitiesChanged has wifi? " + networkCapabilities.hasTransport(NetworkCapabilities.TRANSPORT_WIFI));
+                                                //Log.i(TAG, "onCapabilitiesChanged has internet? " + networkCapabilities.hasCapability(NetworkCapabilities.NET_CAPABILITY_INTERNET));
+                                            }
+                                        } catch (Exception e) {
+                                            e.printStackTrace();
+                                        }
+                                    }
+                                    @Override
+                                    public void onLinkPropertiesChanged(Network network, LinkProperties linkProperties) {
+                                        try {
+                                            if (Build.VERSION.SDK_INT >= Build.VERSION_CODES.LOLLIPOP) {
+                                                //Log.i(TAG, "onLinkPropertiesChanged " + linkProperties.getInterfaceName());
+                                                //Log.i(TAG, "onLinkPropertiesChanged " + linkProperties.getRoutes());
+                                                //Log.i(TAG, "onLinkPropertiesChanged " + linkProperties.getDhcpServerAddress());
+                                                //Log.i(TAG, "onLinkPropertiesChanged " + linkProperties.getDomains());
+                                                //Log.i(TAG, "onLinkPropertiesChanged " + linkProperties.getDnsServers());
+                                                //Log.i(TAG, "onLinkPropertiesChanged " + linkProperties.getLinkAddresses());
+                                            }
+                                        } catch (Exception e) {
+                                            e.printStackTrace();
+                                        }
+                                    }
+                                };
+                                Log.i(TAG, "addProfileCompleted connecting to wifi29andup");
+                                WifiNetworkUtils.getInstance(getActivity()).connectToWifi29AndUp(nreq, getActivity(), bcallback, true, ncallback);
 			}
 		}
 
@@ -1560,75 +1985,75 @@ public class DeviceConfiguration extends Fragment {
 	 * @see DeviceConfiguration#getCFG(Boolean)
 	 */
 	class GetCFGResult extends AsyncTask<Boolean, Void, String> {
+            private Boolean mIsViaWifi;
 
-		private Boolean mIsViaWifi;
+            @Override
+            protected void onPostExecute(String result) {
+                //Log.i(TAG, "Cfg result from SL: " + result);
+                mLogger.info("*AP* Cfg result text: " + result);
+                if (result != null) {
+                        showLoaderWithText(false, "");
+                        if (NetworkUtil.getResultTypeCFGString(result) == CFG_Result_Enum.Success) {
+                            deviceFound = true;
+                            ((MainActivity)getActivity()).showSuccessDialog(null, getString(R.string.pop_up_close), null, PopupType.Success, null, result);
+                            //fetching device IP -lan page
+                            try {
+                                sharedpreferences = getActivity().getSharedPreferences(mypreference, Context.MODE_PRIVATE);
+                                String simplelinkDeviceIp = mDevice.host;
+                                SharedPreferences.Editor editor = sharedpreferences.edit();
+                                editor.putString(Name, simplelinkDeviceIp);
+                                editor.commit();
+                                //Log.i(TAG, "Entered IP into SP: " + mDevice.host);
+                                mLogger.info("*AP* Entered IP into SP: " + mDevice.host);
+                            } catch (NullPointerException e) {
+                                    e.printStackTrace();
+                            }
+                            finish(true);
+                        }
+                        else {
+                            ((MainActivity)getActivity()).showSuccessDialog(result, getString(R.string.pop_up_close), null, PopupType.Failure, null, null);
+                            finish(false);
+                        }
+                }
+                else {
+                    final Handler handler = new Handler();
+                    handler.postDelayed(new Runnable() {
+                            @Override
+                            public void run() {
+                                    cgfTryNumber++;
+                                    getCFG(mIsViaWifi);
+                            }
+                    }, Constants.DELAY_BETWEEN_CFG_RESULTS_REQUESTS);
+                }
+                super.onPostExecute(result);
+            }
 
-		@Override
-		protected void onPostExecute(String result) {
-			//Log.i(TAG, "Cfg result from SL: " + result);
-			mLogger.info("*AP* Cfg result text: " + result);
-			if (result != null) {
-				showLoaderWithText(false, "");
-				if (NetworkUtil.getResultTypeCFGString(result) == CFG_Result_Enum.Success) {
-					deviceFound = true;
-					((MainActivity)getActivity()).showSuccessDialog(null, getString(R.string.pop_up_close), null, PopupType.Success, null, result);
-					//fetching device IP -lan page
-					try {
-						sharedpreferences = getActivity().getSharedPreferences(mypreference, Context.MODE_PRIVATE);
-						String simplelinkDeviceIp = mDevice.host;
-						SharedPreferences.Editor editor = sharedpreferences.edit();
-						editor.putString(Name, simplelinkDeviceIp);
-						editor.commit();
-						//Log.i(TAG, "Entered IP into SP: " + mDevice.host);
-						mLogger.info("*AP* Entered IP into SP: " + mDevice.host);
-					} catch (NullPointerException e) {
-						e.printStackTrace();
-					}
-					finish(true);
-				}
-				else {
-					((MainActivity)getActivity()).showSuccessDialog(result, getString(R.string.pop_up_close), null, PopupType.Failure, null, null);
-					finish(false);
-				}
-			}
-			else {
-				final Handler handler = new Handler();
-				handler.postDelayed(new Runnable() {
-					@Override
-					public void run() {
-						cgfTryNumber++;
-						getCFG(mIsViaWifi);
-					}
-				}, Constants.DELAY_BETWEEN_CFG_RESULTS_REQUESTS);
-			}
-			super.onPostExecute(result);
-		}
+            @Override
+            protected String doInBackground(Boolean... params) {
+                mLogger.info("GetCFGResult doInBackground called");
+                mIsViaWifi = params[0];
+                String result;
+                String resultString;
+                String baseUrl = Constants.BASE_URL_NO_HTTP;
+                if (mIsViaWifi && mDevice != null) {
+                        baseUrl = "://" + mDevice.host;
+                }
+                mLogger.info("*AP* Getting cfg result from SL device: " + baseUrl);
+                resultString = NetworkUtil.getCGFResultFromDevice(baseUrl, deviceVersion);
+                //Log.i(TAG, "Getting cfg result from SL (" + resultString + ")");
+                mLogger.info("*AP* Got cfg result from SL device: " + resultString);
+                CFG_Result_Enum result_Enum = NetworkUtil.cfgEnumForResponse(resultString);
+                result = NetworkUtil.getErrorMsgForCFGResult(result_Enum);
 
-		@Override
-		protected String doInBackground(Boolean... params) {
-			mLogger.info("GetCFGResult doInBackground called");
-			mIsViaWifi = params[0];
-			String result;
-			String resultString;
-			String baseUrl = Constants.BASE_URL_NO_HTTP;
-			if (mIsViaWifi && mDevice != null) {
-				baseUrl = "://" + mDevice.host;
-			}
-			mLogger.info("*AP* Getting cfg result from SL device: " + baseUrl);
-			resultString = NetworkUtil.getCGFResultFromDevice(baseUrl, deviceVersion);
-			//Log.i(TAG, "Getting cfg result from SL (" + resultString + ")");
-			mLogger.info("*AP* Got cfg result from SL device: " + resultString);
-			CFG_Result_Enum result_Enum = NetworkUtil.cfgEnumForResponse(resultString);
-			result = NetworkUtil.getErrorMsgForCFGResult(result_Enum);
-
-                        //baseUrl = "://192.168.1.100:38980/confo/" + mDevice.name + "/" + ssidToAdd;
-                        //baseUrl = "://b00m.in:38980/confo/" + mDevice.name + "/" + ssidToAdd;
-                        baseUrl = "://pv.b00m.in/api/confo/" + mDevice.name + "/" + ssidToAdd;
-			mLogger.info("*AP* Getting cfg result from cloud: " + baseUrl);
-                        resultString = NetworkUtil.getCGFResultFromCloud(baseUrl, deviceVersion);
-			mLogger.info("*AP* Getting cfg result from cloud: " + resultString);
-			return result;
-		}
+                //baseUrl = "://192.168.1.100:38980/confo/" + mDevice.name + "/" + ssidToAdd;
+                //baseUrl = "://b00m.in:38980/confo/" + mDevice.name + "/" + ssidToAdd;
+                baseUrl = "://pv.b00m.in/api/confo/" + mDevice.name + "/" + ssidToAdd;
+                mLogger.info("*AP* Getting cfg result from cloud: " + baseUrl);
+                //Log.i(TAG, "*AP* Getting cfg result from cloud: " + baseUrl);
+                resultString = NetworkUtil.getCGFResultFromCloud(baseUrl, deviceVersion);
+                mLogger.info("*AP* Getting cfg result from cloud: " + resultString);
+                return result;
+            }
 	}
 
 	class OTAAndType extends AsyncTask<String,Void,Device_Type_Enum> {
@@ -1917,7 +2342,7 @@ public class DeviceConfiguration extends Fragment {
 	 * @see in.b00m.smartconfig.utils.NetworkUtil#getConnectedSSID(Context)
 	 */
 	void ssidSecurityChecker() {
-        //this method connected to the broadcast receiver who listen to network changes
+        //this method is connected to the broadcast receiver who listen to network changes
         ConnectivityManager myConnManager = (ConnectivityManager) getActivity().getSystemService(Context.CONNECTIVITY_SERVICE);
         NetworkInfo myNetworkInfo = myConnManager.getNetworkInfo(ConnectivityManager.TYPE_WIFI);
         chosenWifiSSID = NetworkUtil.getConnectedSSID(getActivity());
