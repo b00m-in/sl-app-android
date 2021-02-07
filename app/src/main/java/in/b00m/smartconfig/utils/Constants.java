@@ -127,6 +127,7 @@ public interface Constants {
 	int WIFI_TIMEOUT_FAILURE = 47;
 	int WIFI_3G_FAILURE = 57;
 	String QUESTION_PASSWORD = "Please enter your WiFi password";
+        // getExternalStorageDirectory was deprecated in Android platform 29 / Q
 	String LOG_PATH = Environment.getExternalStorageDirectory() + File.separator + "Android" + File.separator +"data"+File.separator +"in.b00m.smartconfig"+File.separator + "files" +File.separator + "logs" + File.separator + "log.txt";
 	String LOG_PATH_PATTERN = Environment.getExternalStorageDirectory() + File.separator + "Android" + File.separator +"data"+File.separator +"in.b00m.smartconfig"+File.separator + "files" +File.separator + "logs" + File.separator + "log.%d.txt";
 	String DOWNLOAD_FILE_PATH_PREFIX = "http://software-dl.ti.com/ecs/cc31xx/OTA/readme";

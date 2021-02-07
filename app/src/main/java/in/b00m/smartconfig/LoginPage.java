@@ -112,7 +112,7 @@ public class LoginPage  extends Fragment{
         ConnectivityManager cm = (ConnectivityManager) getActivity().getSystemService(Context.CONNECTIVITY_SERVICE);
         Network activeNetwork = cm.getActiveNetwork();
         if (activeNetwork == null) {
-            Log.i(TAG, "activeNetwork null");
+            //Log.i(TAG, "activeNetwork null");
             resp.setText("Current network has no internet"); //result.toString());
             buttonLogin.setImageResource(R.drawable.login_button_off);
             buttonLogin.setEnabled(false);
@@ -122,13 +122,13 @@ public class LoginPage  extends Fragment{
             NetworkCapabilities nc = cm.getNetworkCapabilities(activeNetwork);
             if (nc.hasCapability(NetworkCapabilities.NET_CAPABILITY_INTERNET)) {
                 resp.setText("Please login or register"); //result.toString());
-                Log.i(TAG, "current network has internet");
+                //Log.i(TAG, "current network has internet");
                 buttonLogin.setImageResource(R.drawable.login_button_on);
                 buttonLogin.setEnabled(true);
                 buttonRegister.setImageResource(R.drawable.register_button_on);
                 buttonRegister.setEnabled(true);
             } else {
-                Log.i(TAG, "activeNetwork has no internet");
+                //Log.i(TAG, "activeNetwork has no internet");
                 resp.setText("Current network has no internet"); //result.toString());
                 buttonLogin.setImageResource(R.drawable.login_button_off);
                 buttonLogin.setEnabled(false);

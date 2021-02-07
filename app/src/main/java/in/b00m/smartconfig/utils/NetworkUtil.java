@@ -143,15 +143,15 @@ public class NetworkUtil {
         NetworkCapabilities nc = cm.getNetworkCapabilities(activeNetwork);
         //if (netInfo != null && netInfo.getType() == ConnectivityManager.TYPE_WIFI) {
         if (activeNetwork == null) {
-            Log.i(TAG, "activeNetwork is null");
+            //Log.i(TAG, "activeNetwork is null");
             return NOT_CONNECTED;
         } else if (activeNetwork != null && nc.hasTransport(NetworkCapabilities.TRANSPORT_WIFI) && nc.hasCapability(NetworkCapabilities.NET_CAPABILITY_INTERNET)) {
-            Log.i(TAG, "nonnull activeNetwork with wifi transport and internet capability!");
+            //Log.i(TAG, "nonnull activeNetwork with wifi transport and internet capability!");
             return WIFI;
         } else if(activeNetwork != null && nc.hasTransport(NetworkCapabilities.TRANSPORT_WIFI)) {
         //if (activeNetwork != null) {// || mNetwork != null) {
             //if (activeNetwork.getType() == ConnectivityManager.TYPE_WIFI) // getType deprecated in 28
-            Log.i(TAG, "nonnull activeNetwork with wifi transport");
+            //Log.i(TAG, "nonnull activeNetwork with wifi transport");
             return WIFI;
             //if (activeNetwork.getType() == ConnectivityManager.TYPE_MOBILE)
             //    return MOBILE;
@@ -208,15 +208,15 @@ public class NetworkUtil {
             @Override
             public void successfullyConnectedToNetwork(String ssid) {
                 //no need to add toast
-                Log.i(TAG, "wifiNetReq succesfully connected to network" + ssid );
+                //Log.i(TAG, "wifiNetReq succesfully connected to network" + ssid );
             }
             @Override
             public void failedToConnectToNetwork(WifiConnectionFailure failure) {
-                Log.i(TAG, "wifiNetReq failed to connect to initial network ");
+                //Log.i(TAG, "wifiNetReq failed to connect to initial network ");
             }
             @Override
             public void successfulConnectionToNetwork(Network activeNetwork) {
-                Log.i(TAG, "wifiNetReq: successful connection to :" + activeNetwork.toString());
+                //Log.i(TAG, "wifiNetReq: successful connection to :" + activeNetwork.toString());
             }
         };
         ConnectivityManager.NetworkCallback ncallback = new ConnectivityManager.NetworkCallback(){
@@ -230,10 +230,10 @@ public class NetworkUtil {
                 NetworkCapabilities nc = myConnManager.getNetworkCapabilities(network);
 
                 if (!nc.hasCapability(NetworkCapabilities.NET_CAPABILITY_INTERNET)) {
-                    Log.i(TAG, "wifiNetReq: mysimplelink available");
+                    //Log.i(TAG, "wifiNetReq: mysimplelink available");
                     bcallback.successfullyConnectedToNetwork("mysimplelink");
                 } else {
-                    Log.i(TAG, "wifiNetReq: Boomin available");
+                    //Log.i(TAG, "wifiNetReq: Boomin available");
                     bcallback.successfullyConnectedToNetwork("BOOMIN");
                 }
                 //bcallback.successfulConnectionToNetwork(network);

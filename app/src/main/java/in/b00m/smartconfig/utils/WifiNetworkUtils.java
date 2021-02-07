@@ -137,7 +137,7 @@ public class WifiNetworkUtils {
     
         public Boolean unregisterMnetworkCallback() {
             if (mConnectivityManager != null && mNetworkCallback != null ) {
-                Log.i(TAG, "Unregistering network callback");
+                //Log.i(TAG, "Unregistering network callback");
                 mConnectivityManager.unregisterNetworkCallback(mNetworkCallback);
                 return true;
             } else {
@@ -286,7 +286,9 @@ public class WifiNetworkUtils {
                                 }
                             }
                         };*/
-                        mConnectivityManager.registerNetworkCallback(req, mNetworkCallback); 
+                        // Registering the network callback separately is not required as the 
+                        // requestNetwork presumably registers the callback
+                        //mConnectivityManager.registerNetworkCallback(req, mNetworkCallback); 
                         mConnectivityManager.requestNetwork(req, mNetworkCallback, 10000); 
 
 		} catch (Exception e) {

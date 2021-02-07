@@ -40,6 +40,7 @@ import android.content.Intent;
 import android.content.pm.PackageInfo;
 import android.content.pm.PackageManager;
 import android.content.pm.PackageManager.NameNotFoundException;
+import android.content.pm.ResolveInfo;
 import android.net.ConnectivityManager;
 import android.net.NetworkInfo;
 import android.net.Uri;
@@ -78,6 +79,7 @@ import java.net.MalformedURLException;
 import java.net.URL;
 import java.net.URLConnection;
 import java.net.UnknownHostException;
+import java.util.List;
 
 @EFragment(R.layout.tab_settings_view)
 public class SettingsFragment extends Fragment implements OnCheckedChangeListener {
@@ -312,18 +314,38 @@ public class SettingsFragment extends Fragment implements OnCheckedChangeListene
 	}
 	@Click
 	void settings_logs_button() {
-		if (ContextCompat.checkSelfPermission(getActivity(), Manifest.permission.WRITE_EXTERNAL_STORAGE)
-				== PackageManager.PERMISSION_GRANTED) {
-			// Permission is granted
-			final Intent ei = new Intent(Intent.ACTION_SEND);
-			ei.setType("vnd.android.cursor.dir/email");
-			ei.putExtra(Intent.EXTRA_EMAIL, new String[]{"bugs@b00m.in"});
-			ei.putExtra(Intent.EXTRA_SUBJECT, "Log for SmartConfig, version: " + settings_build_text.getText().toString());
-			ei.putExtra(Intent.EXTRA_STREAM, FileProvider.getUriForFile(getActivity(),
-					getString(R.string.file_provider_authority),
-					new File( Constants.LOG_PATH)));
-			startActivity(Intent.createChooser(ei, "Send email..."));
-		}
+            if (ContextCompat.checkSelfPermission(getActivity(), Manifest.permission.WRITE_EXTERNAL_STORAGE) == PackageManager.PERMISSION_GRANTED) {
+                // Permission is granted
+                File logFile = new File(getActivity().getExternalFilesDir(null), "log.txt");
+                // LOG_PATH uses Environment.getExternalStorageDirectory() which was deprecated in Android platform 29 / Q
+                //Uri path = FileProvider.getUriForFile(getActivity(), getString(R.string.file_provider_authority), new File(Constants.LOG_PATH));
+                Uri path = FileProvider.getUriForFile(getActivity(), getString(R.string.file_provider_authority), logFile);
+                //Log.i(TAG, "Path: " + path);
+                Intent ei = new Intent(Intent.ACTION_SEND);
+                ei.setData(path);
+                //Intent ei  = new Intent("in.b00m.smartconfig.fileprovider").setData(path);
+                ei.addFlags(Intent.FLAG_GRANT_READ_URI_PERMISSION);
+                ei.addFlags(Intent.FLAG_GRANT_WRITE_URI_PERMISSION);
+                //ei.setAction(Intent.ACTION_SEND);
+                ei.setType("vnd.android.cursor.dir/email");
+                ei.putExtra(Intent.EXTRA_EMAIL, new String[]{"bugs@b00m.in"});
+                ei.putExtra(Intent.EXTRA_SUBJECT, "Log for B00MIN-SL, version: " + settings_build_text.getText().toString());
+                ei.putExtra(Intent.EXTRA_STREAM, path) ; /*FileProvider.getUriForFile(getActivity(), getString(R.string.file_provider_authority), new File( Constants.LOG_PATH)));*/
+                Intent chooser = Intent.createChooser(ei, "Send email...");
+                List<ResolveInfo> resInfoList = getActivity().getApplicationContext().getPackageManager().queryIntentActivities(chooser, PackageManager.MATCH_DEFAULT_ONLY);
+                if (resInfoList == null || resInfoList.isEmpty() ) {
+                    //Log.i(TAG, "No resolveinfo");
+                }
+                for (ResolveInfo resolveInfo : resInfoList) {
+                    String packageName = resolveInfo.activityInfo.packageName;
+                    //Log.i(TAG, packageName);
+                    getActivity().getApplicationContext().grantUriPermission(packageName, path, Intent.FLAG_GRANT_READ_URI_PERMISSION);
+                    getActivity().getApplicationContext().grantUriPermission(packageName, path, Intent.FLAG_GRANT_WRITE_URI_PERMISSION);
+                }
+                chooser.putExtra(Intent.EXTRA_STREAM, path) ; /*FileProvider.getUriForFile(getActivity(), getString(R.string.file_provider_authority), new File( Constants.LOG_PATH)));*/
+                startActivity(chooser);
+                //startActivity(Intent.createChooser(ei, "Send email..."));
+            }
         }
 	@Click
 	void settings_logout_button() {

@@ -100,6 +100,7 @@ import org.androidannotations.annotations.UiThread;
 import org.androidannotations.annotations.ViewById;
 import org.androidannotations.annotations.sharedpreferences.Pref;
 
+import java.io.File;
 import java.util.ConcurrentModificationException;
 import java.util.concurrent.locks.Lock;
 import java.util.concurrent.locks.ReadWriteLock;
@@ -489,7 +490,11 @@ public class MainActivity extends FragmentActivity {
 
         // OPTIONAL: Set an active log file (separate from the rollover files).
         // If rollingPolicy.fileNamePattern already set, you don't need this.
-        rollingFileAppender.setFile(Constants.LOG_PATH);
+        File logFile = new File(this.getExternalFilesDir(null), "log.txt");
+        rollingFileAppender.setFile(logFile.getAbsolutePath());
+        //Log.i(TAG, "Set logback file to: " + logFile.getAbsolutePath());
+        //rollingFileAppender.setFile(Constants.LOG_PATH);
+        //Log.i(TAG, "Set logback file to: " + Constants.LOG_PATH);
 
         SizeBasedTriggeringPolicy<ILoggingEvent> sizePolicy = new SizeBasedTriggeringPolicy<>();
         sizePolicy.setMaxFileSize("2MB");// limit 2M for emails

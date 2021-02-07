@@ -316,7 +316,7 @@ public class DeviceConfiguration extends Fragment {
                             }
                             if( devicesNumber < 1 ){
                                     showToastWithMessage("There are no simplelink devices around you..");
-                                    Log.i( TAG, "There are no simplelink devices around you.. startingSSID " + startingSSID);
+                                    //Log.i( TAG, "There are no simplelink devices around you.. startingSSID " + startingSSID);
                                     tab_device_configuration_refresh_button.setImageResource(R.drawable.new_graphics_rescan);
                                     tab_device_configuration_refresh_button.setEnabled(true);
                                     //tab_device_configuration_datetime_button.setImageResource(R.drawable.clock_grey);
@@ -341,7 +341,7 @@ public class DeviceConfiguration extends Fragment {
                             WifiManager wifiMgr = (WifiManager) getActivity().getApplicationContext().getSystemService(Context.WIFI_SERVICE);
                             WifiNetworkUtils.getInstance(getActivity()).unregisterMnetworkCallback();
                             String ssid = WifiNetworkUtils.getInstance(getActivity()).getConnectedSSID();
-                            if (null == ssid || ssid == "") {
+                            if (null == ssid || ssid.equals("")) {
                                 WifiInfo winfo = wifiMgr.getConnectionInfo();
                                 ssid = winfo.getSSID();
                             }
@@ -351,19 +351,19 @@ public class DeviceConfiguration extends Fragment {
                                 suggestionsList.add(suggestion);
                                 int status = wifiMgr.addNetworkSuggestions(suggestionsList);
                                 if (status != WifiManager.STATUS_NETWORK_SUGGESTIONS_SUCCESS) {
-                                    Log.e(TAG, "receiverwifi WifiManager.STATUS_NETWORK_SUGGESTIONS_SUCCESS" + status); 
+                                    //Log.e(TAG, "receiverwifi WifiManager.STATUS_NETWORK_SUGGESTIONS_ERROR_CODE: " + status); 
                                 }
                             }
                             BitbiteNetworkUtilsCallback bcallback = new BitbiteNetworkUtilsCallback() {
                                 @Override
                                 public void successfullyConnectedToNetwork(String ssid) {
                                         //no need to add toast
-                                        Log.i(TAG, "receiverwifi bcallback succesfully connected to network" + startingSSID +  " in Broadcastreceiver");
+                                        //Log.i(TAG, "receiverwifi bcallback succesfully connected to network" + startingSSID +  " in Broadcastreceiver");
                                 }
                                 @Override
                                 public void failedToConnectToNetwork(WifiConnectionFailure failure) {
                                         showToastWithMessage("Failed to connect to initial network startingSSID: " + startingSSID);
-                                        Log.i(TAG, "receiverwifi bcallback failed to connect to network" + startingSSID );
+                                        //Log.i(TAG, "receiverwifi bcallback failed to connect to network" + startingSSID );
                                 }
                                 @Override
                                 public void successfulConnectionToNetwork(Network activeNetwork) {
@@ -374,16 +374,16 @@ public class DeviceConfiguration extends Fragment {
                                 @Override
                                 public void onAvailable(Network network) {
                                     if (Build.VERSION.SDK_INT >= Build.VERSION_CODES.LOLLIPOP) {
-                                        Log.i(TAG, "recevierwifi ncallback onAvailable " + network.toString() + " " + network.getClass().getName());
+                                        //Log.i(TAG, "recevierwifi ncallback onAvailable " + network.toString() + " " + network.getClass().getName());
                                         WifiNetworkUtils.getInstance(getActivity()).setCurrentNetwork(network);
                                     }
                                     ConnectivityManager myConnManager = (ConnectivityManager) getActivity().getSystemService(Context.CONNECTIVITY_SERVICE);
                                     NetworkCapabilities nc = myConnManager.getNetworkCapabilities(network);
                                     if (!nc.hasCapability(NetworkCapabilities.NET_CAPABILITY_INTERNET)) {
-                                        Log.i(TAG, "receiverwifi ncallback no internet");
+                                        //Log.i(TAG, "receiverwifi ncallback no internet");
                                         bcallback.successfullyConnectedToNetwork("mysimplelink");
                                     } else {
-                                        Log.i(TAG, "receiverwifi ncallback internet available");
+                                        //Log.i(TAG, "receiverwifi ncallback internet available");
                                         bcallback.successfullyConnectedToNetwork("BOOMIN");
                                     }
                                     //bcallback.successfulConnectionToNetwork(network);
@@ -392,7 +392,7 @@ public class DeviceConfiguration extends Fragment {
                                 @Override
                                 public void onUnavailable() {
                                     if (Build.VERSION.SDK_INT >= Build.VERSION_CODES.LOLLIPOP) {
-                                        Log.i(TAG, "receiverwifi ncallback onUnavailable " + startingSSID);
+                                        //Log.i(TAG, "receiverwifi ncallback onUnavailable " + startingSSID);
                                     }
                                     bcallback.failedToConnectToNetwork(WifiConnectionFailure.Unknown);
                                 }
@@ -402,8 +402,8 @@ public class DeviceConfiguration extends Fragment {
                                     try {
                                         if (Build.VERSION.SDK_INT >= Build.VERSION_CODES.LOLLIPOP) {
                                             //Log.i(TAG, "onCapabilitiesChanged " + networkCapabilities.getLinkDownstreamBandwidthKbps());
-                                            Log.i(TAG, "receiverwifi ncallback onCapabilitiesChanged has wifi? " + networkCapabilities.hasTransport(NetworkCapabilities.TRANSPORT_WIFI));
-                                            Log.i(TAG, "receiverwifi ncallback onCapabilitiesChanged has internet? " + networkCapabilities.hasCapability(NetworkCapabilities.NET_CAPABILITY_INTERNET));
+                                            //Log.i(TAG, "receiverwifi ncallback onCapabilitiesChanged has wifi? " + networkCapabilities.hasTransport(NetworkCapabilities.TRANSPORT_WIFI));
+                                            //Log.i(TAG, "receiverwifi ncallback onCapabilitiesChanged has internet? " + networkCapabilities.hasCapability(NetworkCapabilities.NET_CAPABILITY_INTERNET));
                                         }
                                     } catch (Exception e) {
                                         e.printStackTrace();
@@ -413,7 +413,7 @@ public class DeviceConfiguration extends Fragment {
                                 public void onLinkPropertiesChanged(Network network, LinkProperties linkProperties) {
                                     try {
                                         if (Build.VERSION.SDK_INT >= Build.VERSION_CODES.LOLLIPOP) {
-                                            Log.i(TAG, "recevierwifi ncallback onLinkPropertiesChanged " + linkProperties.getInterfaceName());
+                                            //Log.i(TAG, "recevierwifi ncallback onLinkPropertiesChanged " + linkProperties.getInterfaceName());
                                             //Log.i(TAG, "onLinkPropertiesChanged " + linkProperties.getRoutes());
                                             //Log.i(TAG, "onLinkPropertiesChanged " + linkProperties.getDhcpServerAddress());
                                             //Log.i(TAG, "onLinkPropertiesChanged " + linkProperties.getDomains());
@@ -425,7 +425,7 @@ public class DeviceConfiguration extends Fragment {
                                     }
                                 }
                             };
-                            Log.i(TAG, "receiverwifi connecting to wifi29andup");
+                            //Log.i(TAG, "receiverwifi connecting to wifi29andup");
                             WifiNetworkUtils.getInstance(getActivity()).connectToWifi29AndUp(nreq, getActivity(), bcallback, true, ncallback);
                             ConnectivityManager cm = (ConnectivityManager) context.getSystemService(Context.CONNECTIVITY_SERVICE);
                             Network activeNetwork = cm.getActiveNetwork();
@@ -468,7 +468,7 @@ public class DeviceConfiguration extends Fragment {
 	public BroadcastReceiver scanFinishedReceiver = new BroadcastReceiver() {
             @Override
             public void onReceive(Context context, Intent intent) {
-                Log.i(TAG, "scanFinishedReceiver, scanningnMDNS:" + scanningnMDNS);
+                //Log.i(TAG, "scanFinishedReceiver, scanningnMDNS:" + scanningnMDNS);
                 if (!deviceFound) {
                     //check the list
                     if (!scanFinishTimer) {
@@ -510,7 +510,7 @@ public class DeviceConfiguration extends Fragment {
 	public BroadcastReceiver deviceFoundReceiver = new BroadcastReceiver() {
 		@Override
 		public void onReceive(Context context, Intent intent) {
-			Log.i(TAG, "deviceFoundReceiver, scanningnMDNS:" + scanningnMDNS);
+			//Log.i(TAG, "deviceFoundReceiver, scanningnMDNS:" + scanningnMDNS);
 			if (!scanningnMDNS)
 				return;
                         //isSearching = false;
@@ -557,7 +557,7 @@ public class DeviceConfiguration extends Fragment {
                                 deviceFound = true;
                                 scanningnMDNS = false;
                                 confirmResult(true);
-                                Log.i(TAG, "deviceFoundReceiver found the device, stopping the MDNS discovery");
+                                //Log.i(TAG, "deviceFoundReceiver found the device, stopping the MDNS discovery");
                                 mLogger.info("Found the device, stopping M discovery");
                                 mLogger.info("*AP* Name is valid - found the correct SL device, stopping M discovery + Ping");
                             }
@@ -1073,7 +1073,7 @@ public class DeviceConfiguration extends Fragment {
                     @Override
                     public void successfullyConnectedToNetwork(String ssid) {
                         print("Checking if the network is simplelink device");
-                        Log.i(TAG, "connectToSSIDAndGetScanResults bcallback succesffullyConnectedToNetwork" + ssid);
+                        //Log.i(TAG, "connectToSSIDAndGetScanResults bcallback succesffullyConnectedToNetwork" + ssid);
                         // add new condition to check if we actually have normal RSSI
                         WifiManager wifi = (WifiManager) getActivity().getApplicationContext().getSystemService(Context.WIFI_SERVICE);
                         int info = wifi.getConnectionInfo().getRssi();
@@ -1089,7 +1089,7 @@ public class DeviceConfiguration extends Fragment {
                             new GetDeviceVersion().execute("Sion");
                         }
                         if (ssid.contains(Constants.DEVICE_PREFIX)) {
-                            Log.i(TAG, "simplelink device" + ssid);
+                            //Log.i(TAG, "simplelink device" + ssid);
                             prefs.scanningDisable().put(true);
                             ((MainActivity) getActivity()).stopPing();
                         } else {
@@ -1100,7 +1100,7 @@ public class DeviceConfiguration extends Fragment {
                     }
                     @Override
                     public void failedToConnectToNetwork(WifiConnectionFailure failure) {
-                        Log.i(TAG, "connectToSSIDAndGetScanResults bcallback failedToConnectedToNetwork" + failure.toString());
+                        //Log.i(TAG, "connectToSSIDAndGetScanResults bcallback failedToConnectedToNetwork" + failure.toString());
                         showLoaderWithText(false, "");
                         tab_device_configuration_router_layout.setVisibility(View.GONE);
                         resetDeviceToConfigureView();
@@ -1125,19 +1125,19 @@ public class DeviceConfiguration extends Fragment {
                 ConnectivityManager.NetworkCallback ncallback = new ConnectivityManager.NetworkCallback(){
                     @Override
                     public void onAvailable(Network network) {
-                        Log.i(TAG, "connectToSSIDAndGetScanResults ncallback onAvailable" + network.toString());
+                        //Log.i(TAG, "connectToSSIDAndGetScanResults ncallback onAvailable" + network.toString());
                         if (Build.VERSION.SDK_INT >= Build.VERSION_CODES.LOLLIPOP) {
-                            Log.i(TAG, "connectToSSIDAndGetScanResults onAvailable " + network.toString() + " " + network.getClass().getName());
+                            //Log.i(TAG, "connectToSSIDAndGetScanResults onAvailable " + network.toString() + " " + network.getClass().getName());
                             WifiNetworkUtils.getInstance(getActivity()).setCurrentNetwork(network);
                         }
                         ConnectivityManager myConnManager = (ConnectivityManager) getActivity().getSystemService(Context.CONNECTIVITY_SERVICE);
                         NetworkCapabilities nc = myConnManager.getNetworkCapabilities(network);
 
                         if (!nc.hasCapability(NetworkCapabilities.NET_CAPABILITY_INTERNET)) {
-                            Log.i(TAG, "connectToSSIDAndGetScanResults ncallback onavailable mysimplelink available");
+                            //Log.i(TAG, "connectToSSIDAndGetScanResults ncallback onavailable mysimplelink available");
                             bcallback.successfullyConnectedToNetwork("mysimplelink");
                         } else {
-                            Log.i(TAG, "Boomin available");
+                            //Log.i(TAG, "Boomin available");
                             bcallback.successfullyConnectedToNetwork("BOOMIN");
                         }
                         //bcallback.successfulConnectionToNetwork(network);
@@ -1146,7 +1146,7 @@ public class DeviceConfiguration extends Fragment {
                     @Override
                     public void onUnavailable() {
                         if (Build.VERSION.SDK_INT >= Build.VERSION_CODES.LOLLIPOP) {
-                            Log.i(TAG, "onUnavailable ");
+                            //Log.i(TAG, "onUnavailable ");
                         }
                         bcallback.failedToConnectToNetwork(WifiConnectionFailure.Unknown);
                     }
@@ -1155,9 +1155,9 @@ public class DeviceConfiguration extends Fragment {
                     public void onCapabilitiesChanged(Network network, NetworkCapabilities networkCapabilities) {
                         try {
                             if (Build.VERSION.SDK_INT >= Build.VERSION_CODES.LOLLIPOP) {
-                                Log.i(TAG, "connectToSSIDAndGetScanResults onCapabilitiesChanged " + networkCapabilities.getLinkDownstreamBandwidthKbps());
-                                Log.i(TAG, "connectToSSIDAndGetScanResults onCapabilitiesChanged has wifi? " + networkCapabilities.hasTransport(NetworkCapabilities.TRANSPORT_WIFI));
-                                Log.i(TAG, "connectToSSIDAndGetScanResults onCapabilitiesChanged has internet? " + networkCapabilities.hasCapability(NetworkCapabilities.NET_CAPABILITY_INTERNET));
+                                //Log.i(TAG, "connectToSSIDAndGetScanResults onCapabilitiesChanged " + networkCapabilities.getLinkDownstreamBandwidthKbps());
+                                //Log.i(TAG, "connectToSSIDAndGetScanResults onCapabilitiesChanged has wifi? " + networkCapabilities.hasTransport(NetworkCapabilities.TRANSPORT_WIFI));
+                                //Log.i(TAG, "connectToSSIDAndGetScanResults onCapabilitiesChanged has internet? " + networkCapabilities.hasCapability(NetworkCapabilities.NET_CAPABILITY_INTERNET));
                             }
                         } catch (Exception e) {
                             e.printStackTrace();
@@ -1167,19 +1167,19 @@ public class DeviceConfiguration extends Fragment {
                     public void onLinkPropertiesChanged(Network network, LinkProperties linkProperties) {
                         try {
                             if (Build.VERSION.SDK_INT >= Build.VERSION_CODES.LOLLIPOP) {
-                                Log.i(TAG, "connectToSSIDAndGetScanResults onLinkPropertiesChanged " + linkProperties.getInterfaceName());
-                                Log.i(TAG, "connectToSSIDAndGetScanResults onLinkPropertiesChanged " + linkProperties.getRoutes());
+                                //Log.i(TAG, "connectToSSIDAndGetScanResults onLinkPropertiesChanged " + linkProperties.getInterfaceName());
+                                //Log.i(TAG, "connectToSSIDAndGetScanResults onLinkPropertiesChanged " + linkProperties.getRoutes());
                                 //Log.i(TAG, "onLinkPropertiesChanged " + linkProperties.getDhcpServerAddress());
-                                Log.i(TAG, "connectToSSIDAndGetScanResults onLinkPropertiesChanged " + linkProperties.getDomains());
-                                Log.i(TAG, "connectToSSIDAndGetScanResults onLinkPropertiesChanged " + linkProperties.getDnsServers());
-                                Log.i(TAG, "connectToSSIDAndGetScanResults onLinkPropertiesChanged " + linkProperties.getLinkAddresses());
+                                //Log.i(TAG, "connectToSSIDAndGetScanResults onLinkPropertiesChanged " + linkProperties.getDomains());
+                                //Log.i(TAG, "connectToSSIDAndGetScanResults onLinkPropertiesChanged " + linkProperties.getDnsServers());
+                                //Log.i(TAG, "connectToSSIDAndGetScanResults onLinkPropertiesChanged " + linkProperties.getLinkAddresses());
                             }
                         } catch (Exception e) {
                             e.printStackTrace();
                         }
                     }
                 };
-                Log.i(TAG, "connectToSSIDAndGetScanResults connecting to wifi29andup");
+                //Log.i(TAG, "connectToSSIDAndGetScanResults connecting to wifi29andup");
                 WifiNetworkUtils.getInstance(getActivity()).connectToWifi29AndUp(nreq, getActivity(), bcallback, true, ncallback);
 	}
 
@@ -1312,7 +1312,7 @@ public class DeviceConfiguration extends Fragment {
                     @Override
                     public void successfullyConnectedToNetwork(String ssid) {
                         //no need to add toast
-                        Log.i(TAG, "finish bcallback succesfully connected to network " + startingSSID );
+                        //Log.i(TAG, "finish bcallback succesfully connected to network " + startingSSID );
                     }
                     @Override
                     public void failedToConnectToNetwork(WifiConnectionFailure failure) {
@@ -1320,14 +1320,14 @@ public class DeviceConfiguration extends Fragment {
                     }
                     @Override
                     public void successfulConnectionToNetwork(Network activeNetwork) {
-                        Log.i(TAG, "finish bcallback successful connection to :" + activeNetwork.toString());
+                        //Log.i(TAG, "finish bcallback successful connection to :" + activeNetwork.toString());
                     }
                 };
                 ConnectivityManager.NetworkCallback ncallback = new ConnectivityManager.NetworkCallback(){
                     @Override
                     public void onAvailable(Network network) {
                         if (Build.VERSION.SDK_INT >= Build.VERSION_CODES.LOLLIPOP) {
-                            Log.i(TAG, "finish ncallback onAvailable " + network.toString() + " " + network.getClass().getName());
+                            //Log.i(TAG, "finish ncallback onAvailable " + network.toString() + " " + network.getClass().getName());
                             WifiNetworkUtils.getInstance(getActivity()).setCurrentNetwork(network);
                         }
                         ConnectivityManager myConnManager = (ConnectivityManager) getActivity().getSystemService(Context.CONNECTIVITY_SERVICE);
@@ -1355,8 +1355,8 @@ public class DeviceConfiguration extends Fragment {
                         try {
                             if (Build.VERSION.SDK_INT >= Build.VERSION_CODES.LOLLIPOP) {
                                 //Log.i(TAG, "onCapabilitiesChanged " + networkCapabilities.getLinkDownstreamBandwidthKbps());
-                                Log.i(TAG, "finish ncallback onCapabilitiesChanged has wifi? " + networkCapabilities.hasTransport(NetworkCapabilities.TRANSPORT_WIFI));
-                                Log.i(TAG, "finish ncallback onCapabilitiesChanged has internet? " + networkCapabilities.hasCapability(NetworkCapabilities.NET_CAPABILITY_INTERNET));
+                                //Log.i(TAG, "finish ncallback onCapabilitiesChanged has wifi? " + networkCapabilities.hasTransport(NetworkCapabilities.TRANSPORT_WIFI));
+                                //Log.i(TAG, "finish ncallback onCapabilitiesChanged has internet? " + networkCapabilities.hasCapability(NetworkCapabilities.NET_CAPABILITY_INTERNET));
                             }
                         } catch (Exception e) {
                             e.printStackTrace();
@@ -1366,7 +1366,7 @@ public class DeviceConfiguration extends Fragment {
                     public void onLinkPropertiesChanged(Network network, LinkProperties linkProperties) {
                         try {
                             if (Build.VERSION.SDK_INT >= Build.VERSION_CODES.LOLLIPOP) {
-                                Log.i(TAG, "finish ncallback onLinkPropertiesChanged " + linkProperties.getInterfaceName());
+                                //Log.i(TAG, "finish ncallback onLinkPropertiesChanged " + linkProperties.getInterfaceName());
                                 //Log.i(TAG, "onLinkPropertiesChanged " + linkProperties.getRoutes());
                                 //Log.i(TAG, "onLinkPropertiesChanged " + linkProperties.getDhcpServerAddress());
                                 //Log.i(TAG, "onLinkPropertiesChanged " + linkProperties.getDomains());
@@ -1378,7 +1378,7 @@ public class DeviceConfiguration extends Fragment {
                         }
                     }
                 };
-                Log.i(TAG, "finish connecting to wifi29andup");
+                //Log.i(TAG, "finish connecting to wifi29andup");
                 WifiNetworkUtils.getInstance(getActivity()).connectToWifi29AndUp(nreq, getActivity(), bcallback, true, ncallback);
             } else {
                 mLogger.info("Initial network is null - will not attempt to connect");
@@ -1590,7 +1590,7 @@ public class DeviceConfiguration extends Fragment {
 		if (!mIsReady) {
 			return;
 		}
-		if (prefs.sub().get() == "Guest") {
+		if (prefs.sub().get().equals("Guest")) {
 			showToastWithMessage(Constants.DEVICE_LIST_MUST_LOGIN);
 			return;
 		}
@@ -1879,7 +1879,7 @@ public class DeviceConfiguration extends Fragment {
                                 ConnectivityManager.NetworkCallback ncallback = new ConnectivityManager.NetworkCallback(){
                                     @Override
                                     public void onAvailable(Network network) {
-                                        Log.i(TAG, "addProfileCompleted ncallback onAvailable" + network.toString());
+                                        //Log.i(TAG, "addProfileCompleted ncallback onAvailable" + network.toString());
                                         if (Build.VERSION.SDK_INT >= Build.VERSION_CODES.LOLLIPOP) {
                                             //Log.i(TAG, "onAvailable " + network.toString() + " " + network.getClass().getName());
                                             WifiNetworkUtils.getInstance(getActivity()).setCurrentNetwork(network);
@@ -1910,7 +1910,7 @@ public class DeviceConfiguration extends Fragment {
                                         try {
                                             if (Build.VERSION.SDK_INT >= Build.VERSION_CODES.LOLLIPOP) {
                                                 //Log.i(TAG, "onCapabilitiesChanged " + networkCapabilities.getLinkDownstreamBandwidthKbps());
-                                                Log.i(TAG, "addprofilecompleted ncallback onCapabilitiesChanged has wifi? " + networkCapabilities.hasTransport(NetworkCapabilities.TRANSPORT_WIFI));
+                                                //Log.i(TAG, "addprofilecompleted ncallback onCapabilitiesChanged has wifi? " + networkCapabilities.hasTransport(NetworkCapabilities.TRANSPORT_WIFI));
                                                 //Log.i(TAG, "onCapabilitiesChanged has internet? " + networkCapabilities.hasCapability(NetworkCapabilities.NET_CAPABILITY_INTERNET));
                                             }
                                         } catch (Exception e) {
@@ -1933,7 +1933,7 @@ public class DeviceConfiguration extends Fragment {
                                         }
                                     }
                                 };
-                                Log.i(TAG, "addProfileCompleted connecting to wifi29andup");
+                                //Log.i(TAG, "addProfileCompleted connecting to wifi29andup");
                                 WifiNetworkUtils.getInstance(getActivity()).connectToWifi29AndUp(nreq, getActivity(), bcallback, true, ncallback);
 			}
 		}
