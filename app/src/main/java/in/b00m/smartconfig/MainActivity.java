@@ -456,10 +456,11 @@ public class MainActivity extends FragmentActivity {
         initMDns();
         restartUdp();
         int networkState = NetworkUtil.getConnectionStatus(this);
-        if (networkState == NetworkUtil.WIFI) { //no wifi connection and alert dialog allowed
-            mStartingWifiNetwork = NetworkUtil.getConnectedSSID(this);
+        if (networkState == NetworkUtil.WIFI) {
+            mStartingWifiNetwork = mNetworkUtils.getConnectedSSID();
             //Log.i(TAG, "Startingssid : " + mStartingWifiNetwork);
-            if (mStartingWifiNetwork == null && !NetworkUtil.wifiNetReq(this)){
+            if (mStartingWifiNetwork == null /*&& !NetworkUtil.wifiNetReq(this)*/){
+                showToastWithMessage("Unable to acquire starting SSID. Please ensure location access is enabled for the device & app.");
                 //Log.i(TAG, "Can't proceed with provisioning");
             }
             readLock.lock();

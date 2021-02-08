@@ -820,7 +820,7 @@ public class DeviceConfiguration extends Fragment {
 
             //Check to see if the starting network is null
             startingSSID = ((MainActivity)getActivity()).mStartingWifiNetwork;
-            String connectedWifi = NetworkUtil.getConnectedSSID(getActivity());
+            String connectedWifi = WifiNetworkUtils.getInstance(getActivity()).getConnectedSSID();
             //Log.i(TAG,"StartingSSID: " + startingSSID);
             if (startingSSID ==  null && connectedWifi== null ) {
                     mLogger.info("*AP* Showing \"no wifi activity\" dialog, because the starting network is null and we are not connected to any network now");
