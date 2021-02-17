@@ -143,6 +143,7 @@ public class RegisterPage  extends Fragment{
                 super.onPostExecute(result);
                 if (result) {
                     resp.setText("Registered as " + prefs.sub().get());
+                    register_fragment_cancel_button();
                     ((MainActivity) getActivity()).clearAllTabs();
                     ((MainActivity) getActivity()).initTabs(prefs.startTab().get());
                 } else {

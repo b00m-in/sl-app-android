@@ -105,6 +105,7 @@
             android:ems="10"
             android:maxLength="19"
             android:inputType="text"
+            android:password="true"
             android:textSize="13sp"
             android:digits="abcdefghijklmnopqrstuvwxyzABCDEFGHIJKLMNOPQRSTUVWXYZ0123456789-_.,%?!£$*@"
             android:padding="5dp" />

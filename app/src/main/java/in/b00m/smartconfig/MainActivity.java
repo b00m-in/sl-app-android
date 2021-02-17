@@ -68,7 +68,7 @@ import android.os.Environment;
 import android.os.Handler;
 import android.os.IBinder;
 import android.provider.Settings;
-import android.support.v4.app.FragmentActivity;
+import android.support.v4.app.FragmentActivity; // support libraries no longer maintained
 import android.support.v4.app.FragmentManager;
 import android.support.v4.app.FragmentTabHost;
 import android.support.v4.app.FragmentTransaction;
@@ -83,11 +83,11 @@ import android.widget.CompoundButton;
 import android.widget.EditText;
 import android.widget.FrameLayout;
 import android.widget.ImageView;
-import android.widget.TabHost;
+import android.widget.TabHost; // deprecated in API level 30
 import android.widget.TabHost.OnTabChangeListener;
 import android.widget.Toast;
 import android.widget.LinearLayout.LayoutParams;
-import android.widget.TabWidget;
+import android.widget.TabWidget; // deprecated in API level 30
 
 import org.androidannotations.annotations.AfterViews;
 import org.androidannotations.annotations.Background;
